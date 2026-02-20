@@ -2,6 +2,10 @@ Improve an existing skill: $ARGUMENTS
 
 Execute this pipeline when Patrik points to an existing skill and provides feedback or improvement ideas.
 
+**Style:** Keep responses concise. Use short sentences and minimal formatting. Do not present triage results as tables — use a brief summary per item. When presenting pipeline step outputs, lead with decisions and flags, not exhaustive analysis.
+
+**Pause points:** Only pause for Patrik's input at Step 1 (confirm understanding) and Step 7 (review results). All other steps execute continuously.
+
 ## Step 0: Baseline Snapshot
 
 Before making any changes, verify the current version of the skill is committed to git. If there are uncommitted changes to the file, ask Patrik whether to commit them first or stash them. The final diff in Step 7 must show a clean comparison between the pre-improvement version and the final version — no mixed changes.
@@ -24,22 +28,17 @@ If any suggestions conflict with each other, flag the conflict explicitly.
 
 **Stop here and wait for Patrik's response.** Do not proceed until he confirms or adjusts.
 
-## Step 2: Propose and Apply Changes
+## Step 2: Apply Changes
 
-After Patrik confirms understanding:
+After Patrik confirms understanding, apply all changes that passed triage directly to the skill file. No approval gate — if it passed triage, implement it.
 
-1. Present proposed changes in the format from ai-resource-improver (Change #, Location, Current, Proposed, Rationale, Unchanged)
-2. Wait for Patrik to approve which changes to implement
-3. Apply approved changes to the skill file
-4. If scripts were modified or created, test each one by running it. A script passes if it: (a) executes without errors, and (b) produces output consistent with what SKILL.md says it should do. If a script runs but produces unexpected output, flag it — don't mark it as tested.
+If scripts were modified or created, test each one by running it. A script passes if it: (a) executes without errors, and (b) produces output consistent with what SKILL.md says it should do. If a script runs but produces unexpected output, flag it — don't mark it as tested.
 
 ## Step 3: Iteration Suggestions
 
 Review the modified skill and generate 2–4 iteration suggestions per the ai-resource-improver methodology.
 
-**Conflict check:** If any iteration suggestion would modify or reverse a change just applied in Step 2, flag this explicitly before presenting it.
-
-Present iteration suggestions — Patrik picks which ones to apply (if any). Apply selected iterations.
+For each suggestion, check whether it conflicts with a change just applied in Step 2. Apply non-conflicting suggestions automatically. Skip any that would modify or reverse a Step 2 change, and note what was skipped and why.
 
 ## Step 4: Evaluate (Subagent)
 
