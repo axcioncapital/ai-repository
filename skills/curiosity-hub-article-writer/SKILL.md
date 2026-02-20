@@ -46,30 +46,52 @@ Type:       Wiki-style informational article (personal learning)
 Depth:      Detailed
 Length:     Adaptive — Claude proposes target length in Step 2 based on material content
 Purpose:    Inform
-Voice:      Analytical, Spacious, Measured
+Voice:      Wikipedia-neutral — no personality, no narrator, information only
 Audience:   Patrik — wants to understand topics deeply enough to draw his own practical implications
 ```
 
 ## Voice Rules
 
-### Core stance: Analytical, Spacious, Measured
+### Wikipedia-neutral tone
 
-- **Analytical:** Present findings from multiple angles without advocating a position. Show the evidence and let the reader weigh it.
-- **Spacious:** Give ideas room. Use context, examples, and breathing space rather than packing every sentence with claims.
-- **Measured:** Acknowledge limitations and complexity. Avoid stating contested or uncertain things as settled fact.
+Write as if no one in particular wrote this. No personality, no narrator presence, no dry wit, no authorial quality. Information only, clearly stated.
+
+Clarity is the engagement. The prose does not need to perform to hold attention. It needs to make sense on every sentence. Prefer simple, direct statements. If a plain sentence communicates the same thing as a sophisticated one, use the plain version.
+
+Readability still matters. Short paragraphs, logical flow between ideas, and good structure serve comprehension, not style.
+
+Bad: "changes happening behind the scenes"
+Good: Name the actual changes.
+
+Bad: "the weaponization of finance changed how reserve holders think about optionality"
+Good: "After sanctions froze central bank assets, reserve holders started looking for ways to reduce their dependence on any single financial system."
+
+### No narrator presence
+
+Do not write as if you have a perspective or style. The prose should not sound like it was crafted by a particular writer. Remove rhetorical observations, framing that implies authorial judgement, and flourishes that draw attention to the writing itself.
+
+Bad: "Finland's archipelago — over 40,000 islands stretching across the Baltic — presents a surveillance challenge that is easier to state than to solve."
+Good: "Finland's archipelago contains over 40,000 islands across the Baltic Sea. This creates a surveillance challenge because the number of narrow channels and island passages makes comprehensive monitoring difficult."
+
+### No dashes as punctuation
+
+Do not use em dashes (—) or en dashes (–) as punctuation. Do not use hyphens between clauses. Replace with full stops, commas, colons, or restructure the sentence. Hyphens are allowed only inside compound words (e.g., "well-known", "real-time"). Any dash appearing between clauses is a violation.
+
+Bad: "Finland's archipelago — over 40,000 islands — presents a unique challenge."
+Good: "Finland's archipelago contains over 40,000 islands. This creates a unique challenge."
 
 ### No decorative sentences
 
-Every sentence must communicate something the reader can understand and use. If a sentence sounds clever but the reader would struggle to explain what it actually means, cut it or rewrite it plainly.
+Every sentence must pass the paraphrase test: if you cannot restate the sentence's meaning in completely different words while preserving the same specific information, the sentence is decorative. Cut it or rewrite it with concrete content.
 
 Bad: "A second pressure is subtler but arguably stickier."
-→ Cut entirely. It says nothing.
+→ Cut entirely. It communicates no specific information.
 
 Bad: "That is where the interesting tension lies."
-→ Cut or replace with plain description of what the tension actually is.
+→ Cut or replace with a plain description of what the tension actually is.
 
 Bad: "The useful question, then, is not X. It is Y."
-→ Instead, just describe what is happening and what is uncertain. Let the reader see the pattern.
+→ Describe what is happening and what is uncertain. Let the reader see the pattern.
 
 ### No editorial steering
 
@@ -86,7 +108,7 @@ Good: Skip it. Go straight to the content.
 Transitions should tell the reader where the argument is going next. They should not sound insightful or add atmosphere.
 
 Bad: "That leads to the next key question: if capital does leave at the margin, where can it realistically go?"
-Good: "If capital does move, the constraint is not where is exciting. It is where is large enough and liquid enough."
+Good: "If capital moves, the limiting factor is the size and liquidity of the alternatives."
 
 Bad: "That brings us to the next question."
 Good: Just start the next idea. If the connection is clear, no transition is needed.
@@ -98,15 +120,9 @@ When the GPT draft stacks multiple abstract nouns together, break them into thin
 Bad: "building durable reasons, mandates, and infrastructure that make lower US exposure more likely"
 Good: "institutions are changing their risk limits, hedging more against the dollar, and building financial routes that do not run through the US"
 
-### Plain over clever
+### Vary paragraph texture
 
-Prefer simple, direct statements. If a plain sentence communicates the same thing as a fancy one, use the plain version.
-
-Bad: "changes happening behind the scenes"
-Good: Name the actual changes.
-
-Bad: "the weaponization of finance changed how reserve holders think about optionality"
-Good: "After sanctions froze central bank assets, reserve holders started looking for ways to reduce their dependence on any single financial system"
+Do not give every paragraph the same level of finish. Some paragraphs are just two or three short sentences stating facts. That is fine. Do not expand them into flowing prose. Varying paragraph length and density makes the article read as information, not as performance.
 
 ## Structure Rules
 
@@ -143,6 +159,8 @@ These patterns appear frequently in GPT drafts. Flag and fix all of them:
 | Abstract stacking | Multiple abstract nouns compressed into one phrase | Break into concrete, picturable things |
 | Reader steering | "The useful question is..." / "The interesting tension is..." | Describe the evidence; let the reader see it |
 | Echoed conclusions | Restating the same point at the end of each section | State it once, clearly |
+| Narrator presence | Rhetorical observations, authorial framing, "easier to state than to solve" | Remove the voice. State the information plainly |
+| Dashes as punctuation | Em dashes, en dashes, or hyphens used between clauses | Replace with full stops, commas, colons, or restructure |
 
 ## Process
 
@@ -169,9 +187,27 @@ Present to Patrik:
 
 After Patrik confirms or adjusts the plan, produce the complete rewritten article.
 
+After completing the rewrite, run a coherence self-check before presenting output:
+
+1. Re-read each section
+2. Apply the paraphrase test to every sentence: can you restate it in completely different words while preserving the same specific information? If not, rewrite it with concrete content or cut it
+3. Check that each paragraph's claims follow logically from the previous paragraph
+4. Fix any failures before proceeding
+
+### Step 4 — Relevance check
+
+Evaluate the completed article against the research plan. For every passage, check whether it directly serves a research plan question or sub-question.
+
+Present a structured list:
+
+**Passages not clearly tied to a research plan question:**
+- [Section > passage description]: why it may be tangential
+
+Ask Patrik: "Confirm keep or cut for each." Apply his decisions before delivering the final article. If all passages are clearly tied to research plan questions, state this and proceed to delivery.
+
 ## Output Protocol
 
-Default to refinement mode: present the rewrite plan (structure, key changes, flagged issues) first. Produce the full article only after Patrik says `RELEASE ARTIFACT`. Deliver the final article as a markdown artifact.
+Default to refinement mode: present the rewrite plan (Step 2) first. Produce the full article only after Patrik says `RELEASE ARTIFACT`. After writing, run the coherence self-check (Step 3) and present the relevance check (Step 4) before delivering the final article. Apply any cuts Patrik requests, then deliver as a markdown artifact.
 
 ## Bias Counters
 
