@@ -1,44 +1,112 @@
 Improve an existing skill: $ARGUMENTS
 
-Follow the improvement workflow defined in CLAUDE.md exactly. Here is the sequence:
+Execute this pipeline when Patrik points to an existing skill and provides feedback or improvement ideas.
 
-## Step 1: Read and Understand
+## Step 0: Baseline Snapshot
 
-Read the skill file specified above. If a path wasn't provided, ask me which skill to improve.
+Before making any changes, verify the current version of the skill is committed to git. If there are uncommitted changes to the file, ask Patrik whether to commit them first or stash them. The final diff in Step 7 must show a clean comparison between the pre-improvement version and the final version — no mixed changes.
 
-Then confirm your understanding of the skill's purpose and current structure before I share my feedback.
+## Step 1: Understand the Feedback
 
-## Step 2: Gather Feedback
+Read the skill Patrik points to. Then read `skills/ai-resource-improver/SKILL.md` for the improvement methodology.
 
-Ask me what I want changed or improved. If I already provided feedback above, confirm your understanding of it before proceeding.
+Before doing anything else, present:
 
-## Step 3: Propose Changes (wait for my approval)
+1. **Your understanding** of each suggestion — restate what Patrik is asking for in your own words
+2. **Triage results** — for each suggestion, assess clarity, logic, compatibility, and complexity per the improver methodology
+3. **Clarifying questions** — anything ambiguous or that could be interpreted multiple ways
+4. **Potential problems** — breaking changes, scope concerns, anything that could go wrong
+5. **Downstream impact** — read any skills referenced by or referencing this skill (check the cross-references section in CLAUDE.md) and flag whether the proposed changes would break interfaces or assumptions in connected skills
 
-Present specific changes:
-- **What** — the concrete modification
-- **Where** — which section/lines
-- **Why** — the reasoning
+If any suggestions conflict with each other, flag the conflict explicitly.
 
-Do NOT apply changes yet. Wait for my approval.
+**Decision point:** If the feedback is pushing the skill beyond its original scope — adding unrelated responsibilities, combining different domains, requiring 2+ new sections — flag that this may warrant a new skill rather than an improvement. Do not scope-creep an existing skill. The ai-resource-improver methodology includes a complexity threshold for this — apply it.
 
-## Step 4: Apply Changes
+**Stop here and wait for Patrik's response.** Do not proceed until he confirms or adjusts.
 
-After my approval, apply the changes to the file.
+## Step 2: Propose and Apply Changes
 
-If the skill is part of the research pipeline (`research-plan-creator → answer-spec-generator → cluster-analysis-pass → evidence-to-report-writer`), check downstream skills for impact and flag any concerns.
+After Patrik confirms understanding:
 
-## Step 5: Quality Check
+1. Present proposed changes in the format from ai-resource-improver (Change #, Location, Current, Proposed, Rationale, Unchanged)
+2. Wait for Patrik to approve which changes to implement
+3. Apply approved changes to the skill file
+4. If scripts were modified or created, test each one by running it. A script passes if it: (a) executes without errors, and (b) produces output consistent with what SKILL.md says it should do. If a script runs but produces unexpected output, flag it — don't mark it as tested.
 
-Read `skills/ai-resource-evaluator/SKILL.md` and apply its eight-layer evaluation framework with the Skill priority matrix on the modified version. Flag issues as Critical / Major / Minor with specific fixes.
+## Step 3: Iteration Suggestions
 
-Present findings and any iteration suggestions. Fix only what I approve.
+Review the modified skill and generate 2–4 iteration suggestions per the ai-resource-improver methodology.
 
-## Step 6: Finalize
+**Conflict check:** If any iteration suggestion would modify or reverse a change just applied in Step 2, flag this explicitly before presenting it.
 
-Show me the final diff and wait for my go-ahead before committing.
+Present iteration suggestions — Patrik picks which ones to apply (if any). Apply selected iterations.
 
-Use commit message format: `update: skill-name — what changed`
+## Step 4: Evaluate (Subagent)
 
----
+**The main agent** reads `skills/ai-resource-evaluator/SKILL.md` from the repo. Then spawn a subagent, passing it ONLY:
 
-IMPORTANT: Move through these steps one at a time. Wait for my input/approval at each checkpoint before proceeding to the next step.
+- The evaluator skill contents (that you just read)
+- The modified SKILL.md (and any bundled resources)
+
+The subagent's task: "Apply the eight-layer evaluation framework with the priority matrix for a skill. Return the full evaluation report."
+
+The subagent must NOT receive the original feedback, the improvement conversation, or any other context. It evaluates the skill cold.
+
+Capture the subagent's evaluation report.
+
+**Evaluation quality gate:** If the evaluation report contains no issues across all eight layers, or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 7 results.
+
+## Step 5: Auto-Fix
+
+Review the evaluation report. For any **Critical** or **Major** issues:
+
+1. Apply fixes directly to the skill file
+2. Log each fix: what was changed and why
+3. For each fix, explicitly check: does this fix create a mismatch between the YAML description and the body? If a trigger condition, exclusion, or output format was changed, update the YAML description to match.
+
+Do NOT auto-fix Minor issues — note them for Patrik's review.
+
+## Step 5b: Verify Fixes
+
+After all auto-fixes are applied, do a lightweight re-check:
+
+1. Re-read the fixed skill end-to-end
+2. Check that fixes didn't introduce contradictions (e.g., tightening a trigger that now conflicts with an exclusion)
+3. Check that fixes didn't break something the evaluator approved (e.g., removing content that was marked as a strength)
+
+If new issues are found, fix them and log the secondary fix. Do not loop more than once — if issues persist after one round of secondary fixes, flag them for Patrik's review.
+
+## Step 6: Verify Against Embedded Spec and Original Feedback
+
+Read the skill's own YAML description and body. Check:
+
+1. **Trigger claims** — Does the description say "use when X"? Does the body actually handle X?
+2. **Exclusion claims** — Does the description say "do NOT use for Y"? Does the body reinforce this boundary?
+3. **Output claims** — Does the skill promise a specific output format? Does the body produce it?
+4. **Input claims** — Does the skill say it expects certain inputs? Does the body handle missing/malformed inputs?
+5. **Cross-references** — Does the skill reference other skills or files? Do those references resolve?
+6. **Fix alignment** — Review the auto-fix log from Step 5. For each fix that changed functionality, verify the YAML description still accurately describes what the skill does.
+7. **Feedback resolution** — Review Patrik's original feedback from Step 1. For each item, verify: was it addressed in the final version? Rate each as Resolved / Partially resolved / Unresolved. If any item is Unresolved, flag it prominently.
+
+Flag any mismatches between what the skill claims and what it actually does.
+
+## Step 7: Present Results
+
+Show Patrik:
+
+1. **The skill** — complete final version after all changes and auto-fixes
+2. **Evaluation report** — the subagent's full output (with shallow-evaluation flag if triggered)
+3. **Fixes applied** — what Critical/Major issues were found, how they were resolved, and whether secondary fixes were needed
+4. **Feedback resolution** — status of each original feedback item (Resolved / Partially resolved / Unresolved)
+5. **Remaining issues** — any Minor issues, spec verification mismatches, or shallow-evaluation concerns
+6. **The diff** — complete diff from the baseline version (Step 0) to the final version
+
+Ask for Patrik's review. He may request changes, approve as-is, or ask for another iteration.
+
+## Step 8: Commit
+
+Only after Patrik explicitly approves:
+
+1. Stage modified files
+2. Commit following the convention in CLAUDE.md (currently: `update: {skill-name} — {what changed}`)
+3. Wait for Patrik's go-ahead before pushing.
