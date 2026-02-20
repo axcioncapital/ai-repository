@@ -1,0 +1,96 @@
+#!/bin/bash
+# Pre-commit hook: validates skill files before allowing a commit
+# Install: copy to .git/hooks/pre-commit and make executable
+# Or: create .claude/hooks/pre-commit and Claude Code picks it up
+
+set -e
+
+errors=0
+
+echo "Running skill validation..."
+
+# Find all SKILL.md files staged for commit
+staged_skills=$(git diff --cached --name-only --diff-filter=ACM | grep "SKILL.md$" || true)
+
+if [ -z "$staged_skills" ]; then
+    echo "No SKILL.md files in this commit. Skipping skill validation."
+    exit 0
+fi
+
+for skill_file in $staged_skills; do
+    skill_dir=$(dirname "$skill_file")
+    skill_name=$(basename "$skill_dir")
+
+    echo ""
+    echo "Checking: $skill_file"
+
+    # --- Check 1: Folder naming convention (lowercase, hyphenated) ---
+    if [[ ! "$skill_name" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
+        echo "  FAIL: Folder name '$skill_name' must be lowercase and hyphenated"
+        errors=$((errors + 1))
+    fi
+
+    # --- Check 2: YAML frontmatter exists ---
+    first_line=$(head -n 1 "$skill_file")
+    if [ "$first_line" != "---" ]; then
+        echo "  FAIL: Missing YAML frontmatter (file must start with ---)"
+        errors=$((errors + 1))
+        continue  # Can't check further without frontmatter
+    fi
+
+    # --- Check 3: Frontmatter closes ---
+    closing_line=$(tail -n +2 "$skill_file" | grep -n "^---$" | head -1 | cut -d: -f1)
+    if [ -z "$closing_line" ]; then
+        echo "  FAIL: Unclosed YAML frontmatter (missing closing ---)"
+        errors=$((errors + 1))
+        continue
+    fi
+
+    # Extract frontmatter content
+    frontmatter=$(head -n $((closing_line + 1)) "$skill_file" | tail -n +2 | head -n $((closing_line - 1)))
+
+    # --- Check 4: Required fields ---
+    if ! echo "$frontmatter" | grep -q "^name:"; then
+        echo "  FAIL: Missing 'name' field in frontmatter"
+        errors=$((errors + 1))
+    fi
+
+    if ! echo "$frontmatter" | grep -q "^description:"; then
+        echo "  FAIL: Missing 'description' field in frontmatter"
+        errors=$((errors + 1))
+    fi
+
+    # --- Check 5: Description not empty ---
+    desc_value=$(echo "$frontmatter" | grep "^description:" | sed 's/^description:\s*//')
+    if [ -z "$desc_value" ] || [ "$desc_value" = "''" ] || [ "$desc_value" = '""' ]; then
+        echo "  FAIL: Description field is empty"
+        errors=$((errors + 1))
+    fi
+
+    # --- Check 6: Body length ---
+    total_lines=$(wc -l < "$skill_file")
+    body_lines=$((total_lines - closing_line - 1))
+    if [ "$body_lines" -gt 500 ]; then
+        echo "  WARN: Body is $body_lines lines (convention: under 500)"
+        # Warning only — don't block commit
+    fi
+
+    # --- Check 7: No prohibited files ---
+    for prohibited in "README.md" "CHANGELOG.md" "INSTALLATION_GUIDE.md" "QUICK_REFERENCE.md"; do
+        if git diff --cached --name-only | grep -q "^$skill_dir/$prohibited$"; then
+            echo "  FAIL: Prohibited file '$prohibited' staged for commit"
+            errors=$((errors + 1))
+        fi
+    done
+
+    echo "  Done."
+done
+
+echo ""
+if [ $errors -gt 0 ]; then
+    echo "BLOCKED: $errors error(s) found. Fix before committing."
+    exit 1
+else
+    echo "All skill checks passed."
+    exit 0
+fi
