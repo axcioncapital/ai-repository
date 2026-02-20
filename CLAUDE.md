@@ -37,11 +37,21 @@ Follow progressive disclosure: metadata (~100 words) is always loaded, body load
 
 Do not create README.md, CHANGELOG.md, INSTALLATION_GUIDE.md, or other auxiliary files. A skill contains only what an AI agent needs to do the job.
 
+## Model Preference
+
+Always use Claude Opus 4.6 (`claude-opus-4-6`) as the primary model. When spawning subagents or making API calls, default to Opus 4.6 unless a faster model is explicitly justified for the task.
+
 ## Working Protocol
+
+**Start of session:** Pull the latest from GitHub before we start.
 
 **New skills or resources:** Propose an outline (purpose, sections, key decisions) and wait for approval before writing the full file.
 
 **Edits to existing files:** Proceed directly with targeted changes.
+
+**File creation:** Do not create files or resources that weren't explicitly requested. Suggest additions in chat instead.
+
+**Scope discipline:** Complete the requested task before proposing extensions or improvements.
 
 ## Cross-References
 
