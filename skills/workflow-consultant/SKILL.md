@@ -100,4 +100,3 @@ If the provided information is insufficient to propose an approach confidently, 
 | `workflow-creator` | Consultant produces the rough input that creator structures. Creator should not run without an approach. |
 | `workflow-evaluator` | Consultant does not evaluate. Evaluator operates on structured workflows, not sketches. |
 | `workflow-documenter` | Consultant does not format. Documenter operates on finished workflows. |
-
