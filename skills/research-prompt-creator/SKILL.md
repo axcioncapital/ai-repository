@@ -1,33 +1,37 @@
 ---
-name: deep-research-prompt-creator
+name: research-prompt-creator
 description: >
-  Transform a Research Plan and Answer Specs into a Deep Research Execution
-  Prompts document — session clustering, per-session execution prompts, session
-  plan table, and operational notes for GPT Deep Research. Trigger when both a
-  Research Plan and Answer Specs are provided and the operator needs execution
-  prompts, or on requests like "create deep research prompts" or "turn this plan
-  into DR sessions." This is Step 2.1 in Stage 2 of the Axcion Research Workflow.
-  Do NOT use for research plan creation (research-plan-creator), answer spec
-  generation (answer-spec-generator), evidence compression, or direct research
-  execution — this skill produces prompts for the operator to paste into GPT
-  Deep Research.
+  Transform an Execution Manifest, Research Plan, and Answer Specs into a
+  Research Execution Prompts document — per-session execution prompts, session
+  plan table, and operational notes for GPT Deep Research. Session groupings and
+  tool assignments come from the Execution Manifest (produced by
+  execution-manifest-creator); this skill writes the prompts, not the routing.
+  Trigger when an Execution Manifest with Deep Research sessions exists and the
+  operator needs execution prompts, or on requests like "create research
+  prompts" or "write prompts for these sessions." This is Step 2.2 in Stage 2
+  of the Axcion Research Workflow. Do NOT use for research plan creation
+  (research-plan-creator), answer spec generation (answer-spec-generator),
+  execution routing (execution-manifest-creator), evidence compression, or
+  direct research execution — this skill produces prompts for the operator to
+  paste into GPT Deep Research.
 ---
 
-# Deep Research Prompt Creator
+# Research Prompt Creator
 
 ## Input Requirements
 
 **Required:**
-1. **Research Plan** — research questions with scope, key terms, source preferences, search terminology guidance
-2. **Answer Specs** — per-question specifications defining required evidence components, evidence rules, and completion gates
+1. **Execution Manifest** — produced by `execution-manifest-creator`. Contains session groupings, tool assignments (GPT vs. Perplexity Deep Research), dependencies, and parallel execution opportunities. Accept the manifest's routing and grouping decisions as given — do not re-cluster or re-route questions.
+2. **Research Plan** — research questions with scope, key terms, source preferences, search terminology guidance
+3. **Answer Specs** — per-question specifications defining required evidence components, evidence rules, and completion gates
 
-Both provided by the operator. Do not generate these.
+All provided by the operator. Do not generate these.
 
-**If inputs are incomplete:** Flag missing elements. Proceed with `[inferred]` defaults only for non-critical gaps (e.g., missing source preferences). Halt for critical gaps (missing scope parameters, missing questions).
+**If inputs are incomplete:** Flag missing elements. Proceed with `[inferred]` defaults only for non-critical gaps (e.g., missing source preferences). Halt for critical gaps (missing Execution Manifest, missing scope parameters, missing questions).
 
-**Question-spec mismatch:** If the Research Plan contains questions without corresponding Answer Specs (or vice versa), flag as `[MISMATCH]`, list orphaned items, and ask whether to proceed with the matched subset or halt.
+**Question-spec mismatch:** If the Execution Manifest references questions not found in the Answer Specs (or vice versa), flag as `[MISMATCH]`, list orphaned items, and ask whether to proceed with the matched subset or halt.
 
-**Information boundary:** Base structural decisions (clustering, dependencies, session sizing, priority allocation) exclusively on the provided inputs. Domain knowledge is acceptable for search term selection, keyword seeding, and steering note context — these benefit from the model knowing the field.
+**Information boundary:** Accept session groupings, dependencies, and tool assignments from the Execution Manifest without modification. Base prompt construction decisions (priority allocation, depth signals, format choices) on the provided inputs. Domain knowledge is acceptable for search term selection, keyword seeding, and steering note context — these benefit from the model knowing the field.
 
 ## Platform Context
 
@@ -35,7 +39,7 @@ GPT Deep Research (GPT-5.2-based, early 2026) has characteristics that constrain
 
 - **No clarification step** — research starts immediately from the prompt. Prompt quality is the single biggest lever on output quality.
 - **Keyword-driven search** — the model uses keywords from the prompt as search seeds. Embed domain-specific terms, proper nouns, and technical terminology explicitly.
-- **Session capacity** — overloaded prompts produce shallow coverage on later questions. Default to 2 questions per session; 3 is the hard ceiling.
+- **Session capacity** — overloaded prompts produce shallow coverage on later questions. Session groupings come from the Execution Manifest; focus on writing prompts that work well within the given session sizes.
 - **Structured output** — tables, headers, and format instructions are well-followed. Leverage this.
 - **File attachments** — the Research Plan should always be attached for scope context.
 - **Site restrictions** — the operator can restrict or prioritize specific sites per session via the ChatGPT UI.
@@ -44,9 +48,9 @@ GPT Deep Research (GPT-5.2-based, early 2026) has characteristics that constrain
 
 Before producing the full document, present:
 
-1. **Session clustering** — which questions go in which sessions and why
-2. **Dependency map** — hard/soft dependencies and parallel execution opportunities
-3. **Key assumptions** — any inferences about clustering or priority
+1. **Session summary** — confirm the sessions from the Execution Manifest (questions, tool assignments, dependencies)
+2. **Prompt strategy** — key decisions about prompt construction (epistemic framing, depth allocation, format choices)
+3. **Key assumptions** — any inferences about priority or emphasis
 4. **Flags** — ambiguities, conflicts, or gaps found in the inputs
 
 Proceed to full document only after the operator confirms the plan.
@@ -55,51 +59,27 @@ Proceed to full document only after the operator confirms the plan.
 
 ### Step 1: Analyze Inputs
 
-Read the Research Plan and Answer Specs. Extract:
+Read the Execution Manifest, Research Plan, and Answer Specs. Extract:
 
+- Session groupings, tool assignments, and dependencies from the Execution Manifest
 - All research questions with their IDs
 - Scope parameters (geography, deal size range, fund size range, time frame, industry focus)
 - Per-question evidence components and completion gates
 - Source preferences and search terminology guidance
-- Explicit dependencies between questions
 
-### Step 2: Cluster Questions into Sessions
+### Step 2: Construct Per-Session Prompts
 
-Group questions into sessions. Default is 2 questions per session. Clustering criteria (priority order):
-
-1. **Source base overlap** — questions that draw from the same literature, databases, or source types (strongest signal)
-2. **Conceptual chain** — Question B's scope references Question A's definitions or outputs
-3. **Analytical lens** — questions applying the same framework to different aspects
-
-**Session sizing:**
-- **2 questions per session is the default.** Never exceed 3.
-- A single question with 4+ complex evidence components may warrant its own session.
-- Two questions with near-identical source bases but no conceptual link still group together — source overlap dominates.
-
-**Justification check for 3-question sessions:**
-A session may include 3 questions only if all three conditions are met: (1) strong source base overlap across all three, (2) no mix of high-priority and lower-priority questions, and (3) all three questions have simple evidence requirements (1–2 components each). If any condition fails, split. Optimize for output quality per question, not minimum session count.
-
-### Step 3: Map Dependencies
-
-For each session pair, determine:
-
-- **Hard dependency** — Session B cannot run until Session A completes (B references A's output). Mark: `Requires: Session [A]`
-- **Soft dependency** — Session B benefits from A's results but can run with Research Plan defaults. Mark: `Benefits from: Session [A] (can run independently)`
-- **No dependency** — mark: `None`
-
-Identify all parallel execution opportunities.
-
-### Step 4: Construct Per-Session Prompts
+Use the session groupings, tool assignments, and dependency ordering from the Execution Manifest. Do not re-cluster or re-route questions.
 
 For each session, produce:
 
-**4a. Session Header**
+**2a. Session Header**
 - Session letter (A, B, C...)
 - Questions included (by ID and short title)
 - Site restriction guidance (mode, sites, rationale) — or "Default (full web search)"
 - Recency preference (e.g., "Prefer sources from 2023–present" or "No recency constraint")
 
-**4b. Execution Prompt** (in a code fence — literal text for the operator to paste)
+**2b. Execution Prompt** (in a code fence — literal text for the operator to paste)
 
 The prompt must be self-contained. It includes the following elements, in order:
 
@@ -133,24 +113,24 @@ Rules are grouped by priority. Structural decisions shape the prompt architectur
 - Use imperative verbs: "Find," "Compare," "Present," "Trace," "Identify"
 - **Omit what the model already does:** Do not include instructions the model would follow naturally from a well-scoped directive — e.g., "cross-reference for consistency," "cite sources," or generic quality reminders. **Test:** if a sub-bullet is unpacking what the main instruction already means, cut it.
 
-**4c. Steering Notes** (operator guidance, not pasted into Deep Research)
+**2c. Steering Notes** (operator guidance, not pasted into Deep Research)
 - Anticipate likely thin-results areas with alternative search angles
 - Specify acceptance criteria for scarcity vs. when to push harder
 - Flag cross-session implications
 - See `references/prompt-construction-guide.md` for steering note templates. If unavailable, cover: likely thin-results areas with alternative search angles, acceptance criteria for scarcity, and cross-session implications.
 
-### Step 5: Assemble the Document
+### Step 3: Assemble the Document
 
 Produce a single markdown file with this structure:
 
 ```
-# Deep Research Execution Prompts — [Project Name]
+# Research Execution Prompts — [Project Name]
 
 ## How to Use This Document
 [Setup instructions, attachment reminder, global settings]
 
 ## Session Plan
-[Table: Session | Questions | Cluster Logic | Dependencies]
+[Table: Session | Questions | Qs/Session | Cluster Logic | Dependencies]
 [Parallel execution opportunities]
 
 ## Session [A]: [Descriptive Title]
@@ -179,7 +159,7 @@ See `references/prompt-construction-guide.md` for the Post-Execution Notes templ
 
 - **Ambiguous Answer Spec component** — flag as `[AMBIGUITY]`, propose 1–2 interpretations, do not silently pick one
 - **Unclear dependencies** — flag the uncertainty, propose conservative ordering (sequential over parallel), do not assume independence
-- **Session overload (>3 questions)** — split and explain the rationale
+- **Session count mismatch** — if the Execution Manifest contains more or fewer sessions than expected, flag it but proceed with what the manifest specifies
 - **Scope conflict between Research Plan and Answer Specs** — flag as `[CONFLICT]` with both versions quoted, do not silently resolve
 - **Missing source preferences** — generate defaults based on question domain, label as `[inferred]`
 - **Missing reference file** (`references/prompt-construction-guide.md`) — proceed using the inline fallback guidance provided at each reference point in this skill. Do not halt.
@@ -190,10 +170,9 @@ If provided information is insufficient to make a confident decision, say so. It
 
 Before delivering, verify:
 
-- Every research question appears in exactly one session
-- No session exceeds 3 questions; any 3-question session has explicit justification
-- All hard dependencies are reflected in the session plan table
-- Parallel execution opportunities are explicitly identified
+- Every research question from the Execution Manifest appears in exactly one session prompt
+- Session plan table matches the Execution Manifest's groupings and dependencies
+- Parallel execution opportunities from the manifest are reflected in the document
 - Every Answer Spec evidence component is translated into a research directive in at least one prompt
 - No prompt uses Answer Spec terminology — all directives are in plain research language
 - Each prompt has a labeled scope block with literal parameter values
@@ -206,4 +185,4 @@ Before delivering, verify:
 
 **Default mode: Refinement**
 
-Before producing the full document, present the planning summary defined in the Planning Protocol above (session clustering, dependency map, key assumptions, flags). **Do not produce the full document until the operator approves the plan.** After approval, write the complete document to file.
+Before producing the full document, present the planning summary defined in the Planning Protocol above (session summary, prompt strategy, key assumptions, flags). **Do not produce the full document until the operator approves the plan.** After approval, write the complete document to file.
