@@ -90,13 +90,14 @@ Every Research Plan contains these sections:
 | **Intelligence Paths** | For each question: whether web search is viable or other sources required |
 | **Search Strategy Notes** | Terminology, query patterns, source preferences, time frames |
 | **Dependencies** | Which questions must be answered before others; note potential overlaps |
+| **Consolidation Log** | (If consolidation applied) What was merged, absorbed, or dropped and why |
 | **Thin Results Protocol** | What to do when questions yield sparse results, including scarcity classification |
 | **Scope Revision Triggers** | Signals that findings suggest the Task Plan objective should change |
 | **Key Terms for Execution** | (Conditional) Operational definitions for ambiguous domain terms |
 
 ## Workflow
 
-### Step 0: Assess Task Plan and State Assumptions
+### Step 1: Assess Task Plan and State Assumptions
 
 Evaluate the Task Plan's completeness. A well-defined Task Plan has: clear objective, defined scope boundaries, process stages indicating what work will be done.
 
@@ -114,14 +115,14 @@ The following were inferred from the Task Plan. If incorrect, the Research Plan 
 
 **If incoherent:** Stop only if no reasonable interpretation exists. Specify what is missing and what minimum clarification would allow progress. Default: proceed and be explicit about what you're assuming.
 
-### Step 1: Extract Research Requirements
+### Step 2: Extract Research Requirements
 
 From the Task Plan, identify:
 - What knowledge gaps must be filled
 - What decisions the research must inform
 - What deliverables the research supports
 
-### Step 1.5: Determine Research Posture
+### Step 3: Determine Research Posture
 
 Based on Task Plan maturity, determine the dominant posture:
 - **Confirmatory:** specific hypotheses to validate or known areas to detail
@@ -130,7 +131,7 @@ Based on Task Plan maturity, determine the dominant posture:
 
 State the posture in the Research Context section.
 
-### Step 1.75: Define Key Terms for Execution (Conditional)
+### Step 4: Define Key Terms for Execution (Conditional)
 
 **When to apply:** The Task Plan involves domain-specific terminology that could be interpreted multiple ways.
 
@@ -147,7 +148,7 @@ For each ambiguous term, specify: operational definition (included), explicit ex
 
 **Skip** if the Task Plan uses only standard, unambiguous terminology.
 
-### Step 2: Decompose into Research Areas
+### Step 5: Decompose into Research Areas
 
 Group related questions into 3-6 research areas. Each area should represent a coherent domain of inquiry.
 
@@ -163,7 +164,7 @@ When research involves multiple actors, apply this framework before formulating 
 
 **Skip relationship mapping** if the research area involves a single actor or relationships are not material.
 
-### Step 3: Formulate Research Questions
+### Step 6: Formulate Research Questions
 
 For each area, write questions at moderate granularity and assign depth levels.
 
@@ -217,7 +218,29 @@ Before finalizing, verify all Tier 1 terms are explicitly addressed by at least 
 
 **Skip** if the Task Plan has no terminology or fluency objectives.
 
-### Step 4: Specify Completion Criteria
+### Step 7: Consolidate Questions
+
+Hard ceiling: **12 questions.** If the total from Step 6 exceeds 12, consolidate before proceeding.
+
+**Consolidation actions (in priority order):**
+
+1. **Merge overlapping questions.** If two questions share a knowledge domain and their completion criteria overlap, combine them into one broader question. Preserve the higher depth level.
+2. **Absorb narrow questions.** If a question is narrow enough that answering a related question would cover it, fold it into the broader question's scope line.
+3. **Drop marginal questions.** Remove questions that add limited value relative to the Task Plan's objective. Stepping-stone questions and low-stakes definitional questions are the first candidates.
+4. **Combine across areas.** If two research areas have only one question each after merging, consider whether they belong together.
+
+**Consolidation log:** For each action taken, document:
+- What was merged, absorbed, or dropped
+- Which questions were affected
+- Why (overlap, marginal value, absorbed by broader question)
+
+Include the consolidation log in the Research Plan output, after the Dependencies section.
+
+**Override:** The 12-question ceiling can be exceeded only if the Task Plan explicitly requires it (e.g., covers 6+ distinct domains with no overlap). State the justification in the consolidation log.
+
+**Do not consolidate below 6 questions.** If the initial set is 6-12, no consolidation is required. If consolidation would reduce below 6, stop and keep the remaining questions.
+
+### Step 8: Specify Completion Criteria
 
 For each question, define what constitutes a sufficient answer using concrete, verifiable signals. Match to the assigned depth level.
 
@@ -242,11 +265,11 @@ For each question, define what constitutes a sufficient answer using concrete, v
 
 **Avoid weak criteria:** "Understand the topic" (too vague), "Have enough information" (not verifiable).
 
-### Step 5: Note Dependencies and Sequencing
+### Step 9: Note Dependencies and Sequencing
 
 Identify which questions depend on answers to other questions. Mark the logical order of investigation.
 
-### Step 6: Assign Intelligence Paths
+### Step 10: Assign Intelligence Paths
 
 For each question, assess the likely information source:
 
@@ -256,23 +279,16 @@ For each question, assess the likely information source:
 
 For each alternative-source question, note which path is most likely to yield results.
 
-### Step 6.5: Assign Tool for Execution
+### Step 11: Execution Tool Context
 
-For web-searchable questions, assign the appropriate AI tool:
+All web-searchable questions are executed via **GPT Deep Research** in Stage 2. The Research Plan does not assign tools per question — tool routing is handled by the execution pipeline:
 
-| Tool | Best For |
-|------|----------|
-| **Perplexity** | Finding and citing: fresh info, source-backed summaries, recent papers/news, questions requiring multiple citations |
-| **GPT-5** | Thinking and synthesizing: synthesizing findings, building frameworks, multi-step reasoning, critiquing, planning |
+- **Stage 2 (primary research):** All questions go to GPT Deep Research, clustered into sessions of 2-4 questions each.
+- **Stage 3 (supplementary gap-filling):** Unresolved gaps route to Perplexity for lightweight factual retrieval (max 2 passes per question).
 
-**Assignment rules:**
-1. Default to Perplexity for questions requiring external information
-2. Use GPT-5 for synthesis, framework-building, critiquing, or deep reasoning
-3. Hybrid pattern: note as "Perplexity → GPT-5" when a question benefits from gather-then-synthesize
+The Research Plan's job is to produce well-formed questions with clear completion criteria. Tool assignment is a downstream concern.
 
-Questions with alternative intelligence paths do not receive tool assignments.
-
-### Step 6.7: Assign Source Requirements
+### Step 12: Assign Source Requirements
 
 For each question, classify source requirements to enable downstream batching.
 
@@ -297,13 +313,13 @@ For each question, classify source requirements to enable downstream batching.
 3. Exploratory OR definitional OR stepping-stone? → Light
 4. Otherwise → Moderate (default)
 
-### Step 6.8: Flag Recency-Sensitive Questions
+### Step 13: Flag Recency-Sensitive Questions
 
 **Recency-sensitive: yes** — market sizing, AUM, deal volume; personnel/leadership; regulatory status; pricing, rates, multiples; competitive landscape.
 
 **Recency-sensitive: no** — industry structure; historical patterns; definitions, frameworks, taxonomies; relationship dynamics; process descriptions.
 
-### Step 7: Define Thin Results Protocol
+### Step 14: Define Thin Results Protocol
 
 Specify what to do when web searches yield sparse results.
 
@@ -324,7 +340,7 @@ Specify what to do when web searches yield sparse results.
 
 **Fallback:** Document what was searched, what was found (even partial), classify the scarcity, flag for Patrik.
 
-### Step 8: Define Scope Revision Triggers
+### Step 15: Define Scope Revision Triggers
 
 Include conditions for pausing and reassessing:
 - Research reveals the assumed problem doesn't exist or is already solved
@@ -342,7 +358,7 @@ Q[n]: [Question text] [Depth tag if elevated above default]
 - Depth: [Level] — [What this level means for this question]
 - Complete when: [Depth-appropriate criteria]
 - Intelligence path: [Web search / Alternative: specify]
-- Tool assignment: [Perplexity / GPT-5] (web-searchable only)
+- Execution: GPT Deep Research (web-searchable) / Alternative: [specify]
 - Source requirements: [Light / Moderate / Strict] — [brief rationale]
 - Recency-sensitive: [yes/no] [if yes: brief reason]
 ```
@@ -395,7 +411,7 @@ Include:
 
 ## Length Guideline
 
-Target 1,000-2,000 words. Adjust based on number of research areas, decision criticality, uncertainty level, and search strategy complexity. A 20-question plan may reach 2,500+. A focused 6-question validation plan may be 800 words.
+Target 1,000-2,000 words. Adjust based on number of research areas, decision criticality, uncertainty level, and search strategy complexity. A 12-question plan at the ceiling may reach 2,000+. A focused 6-question validation plan may be 800 words.
 
 ## Self-Validation Checklist
 
@@ -414,15 +430,18 @@ Before presenting, verify:
 11. All material actors enumerated; key relationships addressed; exclusions justified
 12. Objective modifier applied if Task Plan has a specific objective type
 13. Every question has depth level; elevated depths justified; distribution sensible (<50% elevated)
-14. All web-searchable questions have tool assignment; assignments match task type
+14. Web-searchable questions default to GPT Deep Research; alternative-source questions specify the path
 15. Every question has source requirement classification with rationale; distribution sensible
 16. Time-sensitive questions flagged recency-sensitive
+17. Total question count is 12 or fewer (if exceeded, consolidation log justifies the override)
 
 If any check fails, revise before presenting.
 
 ## Accuracy Standards
 
-If the Task Plan provides insufficient information to formulate confident research questions, say so rather than inferring. It is acceptable to leave gaps or flag assumptions rather than inventing plausible-sounding questions. If the Task Plan's premise contains an error or questionable assumption, flag it constructively. Prioritize accurate scoping over comprehensive coverage.
+If the Task Plan provides insufficient information to formulate confident research questions, say so rather than inferring. It is acceptable to leave gaps or flag assumptions rather than inventing plausible-sounding questions. Prioritize accurate scoping over comprehensive coverage.
+
+If the Task Plan's premise appears factually incorrect, state the concern and proceed with the plan as written, noting the assumption. If the premise is contradicted by well-established fact, flag it as a scope revision trigger and recommend confirmation before execution.
 
 ## Guardrails
 
@@ -430,7 +449,7 @@ If the Task Plan provides insufficient information to formulate confident resear
 - Include questions answerable from the Task Plan itself
 - Formulate questions so broad they cannot be completed
 - Skip completion criteria
-- Exceed 20 questions without clear justification
+- Exceed 12 questions (hard ceiling — override only with explicit Task Plan justification)
 - Assume all questions are web-searchable
 - Invent information or over-extrapolate from weak sources
 
