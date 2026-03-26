@@ -2,7 +2,7 @@
 name: research-prompt-qc
 description: >
   Automated quality check on Research Execution Prompts before operator
-  uses them in GPT Deep Research. Verifies coverage, session integrity, prompt
+  uses them in Research GPT. Verifies coverage, session integrity, prompt
   quality, dependency correctness, and format compliance. Run immediately after
   research-prompt-creator (Step 2.1) completes. Produces per-session
   verdicts (PASS / FLAG) and a batch verdict. Do NOT use for prompt creation
@@ -12,7 +12,7 @@ description: >
 
 # Research Prompt QC
 
-Automated gate between prompt creation (Step 2.1) and prompt execution (Step 2.2). Catches prompt defects before the operator pastes them into GPT Deep Research — where errors are expensive (each session costs time and cannot be partially re-run).
+Automated gate between prompt creation (Step 2.1) and prompt execution (Step 2.2). Catches prompt defects before the operator pastes them into Research GPT — where errors are expensive (each session costs time and cannot be partially re-run).
 
 **Position:** Step 2.1b — immediately after `research-prompt-creator`, before operator executes sessions.
 
@@ -46,7 +46,7 @@ Sessions are well-formed and correctly bounded.
 | Check | What to look for |
 |-------|-----------------|
 | Question count | No session exceeds 3 questions (hard ceiling). Default is 2 per session. |
-| 3-question justification | Any session with 3 questions must have explicit justification meeting all three conditions: (1) strong source base overlap across all three, (2) no mix of high-priority and lower-priority questions, and (3) all three have simple evidence requirements (1–2 components each). Flag if any condition is missing or unmet. |
+| 3-question justification | Any session with 3 questions must have explicit justification citing dependency constraints or strong source overlap. Flag if no justification is provided. |
 | Question assignment | Every research question appears in exactly one session. No orphaned questions, no duplicates. |
 | Clustering rationale | Session plan table includes clustering logic for each session. Flag sessions without stated rationale. |
 | Session balance | No session is overloaded (e.g., 4 complex questions with 5+ components each) while another has a single simple question. Flag imbalances with reasoning. |
@@ -57,9 +57,9 @@ Each execution prompt follows the construction rules from the skill and prompt-c
 
 | Check | What to look for |
 |-------|-----------------|
-| No Answer Spec terminology | Prompts must not contain: "evidence component," "completion gate," "answer spec," "claim ID," "Q[n]-A##," "min_sources," "min_distinct_claims," or similar spec-internal language. These terms are meaningless to Deep Research. |
+| No Answer Spec terminology | Prompts must not contain: "evidence component," "completion gate," "answer spec," "claim ID," "Q[n]-A##," "min_sources," "min_distinct_claims," or similar spec-internal language. These terms are meaningless to the research executor. |
 | Scope as literal values | Scope parameters are embedded as concrete values ("Nordic PE funds with EUR 50M–500M AUM"), not abstract references ("as defined in the Research Plan," "per scope parameters"). |
-| Attachment reference | Each prompt explicitly references the attached Research Plan document. |
+| Context pack block | Each prompt includes a context pack block delimited by `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` markers, containing project background, section objective, content map, and scope boundaries. |
 | Imperative verbs | Directives use action verbs (Find, Compare, Present, Trace, Identify), not passive descriptions. |
 | Output shape specified | Structured/quantitative directives specify output format ("as a table with columns...," "as a numbered list"). Analytical/qualitative directives state the deliverable clearly but do NOT prescribe format — flag if qualitative directives are over-prescribed with rigid format instructions. |
 | Depth/priority signals | Sessions with questions of unequal importance include priority signals. |

@@ -4,17 +4,21 @@ Reference for building research execution prompts. Load this file when construct
 
 ## Translating Answer Spec Components into Research Directives
 
-Answer Specs define what a complete answer must contain using evidence components and completion gates. Deep Research does not understand Answer Spec terminology. The skill must translate each component into a plain-language research directive.
+Answer Specs define what a complete answer must contain using evidence components and completion gates. The research executor does not understand Answer Spec terminology. The skill must translate each component into a plain-language research directive.
 
 ### Translation Pattern
 
+Every directive header must carry the Answer Spec component ID so downstream tools (`research-extract-creator`) can match outputs to specs. Format: `Directive [N] (Q[n]-A##) — [Short title]`.
+
 | Answer Spec Element | Research Directive Translation |
 |---|---|
-| Evidence component: "Market size data with 3+ independent sources" | "Find market size estimates from at least three independent sources. Present as a comparison table with source, year, methodology, and figure." |
-| Evidence component: "Historical trend over 5+ years" | "Trace the historical trajectory over the past five or more years. Provide year-by-year data points where available." |
+| Evidence component Q1-A01: "Market size data with 3+ independent sources" | "**Directive 1 (Q1-A01) — Market size estimates** Find market size estimates from at least three independent sources. Present as a comparison table with source, year, methodology, and figure." |
+| Evidence component Q1-A02: "Historical trend over 5+ years" | "**Directive 2 (Q1-A02) — Historical trajectory** Trace the historical trajectory over the past five or more years. Provide year-by-year data points where available." |
 | Completion gate: "Minimum 3 sources per claim" | "For each major finding, cite at least three distinct sources." |
 | Completion gate: "Conflicting data must be surfaced" | "Where sources disagree, present both figures side by side with source attribution. Do not silently pick one." |
 | Scope constraint: "Nordic mid-market only" | "Focus exclusively on the Nordic region (Sweden, Norway, Denmark, Finland, Iceland). Mid-market defined as [definition from Research Plan]." |
+
+If a single directive covers multiple components, list all IDs: `Directive 3 (Q2-A01, Q2-A02) — Regulatory landscape`. If the Answer Specs do not use the `Q[n]-A##` convention, preserve whatever ID scheme they use.
 
 ### Principles
 
@@ -64,7 +68,7 @@ The model will choose the best structure — narrative, examples, embedded table
 
 ## Depth and Priority Signals
 
-Embed these phrases in prompts to steer Deep Research's time allocation. Always pair qualitative labels with a concrete effort allocation so the model can budget its research time.
+Embed these phrases in prompts to steer the research executor's time allocation. Always pair qualitative labels with a concrete effort allocation so the model can budget its research time.
 
 ### High Priority
 
@@ -82,7 +86,7 @@ Embed these phrases in prompts to steer Deep Research's time allocation. Always 
 
 ### Trade-off Instructions
 
-- "If you need to make trade-offs, allocate effort roughly as: Directive 1 ([X]%), Directive 2 ([Y]%), Directive 3 ([Z]%)."
+- "If you need to make trade-offs, allocate effort roughly as: Directive 1 / Q1-A01 ([X]%), Directive 2 / Q1-A02 ([Y]%), Directive 3 / Q1-A03 ([Z]%)."
 - "If comprehensive data is unavailable, provide the best available partial data and explicitly note what is missing."
 
 ### Sufficiency Signals
@@ -110,14 +114,14 @@ Every session block gets steering notes. They address:
 
 **For likely data scarcity:**
 ```
-[Question X.Y] may return limited results because [reason — e.g., private market data, niche geography, recent phenomenon]. If Deep Research finds fewer than [threshold] sources:
+[Question X.Y] may return limited results because [reason — e.g., private market data, niche geography, recent phenomenon]. If the research executor finds fewer than [threshold] sources:
 - Try narrowing the geography or expanding the time frame
 - Accept partial coverage and flag for supplementary research via Perplexity
 ```
 
 **For definitional ambiguity:**
 ```
-[Question X.Y] uses the term "[term]" which has multiple industry definitions. If Deep Research returns results using inconsistent definitions:
+[Question X.Y] uses the term "[term]" which has multiple industry definitions. If the research executor returns results using inconsistent definitions:
 - Note which definition each source uses
 - Do not attempt to reconcile — flag for operator decision
 ```
@@ -131,7 +135,7 @@ Session [X] results will define the scope for this question. If Session [X] hasn
 
 ## Site Restriction Guidance
 
-Since February 2026, Deep Research supports site-level restrictions (restrict to specific sites, or prioritize specific sites while allowing broader search).
+Research GPT supports site-level restrictions (restrict to specific sites, or prioritize specific sites while allowing broader search).
 
 ### When to Restrict
 
@@ -157,18 +161,38 @@ Site settings for this session:
 
 If no site restrictions apply: "Site settings: Default (full web search, no restrictions)."
 
-## File Attachment Instructions
+## Context Pack Embedding
 
-Every execution prompt assumes the Research Plan document is attached to the Deep Research session. The prompt references it for:
+Every execution prompt includes a context pack — a compact project summary that provides the research executor with orientation context. The prompt creator generates this inline from the Research Plan inputs.
 
-- Scope definitions (geography, deal size, fund size, time frame)
-- Key terminology and definitions
-- Source preferences
+### What the Context Pack Contains
 
-The prompt should reference the attachment explicitly:
+- Project background (client, goal, analytical lens, target market)
+- Section objective (what this section produces and why it matters)
+- Content map (research areas and their focus — NOT individual question listings)
+- Scope boundaries (in/out, key terms, hypotheses under test)
+
+The context pack is NOT an Answer Spec. It provides big-picture orientation only. All execution-level detail (source requirements, depth calibration, completion gates) comes from the per-question directives in the prompt.
+
+### How to Embed
+
+Place the context pack inside the code-fenced execution prompt, after the scope block and before the first research directive:
+
 ```
-The attached document is the Research Plan for this project. Use it for scope definitions, key terms, and source preferences. Do not reproduce the Research Plan — use it as context for your research.
+[Scope block]
+
+--- CONTEXT PACK ---
+[Full content of the context pack file]
+--- END CONTEXT PACK ---
+
+[Research directives begin here]
 ```
+
+### What NOT to Include
+
+- Do not list all research questions from the research plan
+- Do not reproduce Answer Spec content (source rules, evidence components)
+- Do not add execution instructions — those belong in the directives
 
 ## Post-Execution Notes Template
 
@@ -179,7 +203,7 @@ Include at the end of the full document:
 
 After all sessions complete:
 
-1. **Save each session output** using naming convention: [Project Name] — DR Session [Letter] — [Date]
+1. **Save each session output** using naming convention: [Project Name] — Session [Letter] — [Date]
 2. **Cross-session review**: Scan outputs for:
    - Contradictions between sessions (same entity, different data)
    - Gaps where one session assumed another would cover a topic

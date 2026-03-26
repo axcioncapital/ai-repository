@@ -1,15 +1,15 @@
 ---
 name: research-extract-creator
 description: >
-  Produce structured Research Extracts from a raw Deep Research report and its
-  corresponding Answer Specs — one extract per research question. Each extract
-  contains a claims inventory with source attribution, evidence strength ratings,
-  coverage verdicts per Answer Spec component, component syntheses, and
-  gap/conflict documentation. Use when Patrik provides a Deep Research session
-  output alongside Answer Specs and says "extract this," "create research
-  extracts," "process this Deep Research output," "run extraction," or when a raw
-  Deep Research report is provided with Answer Specs and the expectation of
-  structured extracts. This is Step 2.3 of Stage 2 in the Axcion Research
+  Produce structured Research Extracts from a component-organized research
+  report and its corresponding Answer Specs — one extract per research question.
+  Each extract contains a claims inventory with source attribution, evidence
+  strength ratings, coverage verdicts per Answer Spec component, component
+  syntheses, and gap/conflict documentation. Use when Patrik provides a research
+  session output alongside Answer Specs and says "extract this," "create research
+  extracts," "process this research output," "run extraction," or when a
+  research report is provided with Answer Specs and the expectation of structured
+  extracts. This is Step 2.3 of Stage 2 in the Axcion Research
   Workflow. Do NOT use for evidence verification against specs
   (evidence-spec-verifier), cluster-level analysis (cluster-analysis-pass),
   report prose writing (evidence-to-report-writer), or supplementary research
@@ -22,10 +22,10 @@ description: >
 
 Both provided by the operator in a single message:
 
-1. **Raw Deep Research report** — one session's output covering 2–4 research questions. Contains sourced findings in prose/table format with inline citations and URLs, structured by question-level sections.
+1. **Component-organized research report** — one session's output from the Research Executor, covering 2–4 research questions. Findings are organized under `Q[n]-A##` headers (question → answer spec component), with source citations carrying page title, URL, and access date. The report includes a **Source Log** (consolidated list of all sources cited), a **Known Gaps** section (components where the executor found insufficient evidence), and a **Conflicts** section (where sources disagree).
 2. **Answer Specs** — for the specific questions covered in this session. Each spec lists required components and completion gates.
 
-If either input is missing, ask for it before proceeding. If Answer Specs don't match any question sections in the report, flag the mismatch and ask for clarification.
+If either input is missing, ask for it before proceeding. If Answer Specs don't match the question/component headers in the report, flag the mismatch and ask for clarification.
 
 ## Output
 
@@ -37,18 +37,17 @@ Write output to the project's working directory using the naming convention: `re
 
 ### Claim Extraction
 
-- Read the Deep Research report section by section.
-- For each Answer Spec component, identify all claims in the report that address it.
-- Restate each claim in own words — do not copy verbatim from the report.
+- Read the research report component by component (each `Q[n]-A##` section).
+- Extract individual claims from the prose under each component header. Restate each claim in own words — do not copy verbatim from the report.
 - Assign Claim IDs: `[Question ID]-C[sequential number]` (e.g., Q1-C01, Q1-C02).
 - A single paragraph or table row may yield multiple claims if it contains distinct factual assertions.
-- A single claim may map to multiple components — list under the primary component, cross-reference in the secondary.
+- Primary component mapping is given by the report structure — a claim extracted from a `Q[n]-A##` section belongs to that component. When a finding under one component is also relevant to another, cross-reference it in the secondary component.
 
 ### Source Attribution
 
-- Carry over source names and URLs exactly as cited in the Deep Research report.
+- Carry over source citations (page title, URL, access date) exactly as cited in the research report. Cross-check against the report's Source Log for completeness.
 - Do not verify, modify, or enrich source citations — take them at face value.
-- Record the source locator: section heading and approximate position (paragraph number, table label, bullet position) in the Deep Research report.
+- Record the source locator: component header (`Q[n]-A##`) and position within it (paragraph number, table label, bullet position) in the research report.
 
 ### Evidence Strength (per claim)
 
@@ -78,25 +77,24 @@ Per component, write 2–3 sentences summarizing what the evidence collectively 
 
 ### Gaps
 
-Identify which Answer Spec components lack sufficient evidence. Classify each gap:
+Start from the report's Known Gaps section — these are components the executor flagged as insufficiently evidenced. Ingest each, then apply the extract-creator's own coverage verdicts to confirm or reclassify. Final gap classification:
 
-- **Not addressed** — Deep Research didn't search for it
-- **Searched but not found** — report acknowledges scarcity
-- **Found but weak** — evidence exists but below COVERED threshold
+- **Not addressed** — component absent from the report entirely
+- **Searched but not found** — report's Known Gaps flags scarcity, confirmed by extract coverage
+- **Found but weak** — evidence exists but below COVERED threshold (may or may not appear in Known Gaps)
 
 Note whether the gap matters for downstream narrative.
 
 ### Conflicts
 
-Where sources cited in the report disagree: state both positions, assess which has stronger support based on source credibility and independence, and recommend handling (resolve, present both, flag as open).
+Start from the report's Conflicts section — these are disagreements the executor documented. Ingest each, then assess which position has stronger support based on source credibility and independence, and recommend handling (resolve, present both, flag as open). If additional conflicts emerge during claim extraction that the report did not flag, document those as well.
 
 ## Failure Behavior
 
-- **Component not covered in report** → mark MISSING in Coverage Verdicts. Component Synthesis: "No evidence found in the Deep Research report for this component." Do not synthesize from training data or infer from adjacent evidence.
+- **Component not covered in report** → mark MISSING in Coverage Verdicts. Component Synthesis: "No evidence found in the research report for this component." Do not synthesize from training data or infer from adjacent evidence.
 - **Evidence is thin** → extract claims that exist, mark THIN, write Component Synthesis reflecting the limited evidence. Do not complete the component with plausible-sounding filler.
-- **Ambiguous source citation** (URL missing, source name unclear) → carry through with a caveat in Notes: "[Source citation unclear in original report]". Do not fabricate source metadata.
+- **Ambiguous source citation** (URL missing, source name unclear) → carry through with a caveat in Notes: "[Source citation unclear in original report]". Cross-check the report's Source Log. Do not fabricate source metadata.
 - **Contradictory claims** → capture both as separate claims in the Claims Inventory and document in the Conflicts section. Do not silently resolve by picking one.
-- **Ambiguous question mapping** (report section unclear which question it addresses) → map to the most likely question, note ambiguity in the claim's Notes field, flag in Extraction Metadata.
 
 If the provided information is insufficient to extract confidently, say so rather than inferring. Leave gaps rather than invent plausible-sounding details.
 

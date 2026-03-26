@@ -1,24 +1,36 @@
 ---
 name: workflow-evaluator
 description: >
-  Evaluates workflows on architectural soundness (workflow-creator patterns) and
-  documentation quality (workflow-documenter format). Use when Patrik says
-  "evaluate this workflow," "review this workflow," "check this workflow," or
-  provides a workflow and asks for assessment. Produces actionable evaluation
-  reports with severity-classified findings covering design patterns, hand-off
-  integrity, context flow, execution risks, and documentation compliance.
+  Evaluates workflows on architectural soundness (workflow-creator patterns),
+  skill reference integrity, and documentation quality (workflow-documenter
+  format). Use when Patrik says "evaluate this workflow," "review this
+  workflow," "check this workflow," or provides a workflow and asks for
+  assessment. Produces actionable evaluation reports with severity-classified
+  findings covering design patterns, hand-off integrity, skill reference
+  verification, context flow, execution risks, and documentation compliance.
+  Do NOT use for creating or redesigning workflows (workflow-creator),
+  formatting/documenting workflows from scratch (workflow-documenter), or
+  evaluating non-workflow resources (ai-resource-evaluator).
 ---
 
 # Workflow Evaluator
 
 Evaluate workflows against two standards before production use: **workflow-creator** (architectural design patterns) and **workflow-documenter** (formatting and structure conventions).
 
+## Context and Boundaries
+
+**Evaluation standards:** workflow-creator (architecture) and workflow-documenter (documentation). General workflow design knowledge may supplement but not override these two standards. Do not import external frameworks or methodologies not referenced by the user.
+
+**Skill repo access:** Required for Skill Reference Integrity checks (R1–R4). If the skill repository is not accessible, skip R1/R2/R4 checks, note in the report that skill reference verification was not performed, and flag it as a limitation. R3 (purpose alignment) can still be assessed from the skill name and workflow context.
+
+**Scope:** Evaluation only — do not rewrite, redesign, or restructure workflows. If asked to create or redesign a workflow, redirect to workflow-creator. If asked to format/document a workflow from scratch, redirect to workflow-documenter. If given a non-workflow resource, redirect to ai-resource-evaluator.
+
 ## Evaluation Modes
 
 | Mode | Trigger | Scope |
 |------|---------|-------|
-| **Full** (default) | No mode specified | Architecture + documentation + execution risks |
-| **Architecture only** | "logic check," "does this work" | Design patterns, hand-offs, context flow, friction, execution risks |
+| **Full** (default) | No mode specified | Architecture + skill references + documentation + execution risks |
+| **Architecture only** | "logic check," "does this work" | Design patterns, hand-offs, skill references, context flow, friction, execution risks |
 | **Documentation only** | "just the format," "formatting review" | Structure, numbering, conventions |
 | **Quick scan** | "quick check," "quick look" | Surface-level obvious issues only |
 
@@ -79,6 +91,26 @@ For each step with a tool tag:
 - Is the tool appropriate for the task type?
 - Are tool transitions explicit (export format, import method)?
 - Are tool capabilities matched to step requirements?
+
+### Skill Reference Integrity
+
+Skip this section if the workflow references no skills by name.
+
+For workflows that reference skills (by name, folder, or file path), verify each reference resolves correctly. This requires read access to the skill repository.
+
+| # | Check | Fail Condition |
+|---|-------|---------------|
+| R1 | Every skill referenced in the workflow exists in the repo | Skill name not found under `skills/` |
+| R2 | Skill names match exactly (spelling, casing, hyphens) | Name is close but not identical (e.g., `document-formatter` vs `document-formater`) |
+| R3 | Skill-to-stage purpose alignment | A skill is assigned to a stage where its described function doesn't match the stage's task |
+| R4 | Skills are not deprecated or superseded | A skill exists but its description or content indicates it has been replaced |
+
+**How to check:**
+- R1/R2: List all skill names mentioned in the workflow. For each, confirm a matching folder exists under `skills/`. For near-misses, check for single-character differences, missing hyphens, or plural/singular variants.
+- R3: Read the skill's YAML description and compare to the workflow stage's stated purpose. Flag if the skill's trigger conditions don't align with what the stage asks it to do.
+- R4: Check for language in the skill indicating deprecation ("replaced by," "superseded," "deprecated," "use X instead").
+
+Missing skill blocking execution -> Critical. Near-miss name (likely typo) -> Critical. Purpose misalignment -> Moderate. Deprecated skill with functional replacement available -> Moderate.
 
 ### Friction Point Coverage
 
@@ -154,8 +186,8 @@ If an execution risk overlaps with an architecture finding, report in Architectu
 
 | Severity | Definition | Examples |
 |----------|------------|----------|
-| **Critical** | Workflow will fail or produce wrong results | Broken hand-off; missing required pattern; dead-end path |
-| **Moderate** | Works but with friction or risk | Missing recommended pattern; unclear hand-off; unflagged friction |
+| **Critical** | Workflow will fail or produce wrong results | Broken hand-off; missing required pattern; dead-end path; referenced skill doesn't exist; skill name typo |
+| **Moderate** | Works but with friction or risk | Missing recommended pattern; unclear hand-off; unflagged friction; skill-stage purpose misalignment; deprecated skill |
 | **Minor** | Polish issues | Formatting inconsistency; optional improvement |
 
 When uncertain, mark severity with "?" suffix and explain the uncertainty. Do not present uncertain findings with false confidence.
@@ -190,6 +222,19 @@ When uncertain, mark severity with "?" suffix and explain the uncertainty. Do no
 ### Minor
 | Location | Issue | Impact | Recommendation |
 |----------|-------|--------|----------------|
+
+---
+
+## Skill Reference Findings
+
+| Skill Name | Check | Status | Notes |
+|------------|-------|--------|-------|
+| [skill-name] | R1 Exists | pass / fail | |
+| [skill-name] | R2 Exact match | pass / fail | [near-miss if applicable] |
+| [skill-name] | R3 Purpose alignment | pass / fail | |
+| [skill-name] | R4 Not deprecated | pass / fail | |
+
+If no skills referenced in workflow: "No skill references found — section skipped."
 
 ---
 

@@ -3,17 +3,17 @@ name: research-prompt-creator
 description: >
   Transform an Execution Manifest, Research Plan, and Answer Specs into a
   Research Execution Prompts document — per-session execution prompts, session
-  plan table, and operational notes for GPT Deep Research. Session groupings and
-  tool assignments come from the Execution Manifest (produced by
-  execution-manifest-creator); this skill writes the prompts, not the routing.
-  Trigger when an Execution Manifest with Deep Research sessions exists and the
-  operator needs execution prompts, or on requests like "create research
-  prompts" or "write prompts for these sessions." This is Step 2.2 in Stage 2
-  of the Axcion Research Workflow. Do NOT use for research plan creation
-  (research-plan-creator), answer spec generation (answer-spec-generator),
-  execution routing (execution-manifest-creator), evidence compression, or
-  direct research execution — this skill produces prompts for the operator to
-  paste into GPT Deep Research.
+  plan table, and operational notes for all routed execution tools (Research
+  GPT, Perplexity, CustomGPT). Session groupings and tool assignments come
+  from the Execution Manifest (produced by execution-manifest-creator); this
+  skill writes the prompts, not the routing. Trigger when an Execution
+  Manifest exists and the operator needs execution prompts, or on requests
+  like "create research prompts" or "write prompts for these sessions." This
+  is Step 2.1 in Stage 2 of the Axcion Research Workflow. Do NOT use for
+  research plan creation (research-plan-creator), answer spec generation
+  (answer-spec-generator), execution routing (execution-manifest-creator),
+  evidence compression, or direct research execution — this skill produces
+  prompts for the operator to paste into the assigned execution tool.
 ---
 
 # Research Prompt Creator
@@ -21,7 +21,7 @@ description: >
 ## Input Requirements
 
 **Required:**
-1. **Execution Manifest** — produced by `execution-manifest-creator`. Contains session groupings, tool assignments (GPT vs. Perplexity Deep Research), dependencies, and parallel execution opportunities. Accept the manifest's routing and grouping decisions as given — do not re-cluster or re-route questions.
+1. **Execution Manifest** — produced by `execution-manifest-creator`. Contains session groupings, tool assignments (Research GPT vs. Perplexity), dependencies, and parallel execution opportunities. Accept the manifest's routing and grouping decisions as given — do not re-cluster or re-route questions.
 2. **Research Plan** — research questions with scope, key terms, source preferences, search terminology guidance
 3. **Answer Specs** — per-question specifications defining required evidence components, evidence rules, and completion gates
 
@@ -35,13 +35,13 @@ All provided by the operator. Do not generate these.
 
 ## Platform Context
 
-GPT Deep Research (GPT-5.2-based, early 2026) has characteristics that constrain prompt design:
+Research GPT (GPT-5.2-based) has characteristics that constrain prompt design:
 
 - **No clarification step** — research starts immediately from the prompt. Prompt quality is the single biggest lever on output quality.
 - **Keyword-driven search** — the model uses keywords from the prompt as search seeds. Embed domain-specific terms, proper nouns, and technical terminology explicitly.
 - **Session capacity** — overloaded prompts produce shallow coverage on later questions. Session groupings come from the Execution Manifest; focus on writing prompts that work well within the given session sizes.
 - **Structured output** — tables, headers, and format instructions are well-followed. Leverage this.
-- **File attachments** — the Research Plan should always be attached for scope context.
+- **Context pack** — a compact project summary is embedded directly in each execution prompt for scope context. The prompt creator generates this from the Research Plan inputs (project background, section objective, content map, scope boundaries — NOT individual question listings).
 - **Site restrictions** — the operator can restrict or prioritize specific sites per session via the ChatGPT UI.
 
 ## Planning Protocol
@@ -84,9 +84,9 @@ For each session, produce:
 The prompt must be self-contained. It includes the following elements, in order:
 
 **Always present:**
-1. **Attachment reference** — explicit mention of the attached Research Plan and its purpose
+1. **Context pack block** — a compact project summary embedded inline, delimited by `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` markers. Placed after the scope block, before directives. Generate from the Research Plan: project background, section objective, content map (areas and focus, NOT individual question listings), and scope boundaries.
 2. **Scope block** — a clearly labeled standalone block with all scope parameters as literal values (geography, deal size, fund size, time frame, industry focus). Placed before the directives so the model references it throughout.
-3. **Per-question research directives** — translated from Answer Spec components into plain-language directives. Load `references/prompt-construction-guide.md` for translation patterns, output format templates, and depth signal language. If this file is unavailable, use the translation principles and format templates described in the prompt construction rules below.
+3. **Per-question research directives** — translated from Answer Spec components into plain-language directives. Each directive header must include the Answer Spec component ID so downstream tools (research-extract-creator) can match outputs to specs. Format: `Directive 1 (Q1-A01) — [Short title]`. Load `references/prompt-construction-guide.md` for translation patterns, output format templates, and depth signal language. If this file is unavailable, use the translation principles and format templates described in the prompt construction rules below.
 
 **Conditional:**
 4. **Epistemic frame** — include when multiple directives share a research stance (e.g., "Focus on how this works in practice, not idealized models"). Set once as a session-level framing sentence; do not restate per directive. Omit when directives have no shared epistemic orientation.
@@ -98,6 +98,7 @@ The prompt must be self-contained. It includes the following elements, in order:
 Rules are grouped by priority. Structural decisions shape the prompt architecture — if these are wrong, good writing won't compensate. Strategic choices govern research depth and focus. Writing craft ensures clarity and concision.
 
 *Structural decisions (highest priority):*
+- **Component ID labeling:** Every directive header must carry the Answer Spec component ID in parentheses — e.g., `Directive 1 (Q1-A01) — Activity inventory`. This is a hard requirement: `research-extract-creator` matches research outputs to Answer Spec components by these IDs. If a single directive covers multiple components, list all IDs: `Directive 3 (Q2-A01, Q2-A02)`. If the Answer Specs do not use the `Q[n]-A##` convention, preserve whatever ID scheme they use.
 - **Scope block separation:** Pull scope parameters (geography, deal size, fund size, time frame, industry focus) into a clearly labeled standalone block at the top of the execution prompt, separate from the research directives. Directives reference the scope block rather than re-embedding parameters inline. Clean separation means the same scope block can be reused across sessions without rewriting.
 - **Format prescription — match to directive type:** Prescribe specific output format (tables, column names) for structured/quantitative directives where the value is in the data shape. For analytical or qualitative directives (pattern analysis, narrative synthesis, value judgments), state the deliverable clearly but let the model choose the best format. Over-prescribing format on qualitative work forces the model to fit insights into structures that may not serve them.
 - **Epistemic frame — set once, not per-directive:** If multiple directives share a research stance (e.g., "how this actually works in practice, not idealized models"), state it once as a session-level framing sentence near the top of the prompt. Per-directive restatements waste tokens and dilute the signal.
@@ -113,7 +114,7 @@ Rules are grouped by priority. Structural decisions shape the prompt architectur
 - Use imperative verbs: "Find," "Compare," "Present," "Trace," "Identify"
 - **Omit what the model already does:** Do not include instructions the model would follow naturally from a well-scoped directive — e.g., "cross-reference for consistency," "cite sources," or generic quality reminders. **Test:** if a sub-bullet is unpacking what the main instruction already means, cut it.
 
-**2c. Steering Notes** (operator guidance, not pasted into Deep Research)
+**2c. Steering Notes** (operator guidance, not pasted into the research tool)
 - Anticipate likely thin-results areas with alternative search angles
 - Specify acceptance criteria for scarcity vs. when to push harder
 - Flag cross-session implications
@@ -127,7 +128,7 @@ Produce a single markdown file with this structure:
 # Research Execution Prompts — [Project Name]
 
 ## How to Use This Document
-[Setup instructions, attachment reminder, global settings]
+[Setup instructions, global settings]
 
 ## Session Plan
 [Table: Session | Questions | Qs/Session | Cluster Logic | Dependencies]
@@ -174,9 +175,10 @@ Before delivering, verify:
 - Session plan table matches the Execution Manifest's groupings and dependencies
 - Parallel execution opportunities from the manifest are reflected in the document
 - Every Answer Spec evidence component is translated into a research directive in at least one prompt
+- Every directive header includes the Answer Spec component ID (e.g., `Q1-A01`) for downstream traceability
 - No prompt uses Answer Spec terminology — all directives are in plain research language
 - Each prompt has a labeled scope block with literal parameter values
-- Each prompt includes an attachment reference for the Research Plan
+- Each prompt includes the context pack block with `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` delimiters
 - Each session has specific steering notes (not generic)
 - Site restriction guidance is included for every session (even if "Default")
 - Post-execution notes section is present
