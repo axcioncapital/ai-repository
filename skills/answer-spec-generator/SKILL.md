@@ -27,6 +27,10 @@ When user says `RELEASE ARTIFACT`:
 
 If the Research Plan provides insufficient information to confidently set scope, depth, or completion criteria, say so rather than inferring aggressively. It is acceptable to leave fields marked `[inferred]` and flag them rather than invent plausible-sounding defaults. If the Research Plan's completion criteria contain questionable assumptions (e.g., requiring evidence density that the topic cannot support), flag it constructively rather than silently encoding impossible gates.
 
+## Information Boundary
+
+Draw all specification parameters (scope, depth, completion criteria, claim ranges) from the Research Plan and `references/component-templates.md`. General domain knowledge may be used only for: (1) inferring strictness level from contextual signals, (2) calibrating claim ranges within the bounds defined in component-templates.md, and (3) flagging questionable assumptions in the Research Plan. Do not use general knowledge to invent scope details, evidence density estimates, or completion criteria not derivable from the provided inputs.
+
 ## Input Requirements
 
 **Required:** Research question(s) with scope, depth, and completion criteria (typically from a Research Plan). Completion criteria are translated into measurable Completion Gates — the prose version is not preserved in the spec.
@@ -37,6 +41,8 @@ If the Research Plan provides insufficient information to confidently set scope,
 - `output`: `combined | separate` (default: combined)
 
 **If Research Plan is incomplete** (missing scope, depth, or completion criteria): Synthesize reasonable defaults from the question text and label them as `[inferred]`. Flag to user before proceeding.
+
+**If no Research Plan is provided** (bare questions only): Accept the questions but mark all metadata fields as `[inferred]`. Warn the user that specs generated without a Research Plan will have weaker scope boundaries and should be reviewed before execution.
 
 ## Strictness Inference
 
@@ -102,6 +108,8 @@ When questions span multiple types:
 
 **If classification is uncertain**: Output the spec labeled `Hybrid (tentative)` and note the assumptions.
 
+**If no type matches**: If a question does not match any defined type, classify as the closest fit and label it `[approximate match — no exact type]`. Use the closest type's component template as a starting point and adapt components to fit the actual question. Flag the classification for user review.
+
 ## Workflow
 
 ### Step 1: Parse Input
@@ -143,6 +151,23 @@ For each question:
 - Prevalence signals (if purely definitional)
 - Recommendation logic (if purely descriptive)
 
+**Expected Claims calibration:**
+Set a claim range per component based on its type and the question's strictness. The range tells downstream tools (prompt creator, extract verifier) how much evidence each component should produce — preventing flat aggregate targets that let easy components absorb all the claims.
+
+| Component type | Typical range | Rationale |
+|----------------|---------------|-----------|
+| Inventory/catalog (e.g., activity inventory, entity inventory, pattern inventory) | 5–10 | One claim per item; count depends on how many items exist |
+| Mechanics/process (e.g., pattern mechanics, process steps) | 3–6 | One claim per step or mechanism |
+| Comparison/difference (e.g., key differences, variation drivers) | 3–5 | One claim per axis of difference |
+| Analytical/evaluative (e.g., implications, trade-offs, contextual applicability) | 2–4 | Fewer but deeper claims; quality over quantity |
+| Boundary/edge case (e.g., boundary conditions, failure modes) | 1–3 | Thin evidence expected; flag gaps rather than force volume |
+
+Adjust ranges for strictness: `strict` uses upper end, `light` uses lower end, `standard` uses midpoint. For Optional components, set the lower bound to 0 (evidence may not exist).
+
+Domain evidence density should also influence range selection within the strictness band. For evidence-sparse domains (emerging technologies, niche markets, practitioner tacit knowledge), use the lower end of ranges even at `standard` strictness. For evidence-rich domains (established industries, well-studied phenomena), the upper end is appropriate. If domain density is unknown, use midpoint and flag as `[inferred]`.
+
+The answer-level `min_distinct_claims` gate is the sum of per-component lower bounds. Do not set it independently — derive it from the component ranges.
+
 **Dimension priority rule:**
 If the question asks for *variation across types*, set at least one segmentation dimension as **Required** by adding it to the relevant component's Description field (e.g., "**Segment by:** fund size (Required — state unknown if no evidence found)"). Excluded dimensions go in the Out of Scope list under Definitions & Boundaries.
 
@@ -163,9 +188,10 @@ Before output, verify each spec:
 | No overreach | Do components stay within stated scope? |
 | Variation dimensions | If question asks for variation, is at least one dimension marked Required? |
 | ID consistency | Do Component IDs follow Q[n]-A## format? |
+| Claim range calibration | Does each component have an Expected Claims range? Is `min_distinct_claims` the sum of per-component lower bounds? |
 | Cross-spec consistency | (Batch) Do related questions use consistent terms? |
 
-Revise any spec that fails validation.
+If any check fails: auto-fix where the fix is unambiguous (e.g., missing Component ID, incorrect `min_distinct_claims` sum). For subjective failures (e.g., component-question fit), flag the issue in the refinement summary presented to the user before `RELEASE ARTIFACT`.
 
 ### Step 6: SOP Compatibility Validation
 
@@ -180,6 +206,7 @@ Run a batch-level validation pass after all specs are individually validated.
 | V3 | Strictness explicit | Medium | Every spec has an explicit strictness value | **Auto-fix:** Apply inferred strictness, mark `[inferred]`. |
 | V4 | Downstream format labeled | Low | Section labeled "Downstream Synthesis Format" (not "Output Format") | **Auto-fix:** Rename heading. |
 | V5 | Evidence rules != SOP grading | Low-Med | Evidence rules specify scope/source requirements only; no duplication of SOP grading criteria. The preamble's Default Evidence Rule (source count thresholds) is a scope requirement, not a grading criterion. | **Flag for review:** Identify conflicting language. |
+| V7 | Expected Claims present | Medium | Every component has an Expected Claims range. `min_distinct_claims` equals the sum of per-component lower bounds. | **Auto-fix:** Compute sum from component ranges. Log. |
 | V6 | No silent cross-question dependencies | Low | Evidence rules do not reference other question IDs without flagging execution order | **Flag for review:** List dependencies. |
 
 **Validation output:** Append a summary table after the specs:
@@ -187,9 +214,9 @@ Run a batch-level validation pass after all specs are individually validated.
 ```
 ## SOP Compatibility Validation Summary
 
-| Question | V1 IDs | V2 Gates | V3 Strictness | V4 Format | V5 Evidence | V6 Dependencies | Status |
-|----------|--------|----------|---------------|-----------|-------------|-----------------|--------|
-| Q1       | ✓      | ✓        | ✓             | ✓         | ✓           | ✓               | Pass   |
+| Question | V1 IDs | V2 Gates | V3 Strictness | V4 Format | V5 Evidence | V6 Dependencies | V7 Claims | Status |
+|----------|--------|----------|---------------|-----------|-------------|-----------------|-----------|--------|
+| Q1       | ✓      | ✓        | ✓             | ✓         | ✓           | ✓               | ✓         | Pass   |
 ```
 
 If any High-severity auto-fix is applied, note it prominently. If any Medium+ flags remain unresolved, do not mark the batch as ready.
@@ -252,9 +279,9 @@ Depth: [From Research Plan, or [inferred]]
 **Timeframe:** [Relevant period — Required if question includes "current"/"recent"/"today"]
 
 ### Answer Components
-| ID | Component | Description | Priority |
-|----|-----------|-------------|----------|
-| Q[n]-A01 | [Name] | [What this component must contain. **Segment by:** dimension (Required/Optional) if applicable] | Required / Optional |
+| ID | Component | Description | Expected Claims | Priority |
+|----|-----------|-------------|-----------------|----------|
+| Q[n]-A01 | [Name] | [What this component must contain. **Segment by:** dimension (Required/Optional) if applicable] | [range, e.g., 3–5] | Required / Optional |
 
 ### Claim-Level Evidence Rules
 
@@ -271,7 +298,7 @@ Express all gates as countable thresholds:
 
 | Counter | Value |
 |---------|-------|
-| `min_distinct_claims` | [number] |
+| `min_distinct_claims` | [sum of per-component lower bounds] |
 | `min_sources` | [number] |
 | `min_independent_sources` | [number] |
 | `min_high_sources` | [number or "n/a"] |
@@ -287,7 +314,7 @@ If Research Plan criteria are qualitative, translate to measurable proxies and m
 | "Can withstand follow-up questions" | "Logic chain has ≥2 levels of supporting evidence" |
 | "Evidence presented with nuance" | "All claims include at least one qualifier or boundary condition" |
 | "Passes plain-language test" | "All claims use terms defined in Key Terms; no unexplained jargon" |
-| "Comprehensive coverage" | "All Required components have ≥N distinct claims" |
+| "Comprehensive coverage" | "All Required components meet their Expected Claims lower bound" |
 
 The test: can the Research Executor resolve this gate to ✓/⚠/✗/○ without subjective interpretation? If not, rewrite.
 
@@ -324,12 +351,12 @@ Depth: Identify distinct approaches with enough detail to understand mechanics a
 **Timeframe:** Current practice (2020-present)
 
 ### Answer Components
-| ID | Component | Description | Priority |
-|----|-----------|-------------|----------|
-| Q4-A01 | Pattern inventory | Distinct sourcing approaches identified (e.g., advisor-led, proprietary, hybrid) | Required |
-| Q4-A02 | Pattern mechanics | How each approach works: channels used, resources involved, typical timelines | Required |
-| Q4-A03 | Variation drivers | Factors explaining why different funds use different approaches. **Segment by:** fund size (Required — state unknown if no evidence found), geographic sub-region (Optional) | Required |
-| Q4-A04 | Prevalence signals | Which approaches are common vs. niche in the Nordic context | Optional |
+| ID | Component | Description | Expected Claims | Priority |
+|----|-----------|-------------|-----------------|----------|
+| Q4-A01 | Pattern inventory | Distinct sourcing approaches identified (e.g., advisor-led, proprietary, hybrid) | 3–5 | Required |
+| Q4-A02 | Pattern mechanics | How each approach works: channels used, resources involved, typical timelines | 3–5 | Required |
+| Q4-A03 | Variation drivers | Factors explaining why different funds use different approaches. **Segment by:** fund size (Required — state unknown if no evidence found), geographic sub-region (Optional) | 2–4 | Required |
+| Q4-A04 | Prevalence signals | Which approaches are common vs. niche in the Nordic context | 0–2 | Optional |
 
 ### Claim-Level Evidence Rules
 
@@ -345,7 +372,7 @@ Depth: Identify distinct approaches with enough detail to understand mechanics a
 
 | Counter | Value |
 |---------|-------|
-| `min_distinct_claims` | 6 (minimum 2 per Required component) |
+| `min_distinct_claims` | 8 (sum of per-component lower bounds: 3+3+2+0) |
 | `min_sources` | 8 |
 | `min_independent_sources` | 4 |
 | `min_high_sources` | 2 |
@@ -382,14 +409,14 @@ Depth: Structural comparison across multiple dimensions with implications for PE
 **Timeframe:** Current state (2022-present)
 
 ### Answer Components
-| ID | Component | Description | Priority |
-|----|-----------|-------------|----------|
-| Q7-A01 | Comparison dimensions | Axes on which boutiques and banks differ. **Segment by:** deal size focus (Optional), geographic focus Nordic vs. global (Optional) | Required |
-| Q7-A02 | Boutique model | How boutique advisors typically structure and execute PE coverage | Required |
-| Q7-A03 | Bank model | How large banks typically structure and execute PE coverage | Required |
-| Q7-A04 | Key differences | Specific structural/operational differences with evidence | Required |
-| Q7-A05 | Implications | What each difference means for PE funds (advantages/disadvantages) | Required |
-| Q7-A06 | Contextual applicability | Conditions where each model is preferable | Optional |
+| ID | Component | Description | Expected Claims | Priority |
+|----|-----------|-------------|-----------------|----------|
+| Q7-A01 | Comparison dimensions | Axes on which boutiques and banks differ. **Segment by:** deal size focus (Optional), geographic focus Nordic vs. global (Optional) | 3–5 | Required |
+| Q7-A02 | Boutique model | How boutique advisors typically structure and execute PE coverage | 3–5 | Required |
+| Q7-A03 | Bank model | How large banks typically structure and execute PE coverage | 3–5 | Required |
+| Q7-A04 | Key differences | Specific structural/operational differences with evidence | 4–6 | Required |
+| Q7-A05 | Implications | What each difference means for PE funds (advantages/disadvantages) | 3–4 | Required |
+| Q7-A06 | Contextual applicability | Conditions where each model is preferable | 0–3 | Optional |
 
 ### Claim-Level Evidence Rules
 
@@ -406,7 +433,7 @@ Depth: Structural comparison across multiple dimensions with implications for PE
 
 | Counter | Value |
 |---------|-------|
-| `min_distinct_claims` | 10 (minimum 2 per Required component) |
+| `min_distinct_claims` | 16 (sum of per-component lower bounds: 3+3+3+4+3+0) |
 | `min_sources` | 12 |
 | `min_independent_sources` | 5 |
 | `min_high_sources` | 4 |
@@ -433,7 +460,7 @@ Most common in `light` strictness specs.
 
 **Do not:**
 - Generate components that don't serve the question
-- Set completion gates exceeding Research Plan's criteria
+- Set completion gates exceeding Research Plan's criteria (exception: `min_distinct_claims` is derived from per-component Expected Claims ranges and may differ from qualitative Research Plan criteria — this is correct behavior)
 - Force dimensions that aren't relevant
 - Over-specify when strictness is `light`
 - Under-specify when strictness is `strict`
