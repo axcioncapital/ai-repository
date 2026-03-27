@@ -108,6 +108,26 @@ Include one per directive to give the model permission to stop and report gaps:
 - "If [specific data type] is not publicly available, note the gap and provide the closest available proxy data."
 - "Limited evidence is acceptable here — report what you find and flag the coverage level."
 
+### Volume Calibration
+
+The Answer Spec's Expected Claims ranges indicate how much evidence each component should produce. Translate these into natural-language volume signals so the execution tool calibrates effort per directive rather than treating all directives equally.
+
+| Expected Claims Range | Component Type | Directive Language Pattern |
+|---|---|---|
+| 5–10 | Inventory/catalog | "Identify all distinct [items] you can find. Aim for comprehensive coverage — if fewer than [lower bound] surface, report what exists and characterize the gap." |
+| 3–6 | Mechanics/process | "Trace the main [steps/mechanisms]. Cover the primary paths." |
+| 3–5 | Comparison/difference | "Identify the key [differences/axes]. Focus on the most significant ones." |
+| 2–4 | Analytical/evaluative | "Analyze in depth. 2–3 well-supported findings are more valuable than 5 shallow ones." |
+| 0–3 | Boundary/edge case | "Report what exists — thin evidence is expected here. Do not force volume." |
+
+**How to use:**
+- Use the **lower bound** as the sufficiency threshold — below this count, the executor should flag a gap
+- Use the **upper end** as a soft ceiling — above this, diminishing returns are likely
+- For **Optional** components (lower bound = 0), use the boundary/edge case pattern regardless of the upper bound
+- Do not embed the numeric ranges literally in the prompt — translate into the natural-language patterns above
+
+**Volume calibration and directive ordering interact:** Components with higher Expected Claims ranges typically need more search budget. When using operative effort allocation (directive ordering + minimum search counts), account for volume differences — an inventory component needing 5–10 items requires more searches than an analytical component needing 2–4 findings.
+
 ### Per-Component Source Quality Floors
 
 Aggregate source targets let the execution tool concentrate quality on easy components. Embed a per-component floor directly in the prompt:
@@ -117,6 +137,22 @@ Source quality rule: No component's findings may rest on fewer than 2 independen
 ```
 
 This instruction goes near the top of the prompt, after the scope block and before directives. It applies globally across all directives in the session.
+
+### Source Authority Emphasis
+
+When the Answer Spec's completion gates include `min_high_sources` ≥ 3, the execution tool needs explicit guidance to prioritize authoritative sources. Without this, it may meet source count thresholds entirely with secondary commentary.
+
+**When to include:** Check the Answer Spec's `min_high_sources` gate. If it is 3 or higher, embed the authority emphasis.
+
+**Template:**
+
+```
+Source authority emphasis: For this session, prioritize authoritative primary sources — industry body publications, regulatory filings, large-sample surveys, peer-reviewed research. Secondary commentary and news summaries are acceptable as supporting evidence but should not be the sole basis for any finding.
+```
+
+**Placement:** After the source quality floor instruction, before directives. Like the quality floor, this applies globally across all directives in the session.
+
+**When `min_high_sources` < 3 or is "n/a":** Omit the authority emphasis. The default source quality floor is sufficient.
 
 ## Steering Notes Patterns
 
