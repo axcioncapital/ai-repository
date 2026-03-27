@@ -68,11 +68,16 @@ The model will choose the best structure — narrative, examples, embedded table
 
 ## Depth and Priority Signals
 
-Embed these phrases in prompts to steer the research executor's time allocation. Always pair qualitative labels with a concrete effort allocation so the model can budget its research time.
+Effort signals must be operative — they must change the execution tool's search behavior, not just describe intent. Percentage allocations alone are descriptive; the execution tool front-loads effort on whichever directives it encounters first and runs out of budget for later ones.
+
+Two mechanisms make effort signals operative:
+
+1. **Directive ordering:** Place the hardest or most important components first in the prompt. The execution tool allocates disproportionate effort to early directives.
+2. **Minimum search allocations:** Specify a floor number of dedicated searches per component, so critical components get attention regardless of what earlier directives consume.
 
 ### High Priority
 
-- "This is the highest-priority directive in this session. Allocate approximately [X]% of your research effort here."
+- "This is the highest-priority directive in this session. Allocate at least [N] dedicated searches to this directive."
 - "Depth matters more than breadth here — go deep on fewer sources rather than skimming many."
 
 ### Standard Priority
@@ -81,13 +86,19 @@ Embed these phrases in prompts to steer the research executor's time allocation.
 
 ### Lower Priority (Acceptable if Thin)
 
-- "This directive is lower priority. Allocate approximately [X]% of your research effort here — a focused summary is acceptable."
+- "This directive is lower priority — a focused summary is acceptable if results are scarce."
 - "A high-level overview is sufficient — do not spend extended time on this if results are scarce."
 
 ### Trade-off Instructions
 
-- "If you need to make trade-offs, allocate effort roughly as: Directive 1 / Q1-A01 ([X]%), Directive 2 / Q1-A02 ([Y]%), Directive 3 / Q1-A03 ([Z]%)."
+- "If you need to make trade-offs: Directive 1 / Q1-A01 gets at least [N] dedicated searches. Directive 2 / Q1-A02 gets at least [M]. Remaining budget goes to Directive 3 / Q1-A03."
 - "If comprehensive data is unavailable, provide the best available partial data and explicitly note what is missing."
+
+### Operative Allocation Example
+
+```
+Research the following directives in the order presented. Directive 2 is the hardest research problem in this session — allocate at least 3 dedicated searches to it regardless of results on Directive 1. Directive 3 is lower priority; a focused summary from 1–2 searches is acceptable.
+```
 
 ### Sufficiency Signals
 
@@ -96,6 +107,16 @@ Include one per directive to give the model permission to stop and report gaps:
 - "If fewer than [N] independent sources exist for this topic, report what is available and characterize the evidence gap."
 - "If [specific data type] is not publicly available, note the gap and provide the closest available proxy data."
 - "Limited evidence is acceptable here — report what you find and flag the coverage level."
+
+### Per-Component Source Quality Floors
+
+Aggregate source targets let the execution tool concentrate quality on easy components. Embed a per-component floor directly in the prompt:
+
+```
+Source quality rule: No component's findings may rest on fewer than 2 independent sources. If you can only find 1 source for a component after dedicated searching, classify that component as "thin coverage" and explicitly document the gap — do not pad with tangentially related sources.
+```
+
+This instruction goes near the top of the prompt, after the scope block and before directives. It applies globally across all directives in the session.
 
 ## Steering Notes Patterns
 
@@ -161,6 +182,111 @@ Site settings for this session:
 
 If no site restrictions apply: "Site settings: Default (full web search, no restrictions)."
 
+## Search Seed Construction
+
+Search seeds are the keywords and phrases embedded in the prompt that the execution tool uses as starting points for web searches. Seed quality is the single biggest lever on source quality — generic seeds return generic results.
+
+### Tiering by Question Difficulty
+
+Every session prompt should include two tiers of seeds:
+
+**Tier 1 — Broad seeds** (topic coverage): Standard industry terms that cast a wide net. Appropriate for well-documented topics where good sources are easy to find.
+
+```
+Search seeds: "private equity deal process," "PE investment lifecycle," "buyout fund operations"
+```
+
+**Tier 2 — Narrow seeds** (hard components): High-specificity phrases targeting the source types where difficult evidence lives. Use for components probing practitioner behavior, tacit knowledge, operational detail, or niche data. These seeds should name specific source types, organizations, or publication formats.
+
+```
+Narrow seeds for [component ID]: "GP survey deal selection process," "PE partner screening intuition behavioral finance," "private equity pattern recognition investment decisions," "operational due diligence practitioner survey"
+```
+
+**When to use each tier:** If a directive asks for factual, well-documented information (market size, regulatory framework, standard process), Tier 1 seeds are sufficient. If a directive asks for how something works in practice, what practitioners actually do vs. what frameworks prescribe, or evidence that lives in surveys/interviews/operational reports rather than textbooks, add Tier 2 seeds.
+
+### Geographic Seed Coverage
+
+When the scope names a region (e.g., "Nordic," "Southeast Asian," "Latin American"), the seeds must cover all constituent countries or markets — not just the most prominent ones. Map the region to its constituent markets and include at least one specific seed per market.
+
+```
+Nordic scope — ensure seeds include:
+- Sweden: "[Swedish industry association acronym]," "[Swedish-language term if applicable]"
+- Norway: "[Norwegian equivalent]"
+- Denmark: "[Danish equivalent]"
+- Finland: "[Finnish equivalent]"
+- Iceland: (if applicable to scope)
+```
+
+Use the Research Plan's search terminology guidance as the source for country-specific terms. If the Research Plan omits some constituent markets, flag the gap.
+
+### Concrete Source Paths
+
+Do not just name institutions — give the execution tool searchable paths to their relevant outputs.
+
+| Weak (name only) | Strong (concrete path) |
+|---|---|
+| "Preqin" | "Preqin private equity operational benchmarks," "Preqin GP survey" |
+| "ILPA" | "ILPA due diligence questionnaire guidelines," "ILPA principles 3.0" |
+| "Academic research" | "Journal of Private Equity deal process," "Journal of Financial Economics buyout" |
+
+### Query Budget Awareness
+
+Execution tools have a finite number of searches per session. Generic seeds burn budget on shallow results, leaving nothing for harder components. Design seed lists with this constraint in mind:
+
+- Front-load high-value narrow seeds for the hardest components
+- Use broad seeds sparingly — one or two per directive is usually sufficient for well-documented topics
+- If the execution tool has a known query limit, the total seed count across all directives should not exceed that limit
+
+## Proxy Hierarchy Patterns
+
+When the scope includes specificity constraints that are likely to produce data gaps, the prompt must include an explicit proxy fallback chain. Without this, the execution tool either reports "no data found" or silently uses an approximation without flagging it.
+
+### When to Include a Proxy Hierarchy
+
+Include when any scope parameter is narrow enough that exact-match data may not exist:
+
+- **Geographic:** Niche region or small market (e.g., "Nordic mid-market," "Southeast Asian lower mid-market")
+- **Segment:** Narrow size band (e.g., "€5M–€25M enterprise value")
+- **Temporal:** Recent phenomenon with limited historical data
+- **Domain:** Intersection of two specialties (e.g., "PE operational value creation in healthcare")
+
+### How to Construct
+
+Define a priority-ordered chain from most specific to most general. Each level must be a concrete, searchable scope — not a vague broadening. Require the execution tool to state which level it used.
+
+**Template:**
+
+```
+If [specific-scope] data is unavailable, use this priority order:
+(a) [Closest proxy — one step broader, still highly relevant]
+(b) [Next proxy — broader geography or adjacent segment]
+(c) [Broadest acceptable proxy — global/large-market data with explicit adjustment logic]
+State which proxy level was used for each finding.
+```
+
+**Geographic example:**
+
+```
+If Nordic-specific data is unavailable, use this priority order:
+(a) Pan-Nordic reports (e.g., KPMG Nordic, Roland Berger Nordics)
+(b) Individual Nordic country data (SVCA, NVCA, DVCA, FVCA)
+(c) Small European market comparables (Benelux, Switzerland)
+(d) Global data — state explicitly that this is a global proxy and note limitations for Nordic applicability
+```
+
+**Segment example:**
+
+```
+If €5M–€25M enterprise value data is unavailable, use this priority order:
+(a) Sub-€50M or "lower mid-market" data
+(b) Sub-$250M or "mid-market" data
+(c) All-size PE data — state the proxy range and its limitations for the target segment
+```
+
+### Placement
+
+Embed the proxy hierarchy in the prompt immediately after the scope block, before directives. It applies globally to all directives in the session. If different directives need different proxy chains, embed per-directive instead.
+
 ## Context Pack Embedding
 
 Every execution prompt includes a context pack — a compact project summary that provides the research executor with orientation context. The prompt creator generates this inline from the Research Plan inputs.
@@ -170,7 +296,7 @@ Every execution prompt includes a context pack — a compact project summary tha
 - Project background (client, goal, analytical lens, target market)
 - Section objective (what this section produces and why it matters)
 - Content map (research areas and their focus — NOT individual question listings)
-- Scope boundaries (in/out, key terms, hypotheses under test)
+- One-line scope reference pointing to the standalone scope block (e.g., "Scope parameters are defined in the SCOPE block above") — do NOT duplicate scope values here
 
 The context pack is NOT an Answer Spec. It provides big-picture orientation only. All execution-level detail (source requirements, depth calibration, completion gates) comes from the per-question directives in the prompt.
 

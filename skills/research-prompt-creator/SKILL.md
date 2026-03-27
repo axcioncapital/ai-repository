@@ -3,8 +3,9 @@ name: research-prompt-creator
 description: >
   Transform an Execution Manifest, Research Plan, and Answer Specs into a
   Research Execution Prompts document — per-session execution prompts, session
-  plan table, and operational notes for all routed execution tools (Research
-  GPT, Perplexity, CustomGPT). Session groupings and tool assignments come
+  plan table, and operational notes, primarily for Research GPT sessions.
+  Perplexity sessions may appear in the manifest but use simpler prompt
+  formats; CustomGPT sessions follow Research GPT patterns. Session groupings and tool assignments come
   from the Execution Manifest (produced by execution-manifest-creator); this
   skill writes the prompts, not the routing. Trigger when an Execution
   Manifest exists and the operator needs execution prompts, or on requests
@@ -41,7 +42,8 @@ Research GPT (GPT-5.2-based) has characteristics that constrain prompt design:
 - **Keyword-driven search** — the model uses keywords from the prompt as search seeds. Embed domain-specific terms, proper nouns, and technical terminology explicitly.
 - **Session capacity** — overloaded prompts produce shallow coverage on later questions. Session groupings come from the Execution Manifest; focus on writing prompts that work well within the given session sizes.
 - **Structured output** — tables, headers, and format instructions are well-followed. Leverage this.
-- **Context pack** — a compact project summary is embedded directly in each execution prompt for scope context. The prompt creator generates this from the Research Plan inputs (project background, section objective, content map, scope boundaries — NOT individual question listings).
+- **Context pack** — a compact project summary is embedded directly in each execution prompt for scope context. The prompt creator generates this from the Research Plan inputs (project background, section objective, content map — NOT individual question listings). Scope parameters live in the standalone scope block, not in the context pack.
+- **Finite search budget** — execution tools have a limited number of searches per question or session. Generic seeds burn budget on shallow results, leaving nothing for harder components. Prompt design must account for this: prioritize high-specificity seeds for difficult components, and keep broad seeds to a minimum for well-documented topics.
 - **Site restrictions** — the operator can restrict or prioritize specific sites per session via the ChatGPT UI.
 
 ## Planning Protocol
@@ -84,14 +86,14 @@ For each session, produce:
 The prompt must be self-contained. It includes the following elements, in order:
 
 **Always present:**
-1. **Context pack block** — a compact project summary embedded inline, delimited by `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` markers. Placed after the scope block, before directives. Generate from the Research Plan: project background, section objective, content map (areas and focus, NOT individual question listings), and scope boundaries.
-2. **Scope block** — a clearly labeled standalone block with all scope parameters as literal values (geography, deal size, fund size, time frame, industry focus). Placed before the directives so the model references it throughout.
+1. **Scope block** — a clearly labeled standalone block with all scope parameters as literal values (geography, deal size, fund size, time frame, industry focus). Placed at the top of the prompt so the model references it throughout.
+2. **Context pack block** — a compact project summary embedded inline, delimited by `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` markers. Placed after the scope block, before directives. Generate from the Research Plan: project background, section objective, and content map (areas and focus, NOT individual question listings). Do not duplicate scope parameters here — include a one-line reference to the standalone scope block (e.g., "Scope parameters are defined in the SCOPE block above"). The scope block is authoritative for all scope values.
 3. **Per-question research directives** — translated from Answer Spec components into plain-language directives. Each directive header must include the Answer Spec component ID so downstream tools (research-extract-creator) can match outputs to specs. Format: `Directive 1 (Q1-A01) — [Short title]`. Load `references/prompt-construction-guide.md` for translation patterns, output format templates, and depth signal language. If this file is unavailable, use the translation principles and format templates described in the prompt construction rules below.
 
 **Conditional:**
 4. **Epistemic frame** — include when multiple directives share a research stance (e.g., "Focus on how this works in practice, not idealized models"). Set once as a session-level framing sentence; do not restate per directive. Omit when directives have no shared epistemic orientation.
 5. **Output format instructions** — include for structured/quantitative directives (prescribe tables, columns). Omit for analytical/qualitative directives — state the deliverable and let the model choose format.
-6. **Depth/priority signals** — include when questions within a session have unequal importance. Use concrete effort allocation percentages and sufficiency thresholds. Omit when all directives in a session have equal weight.
+6. **Depth/priority signals** — include when questions within a session have unequal importance. Use operative effort signals (directive ordering, minimum search allocations) and sufficiency thresholds. Omit when all directives in a session have equal weight.
 
 **Prompt construction rules:**
 
@@ -106,8 +108,10 @@ Rules are grouped by priority. Structural decisions shape the prompt architectur
 *Strategic choices (research quality):*
 - **Claim anchoring:** When the inputs contain specific claims, figures, or benchmarks (e.g., a reported ratio, a percentage from an industry source), embed them in the directive as concrete anchors to validate. This focuses the model on targeted research against a specific claim rather than open-ended exploration. Extract validatable claims from the Research Plan, Answer Specs, or operator briefing and embed at least one per directive where available.
 - **Sufficiency signals:** For each directive, include a brief threshold that tells the model when to stop digging and report what it has. Example: "If fewer than 3 independent sources exist for this topic, report what is available and characterize the evidence gap rather than continuing to search." Without these, the model cannot make good trade-offs when directives compete for attention within a session.
-- **Depth/priority signals:** When questions within a session have unequal importance, use concrete effort allocation (e.g., "Allocate approximately 60% of research effort to Directive 2") rather than only qualitative labels like "highest priority" or "lower priority." Qualitative labels alone tend to produce "do last and run out of time" rather than intentionally lighter coverage.
-- Include domain-specific keywords and technical terms as search seeds
+- **Depth/priority signals:** When questions within a session have unequal importance, effort signals must be operative, not just descriptive. Percentage allocations alone (e.g., "allocate ~60%") don't translate into search behavior — the execution tool front-loads effort on the first components it encounters and runs out of budget for later ones. Two mechanisms make effort signals operative: (1) order directives so the hardest or most important components appear first in the prompt, and (2) specify minimum dedicated searches per component (e.g., "Allocate at least 2 dedicated searches to Directive 3 regardless of results on earlier directives"). See `references/prompt-construction-guide.md` for operative allocation templates.
+- **Per-component source quality floors:** Aggregate source targets (e.g., "≥10 sources per session") let the execution tool meet the target by stacking good sources on easy components while using a single low-quality source for critical ones. Set a per-component minimum in the prompt: no component's findings may rest on fewer than 2 independent sources. If a component has only 1 source after dedicated searching, the execution tool must classify it as thin and document the gap. See `references/prompt-construction-guide.md` for embedding templates.
+- **Search seed tiering:** Seeds must match the difficulty of the question, not just the topic. Easy questions (well-documented topics, established frameworks) need broad topical seeds. Hard questions — those probing practitioner behavior, tacit knowledge, or operational detail — need narrow, high-specificity seeds targeting the source types where that evidence actually lives (practitioner surveys, GP letters, operational benchmarks). Include two tiers of seeds: broad seeds for topic coverage, and a second tier of narrow seeds explicitly labeled for the harder components. When the scope includes a geographic region, seeds must cover all constituent countries or markets, not just the most prominent ones. Use concrete source paths ("search for 'ILPA due diligence guidelines'"), not just institution names ("ILPA"). See `references/prompt-construction-guide.md` for seed tiering templates.
+- **Proxy hierarchies for known data gaps:** When the scope includes specificity constraints likely to produce data gaps (niche geography, narrow market segment, recent phenomenon), include a prioritized proxy fallback chain in the prompt. The chain tells the execution tool what approximation to use and in what order when exact-match data is unavailable, and requires it to state which proxy level was used. Without explicit fallback instructions, the execution tool either returns nothing or silently approximates without flagging the substitution. Derive proxy hierarchies from the Research Plan's scope parameters and source preferences. See `references/prompt-construction-guide.md` for proxy chain templates.
 
 *Writing craft (clarity and concision):*
 - Translate Answer Spec components into research directives — never use Answer Spec terminology ("evidence component," "completion gate") in the prompt
@@ -156,6 +160,10 @@ Produce a single markdown file with this structure:
 
 See `references/prompt-construction-guide.md` for the Post-Execution Notes template. If unavailable, include: save naming convention, cross-session review checklist (contradictions, gap coverage, scope drift), and downstream flags for Research Plan assumption changes.
 
+### Step 4: Run Self-Check
+
+Before delivering the document, verify every item in the Self-Check list below. Fix any failures before presenting to the operator. If new conflicts or ambiguities emerge during prompt construction that were not flagged in the planning summary, pause and present them to the operator before continuing.
+
 ## Failure Behavior
 
 - **Ambiguous Answer Spec component** — flag as `[AMBIGUITY]`, propose 1–2 interpretations, do not silently pick one
@@ -164,6 +172,7 @@ See `references/prompt-construction-guide.md` for the Post-Execution Notes templ
 - **Scope conflict between Research Plan and Answer Specs** — flag as `[CONFLICT]` with both versions quoted, do not silently resolve
 - **Missing source preferences** — generate defaults based on question domain, label as `[inferred]`
 - **Missing reference file** (`references/prompt-construction-guide.md`) — proceed using the inline fallback guidance provided at each reference point in this skill. Do not halt.
+- **Unknown execution tool** — if the Execution Manifest routes a session to a tool not covered by this skill's platform context, flag as `[UNSUPPORTED TOOL]`, produce a best-effort prompt using the Research GPT format, and note that the operator should review for platform compatibility.
 
 If provided information is insufficient to make a confident decision, say so. It is acceptable to leave gaps and flag them rather than invent plausible-sounding defaults. If the operator's inputs contain an error or questionable assumption, flag it constructively.
 
@@ -177,9 +186,11 @@ Before delivering, verify:
 - Every Answer Spec evidence component is translated into a research directive in at least one prompt
 - Every directive header includes the Answer Spec component ID (e.g., `Q1-A01`) for downstream traceability
 - No prompt uses Answer Spec terminology — all directives are in plain research language
+- Each prompt includes a per-component source quality floor instruction
 - Each prompt has a labeled scope block with literal parameter values
-- Each prompt includes the context pack block with `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` delimiters
+- Each prompt includes the context pack block with `--- CONTEXT PACK ---` / `--- END CONTEXT PACK ---` delimiters, and the context pack does not duplicate scope parameters from the scope block
 - Each session has specific steering notes (not generic)
+- If scope parameters include known data gap risks, a proxy fallback chain is included in the prompt
 - Site restriction guidance is included for every session (even if "Default")
 - Post-execution notes section is present
 
