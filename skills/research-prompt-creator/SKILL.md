@@ -129,8 +129,14 @@ Rules are grouped by priority. Structural decisions shape the prompt architectur
 **2c. Steering Notes** (operator guidance, not pasted into the research tool)
 - Anticipate likely thin-results areas with alternative search angles
 - Specify acceptance criteria for scarcity vs. when to push harder
-- Flag cross-session implications
+- Flag cross-session implications — but only when operationally actionable (see rule below)
 - See `references/prompt-construction-guide.md` for steering note templates. If unavailable, cover: likely thin-results areas with alternative search angles, acceptance criteria for scarcity, and cross-session implications.
+
+**Cross-session reference rule:** Every cross-session reference in a steering note must be operationally actionable within the isolated execution context. Since GPT sessions run independently with no shared context, a reference to another session's findings is meaningless to the researcher. Two valid patterns:
+1. **Dependency embedding** — the manifest declares a dependency (hard or soft), and the prompt embeds the relevant context or shared assumptions so the session can act on it independently. The steering note explains the relationship for the operator.
+2. **Silent deferral** — the relationship is real but will be reconciled in the extract or cluster phase. No cross-session reference appears in the steering note. Reconciliation happens downstream without creating unactionable expectations in the prompt.
+
+**Invalid pattern:** Advisory cross-session flags that note a relationship but defer action (e.g., "Q3's findings should be consistent with Session A's coverage gaps. Conflicts will be reconciled in the extract phase."). These create expectations that no participant can act on during execution — the researcher cannot see Session A's results, and the operator has no reconciliation mechanism at execution time. If the manifest classifies a relationship as "None," do not add a cross-session flag that contradicts that classification.
 
 ### Step 3: Assemble the Document
 

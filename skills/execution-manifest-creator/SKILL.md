@@ -68,9 +68,19 @@ Evaluate each question against these criteria to determine routing.
 
 After routing, group Research GPT questions into sessions:
 
-1. **Respect dependencies first:** If question B requires question A's findings, they must go in sequential sessions (A before B), not the same session. Map all dependencies before grouping — they are hard constraints that override clustering preferences.
+1. **Respect dependencies first:** Map all dependencies before grouping. Dependencies are hard constraints that override clustering preferences.
 2. **Target 2 questions per session.** Sessions of 1 or 3 are acceptable when dependency constraints or strong source overlap justify it. Avoid sessions larger than 3 — smaller sessions produce deeper coverage.
 3. **Optimize by source overlap** (strongest signal), then conceptual chain, then analytical lens.
+
+### Dependency Classification
+
+Classify every inter-question relationship before grouping. Each pair of questions with a relationship gets exactly one classification:
+
+- **Hard dependency:** Question B requires Question A's output as input (e.g., B synthesizes A's findings, B's scope is defined by A's results). **Handling:** Place in sequential sessions. The manifest's dependency column must show the upstream session. The downstream session cannot execute until the upstream session's extracts are available.
+- **Soft dependency:** Questions A and B analyze overlapping phenomena from different angles — consistency matters but neither requires the other's output. (e.g., both address capacity constraints, one maps the bottleneck while the other maps the role structure that creates it). **Handling:** Either (a) sequence the sessions and note that the later session benefits from the earlier session's context, or (b) embed shared analytical assumptions from the Research Plan into both prompts so they work from the same baseline. The manifest's dependency column must show "Soft: [brief description]" — never "None."
+- **None:** No analytical relationship. Questions address unrelated phenomena with no overlap in scope, actors, or mechanisms.
+
+**Classification test:** If a steering note would reference another session's findings (e.g., "should be consistent with Session A's coverage gap findings"), that is at minimum a soft dependency. If the reference would say "requires" or "depends on," it is a hard dependency. Do not classify a relationship as "None" and then add a cross-session flag in the prompt — that is a contradiction.
 
 ## CustomGPT Batching Logic
 
@@ -111,7 +121,8 @@ Before delivering, verify:
 
 - Every research question appears in exactly one route (Research GPT or CustomGPT)
 - Research GPT sessions target 2 questions each (1 or 3 acceptable with justification)
-- All dependencies between questions are reflected in session ordering
+- All dependencies between questions are reflected in session ordering — every inter-question relationship is classified as Hard, Soft, or None
+- No session's dependency column shows "None" while its steering notes or downstream prompts would reference another session's findings
 - Parallel execution opportunities are explicitly identified
 - Routing rationale is specific to each question (not generic)
 - The routing summary table matches the detailed session/queue sections

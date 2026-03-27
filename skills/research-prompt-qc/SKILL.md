@@ -75,6 +75,7 @@ Dependencies between sessions are correctly mapped and reflected.
 | Hard vs. soft classification | Dependencies are correctly classified — hard dependencies (B cannot run without A's output) vs. soft (B benefits from A but can run independently). |
 | Parallel opportunities | Sessions without dependencies are identified as parallelizable. |
 | Circular dependencies | No circular dependency chains exist. |
+| Cross-session reference audit | Scan all steering notes for references to other sessions (patterns: "Session [X]", "Q[N] from Session", "cross-session flag/dependency", "consistent with Session", "feeds into Session"). For each reference found: (1) verify it maps to a declared dependency in the manifest (hard or soft), and (2) verify the prompt includes an operational handling mechanism (dependency embedding with shared assumptions, or sequencing with context forwarding). Flag any advisory-only cross-session reference — one that notes a relationship but defers action to a downstream phase without embedding actionable context — as a **Moderate** finding: "Cross-session reference without operational dependency handling." |
 
 ### Dimension 5: Format and Operational Compliance
 
