@@ -43,12 +43,21 @@ Before proceeding:
 - For PARTIAL items, verify the specific claims approved for merging are identified
 - If mismatched: state the mismatch, request correction, do not proceed
 
+## Claim ID Invariant
+
+Every discrete factual assertion entering the extract through this skill MUST receive its own Claim ID. No exceptions for how findings are structured in the source material.
+
+When a QC-approved item contains multiple distinct assertions bundled in a single finding block (e.g., "transaction costs run 2–4%, sourcing costs consume 15–30% of fees, IRR drag is ~1pp"), decompose it into individual claims before merging. Each quantitative figure, each named-source finding, and each independently citable statement is a separate claim. If a finding block contains N distinct assertions, it produces N claims with N Claim IDs.
+
+**Test:** If a downstream writer could cite this assertion independently in report prose, it needs its own Claim ID.
+
 ## Merge Process
 
 ### Step 1: Add Supplementary Claims
 
 For each MERGE item from the QC results:
 
+- **Decompose first.** If a MERGE item contains multiple discrete assertions, split it into individual claims before proceeding. Do not merge block-level findings as a single claim.
 - Create new claims under the appropriate Answer Spec component in the Research Extract.
 - Assign Claim IDs that continue the existing sequence for that question (e.g., if the last existing claim is Q3-C08, new supplementary claims start at Q3-C09).
 - For each new claim:
