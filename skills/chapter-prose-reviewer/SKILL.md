@@ -113,6 +113,7 @@ If the spec addresses dimensions not listed here, evaluate those too. The anchor
 - **Hedging calibration:** Flag any claim presented with more confidence than the evidence seems to support, or any well-supported finding presented with unnecessary hedging that weakens it.
 - **Defensive comprehensiveness:** Every piece of evidence gets its own sentence/paragraph when some could be compressed — writer afraid to leave anything out rather than making editorial choices. All findings receive equal treatment regardless of significance.
 - **Uninterpreted evidence:** Flag individual data points or findings presented without a "so what" — the reader sees the number but not why it matters. This is about evidence-level interpretation, not argument flow. (For structural argument gaps, see §2 Missing "so what.")
+- **[CITATION NEEDED] tags:** Flag any `[CITATION NEEDED]` tag remaining in the prose. Acceptable: analytical inferences synthesizing across multiple claims without a single supporting source. Violation: any `[CITATION NEEDED]` for a claim where the source is known but the Claim ID is missing — this indicates an upstream Claim ID assignment failure. Severity: HIGH.
 
 ## Output Format
 

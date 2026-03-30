@@ -30,6 +30,7 @@ Run six structured refinement checks against cluster analytical memos. Report fi
 - At least 1 memo provided with identifiable evidence strength indicators and findings with source tags
 - If compressed briefs are absent, note that Check 3 runs at reduced confidence (memo-internal references only)
 - If a memo is missing a required section, flag which checks cannot run against that memo and proceed with remaining checks. Do not invent content for missing sections.
+- If any Key Finding tagged `[SOURCE-GROUNDED]` cannot be traced to Claim IDs from the underlying briefs, flag as incomplete traceability. Severity: non-blocking (the refiner can still run its six checks), but the flag must appear in the output for operator awareness.
 
 ## Refinement Checks
 

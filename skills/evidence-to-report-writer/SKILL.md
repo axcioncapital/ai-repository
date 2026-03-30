@@ -263,6 +263,12 @@ If supplementary items were used, include a brief appendix listing which supplem
 
 ## Constraints
 
+### Claim ID Completeness
+
+If the evidence prose contains assertions with apparent sources but missing Claim IDs, do not proceed to narrative drafting. Flag the specific claims and request upstream ID assignment (Steps 2.3, 2.S4, or 3.S3). The `[CITATION NEEDED]` tag is reserved for genuine analytical inferences — not for claims whose sources are known but whose IDs were never assigned.
+
+**Scope:** This rule applies to core evidence (Input 1). Supplementary items (Input 5) from the enrichment pipeline legitimately lack Claim IDs — they are context-tier items, not core evidence, and are handled under Supplementary Evidence Rules.
+
 ### The Orphan Sentence Test
 
 Every sentence in the output prose must trace to one or more claim IDs from the input. Before finalizing, scan for orphan sentences — sentences that read well but don't connect to any claim.
@@ -303,6 +309,7 @@ Before delivering, verify:
 - [ ] Emphasis hierarchy matches architecture + annotation cues
 - [ ] Thin evidence flagged, not padded
 - [ ] Style spec applied (provided or generated)
+- [ ] No `[CITATION NEEDED]` tags for claims with known sources — if a claim has a traceable source but no Claim ID in the input, halt and flag for upstream ID assignment (per Claim ID Invariant in quality-standards.md)
 - [ ] Supplementary tier discipline: no SUPPLEMENTARY item used to support, prove, or substantiate a core analytical claim
 - [ ] Known absences addressed: every `Status: No usable result` item reviewed; decision (acknowledged or skipped) recorded
 

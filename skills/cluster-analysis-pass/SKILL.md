@@ -32,6 +32,8 @@ If the cluster description appears mismatched with brief content (e.g., descript
 
 If inputs are incomplete, state what is missing and request it. Do not infer missing evidence.
 
+If Research Extracts: verify claims carry Claim IDs (format `Q[n]-C[##]`). If claims are present without IDs, flag as incomplete input and request correction before proceeding.
+
 If briefs use inconsistent or absent grading schemes, note the inconsistency in the Evidence Strength Map section, map to the closest equivalent where possible, and flag uncertain mappings with `[GRADE INFERRED]`.
 
 ## Memo Structure
