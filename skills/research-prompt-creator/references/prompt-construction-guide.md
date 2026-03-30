@@ -329,12 +329,15 @@ Every execution prompt includes a context pack — a compact project summary tha
 
 ### What the Context Pack Contains
 
-- Project background (client, goal, analytical lens, target market)
-- Section objective (what this section produces and why it matters)
-- Content map (research areas and their focus — NOT individual question listings)
+- Project background (client, goal, analytical lens, target market) — **universal across sessions**
+- Analytical framework (value chain, foundational concepts) — **universal across sessions**
+- Section description — **session-specific:** frame the session's investigation (which categories, hypotheses, or research areas this session covers), not the full section objective. Only mention hypotheses the session tests, prior findings the session builds on, and content map areas the session investigates.
+- Prior findings from earlier sections — **include only if session-relevant** (e.g., include the adoption gradient for technology/platform sessions, omit for sessions investigating traditional intermediaries)
 - One-line scope reference pointing to the standalone scope block (e.g., "Scope parameters are defined in the SCOPE block above") — do NOT duplicate scope values here
 
 The context pack is NOT an Answer Spec. It provides big-picture orientation only. All execution-level detail (source requirements, depth calibration, completion gates) comes from the per-question directives in the prompt.
+
+**Why session-specific filtering matters:** Execution tools have finite context windows and attention budgets. Every irrelevant hypothesis or research area in the context pack is a marginal dilution of focus on the elements that matter for the session. A context pack listing eleven hypotheses when the session tests two creates ambiguity about what the session is actually investigating and may cause the model to reference irrelevant content in its output.
 
 ### How to Embed
 
