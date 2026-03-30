@@ -325,39 +325,47 @@ Embed the proxy hierarchy in the prompt immediately after the scope block, befor
 
 ## Context Pack Embedding
 
-Every execution prompt includes a context pack — a compact project summary that provides the research executor with orientation context. The prompt creator generates this inline from the Research Plan inputs.
+Every execution prompt includes a context pack — a compact, section-level orientation block that is **identical across all sessions** in a section. The prompt creator generates this once from the Research Plan inputs and reuses it in every session prompt.
 
 ### What the Context Pack Contains
 
-- Project background (client, goal, analytical lens, target market) — **universal across sessions**
-- Analytical framework (value chain, foundational concepts) — **universal across sessions**
-- Section description — **session-specific:** frame the session's investigation (which categories, hypotheses, or research areas this session covers), not the full section objective. Only mention hypotheses the session tests, prior findings the session builds on, and content map areas the session investigates.
-- Prior findings from earlier sections — **include only if session-relevant** (e.g., include the adoption gradient for technology/platform sessions, omit for sessions investigating traditional intermediaries)
-- One-line scope reference pointing to the standalone scope block (e.g., "Scope parameters are defined in the SCOPE block above") — do NOT duplicate scope values here
+Four lines only:
+
+1. Project background (client, goal, analytical lens, target market)
+2. One-line section objective (what the section maps — not what individual sessions investigate)
+3. Analytical framework (value chain, foundational concepts)
+4. One-line scope reference pointing to the standalone scope block (e.g., "Scope parameters are defined in the SCOPE block above") — do NOT duplicate scope values here
 
 The context pack is NOT an Answer Spec. It provides big-picture orientation only. All execution-level detail (source requirements, depth calibration, completion gates) comes from the per-question directives in the prompt.
 
-**Why session-specific filtering matters:** Execution tools have finite context windows and attention budgets. Every irrelevant hypothesis or research area in the context pack is a marginal dilution of focus on the elements that matter for the session. A context pack listing eleven hypotheses when the session tests two creates ambiguity about what the session is actually investigating and may cause the model to reference irrelevant content in its output.
+### Where Session-Specific Context Goes
+
+Hypotheses, prior findings from other sections, content map areas, and category framing belong in the **session intro paragraph** — the free text between the context pack closing marker and the first research directive. The session intro is naturally session-specific because the prompt creator writes it per session. This separation prevents attention dilution: every item in the context pack is relevant to every session, and session-specific anchors appear only where they're needed.
 
 ### How to Embed
 
-Place the context pack inside the code-fenced execution prompt, after the scope block and before the first research directive:
+Place the context pack inside the code-fenced execution prompt, after the scope block. Follow it with the session intro paragraph, then the first research directive:
 
 ```
 [Scope block]
 
 --- CONTEXT PACK ---
-[Full content of the context pack file]
+[Universal orientation — identical across sessions]
 --- END CONTEXT PACK ---
+
+[Session intro paragraph — session-specific framing, hypotheses, prior findings]
 
 [Research directives begin here]
 ```
 
-### What NOT to Include
+### What NOT to Include in the Context Pack
 
-- Do not list all research questions from the research plan
-- Do not reproduce Answer Spec content (source rules, evidence components)
-- Do not add execution instructions — those belong in the directives
+- Hypotheses (belong in session intro for sessions that test them)
+- Prior findings from other sections (belong in session intro where relevant)
+- Content map areas or category descriptions (belong in session intro)
+- Research questions from the research plan
+- Answer Spec content (source rules, evidence components)
+- Execution instructions (belong in the directives)
 
 ## Post-Execution Notes Template
 
