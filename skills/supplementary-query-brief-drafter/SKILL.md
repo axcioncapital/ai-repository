@@ -59,11 +59,13 @@ For each group, work through this analysis (this becomes Section A of the output
 
 - State which components (Question ID + component name) the group covers and the coverage verdict (THIN or MISSING) from the Research Extract.
 - Review the existing claims in the Research Extracts for these components. List the source types already represented (e.g., "US-focused academic surveys, practitioner training sites, industry reports from Bain/McKinsey").
-- Identify source types that are plausible for this topic but absent from existing evidence. These become the targeting basis.
+- **Construct an Already Searched inventory.** This covers sources and search angles that were already tried, whether they produced usable evidence or not. Derive from: (a) sources cited in existing extract claims (these were found), (b) sources listed in the extract's Gaps section or noted as "searched but not found" (these were tried and returned nothing), (c) structural scarcity notes in the extract (these document topics where evidence likely doesn't exist). Name specific source types, institutions, and search angles — not vague categories like "academic sources" but "Bain Global PE Report, SPS benchmark data, Chemmanur 2014." Include this inventory in Section A under the heading **"Already Searched (found + empty)"** for each group.
+- Identify source types that are plausible for this topic but absent from both existing evidence AND the Already Searched inventory. These become the targeting basis. A source type that was searched and returned nothing should not be re-targeted unless you can articulate a specific reason why a different query angle would reach different results from the same source type.
 - Draft 3–5 Perplexity queries ranked by expected yield. Each query must be:
   - **Single-intent** — one clear question per query. If you find yourself using "and" or "additionally" to connect distinct questions, split them. A query like "What frameworks exist for X, and what academic research supports Y?" is two queries. Perplexity latches onto the easiest sub-question and gives shallow coverage on the rest.
   - Self-contained (Perplexity has no cross-query memory and no knowledge of prior research)
   - Non-overlapping with other queries in the group. After drafting, check for **source overlap** across groups: if two queries target the same institutions, databases, or publication types, flag the second as **contingent** — execute only if the first doesn't return that source type. Mark contingent queries in both Section A and Section B.
+  - **Excludes already-searched angles.** Each query must not re-target source types, institutions, or search angles listed in the Already Searched inventory unless the query explicitly uses a different entry point (e.g., searching for a specific report by name rather than by topic, or targeting a secondary publication that cites the primary source). If a query's success depends on a source type that was already searched and returned nothing, either reframe it to target a genuinely different source type or flag it as low-probability with a note explaining why this angle might work despite prior failure.
   - Written as the literal text to paste into Perplexity — include source targeting directly in the query wording
   - **Context prefix must match the target source universe.** If the group targets practitioner content (blogs, podcasts, LinkedIn commentary, conference talks), frame the query accordingly — do not default to "professional advisory report" framing, which biases Perplexity toward formal publications. Match the register to what you're looking for: informal framing for informal sources, academic framing for academic sources.
 - Per query, note:
@@ -92,8 +94,9 @@ For each group:
 - Group name and source universe
 - Components covered (IDs + verdicts)
 - Existing source types in evidence
-- Target source types (absent but plausible)
-- Per-query: success signal, minimum yield threshold, component mapping, and contingency flags
+- **Already Searched (found + empty)** — sources and angles already tried, including those that returned nothing useful
+- Target source types (absent from both evidence AND the Already Searched inventory)
+- Per-query: success signal, minimum yield threshold, component mapping, contingency flags, **and exclusion list** (specific sources/angles this query must avoid because they were already tried)
 
 ---
 
@@ -170,7 +173,8 @@ Components classified as **confirmed scarcity** exit here. List them under **ROU
 For remaining groups (this becomes Section A of the output):
 
 - Maintain or re-group based on shared source universe (groups may have changed if some components closed in pass 1).
-- Review existing source types now in evidence (original Deep Research sources + pass 1 supplementary sources). Identify source types that are plausible for this topic but still absent from evidence. These become the targeting basis.
+- **Update the Already Searched inventory** to include pass 1 queries and their outcomes — both sources found and sources that returned nothing useful. The pass 1 Query Brief and raw Perplexity output are the inputs for this update. The inventory now covers: (a) sources from original Research Execution GPT sessions, (b) sources from pass 1 supplementary queries (both found and empty), (c) structural scarcity notes. Include this updated inventory in Section A under **"Already Searched (found + empty)"** for each group.
+- Review existing source types now in evidence (original Deep Research sources + pass 1 supplementary sources). Identify source types that are plausible for this topic but absent from both evidence AND the updated Already Searched inventory. These become the targeting basis. Do not re-target source types that pass 1 already tried and that returned nothing, unless you can articulate a specific reason why a different query angle would reach different results.
 - Draft 3–5 Perplexity queries per group ranked by expected yield. Each query must be:
   - **Single-intent** — one clear question per query. Do not bundle sub-questions. This is even more important in pass 2 where precision matters — broad queries already failed in pass 1.
   - Self-contained (Perplexity has no cross-query memory and no knowledge of prior research)

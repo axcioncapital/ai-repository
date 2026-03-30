@@ -32,7 +32,7 @@ Three items, provided together:
 
 1. **Raw Perplexity output** — for all queries in this pass, organized by query number
 2. **Research Extracts** — for all affected questions (needed for redundancy checking and gap context)
-3. **Query Brief Section A** — for this pass (needed for success signals and component mapping)
+3. **Query Brief Section A** — for this pass (needed for success signals, component mapping, and the Already Searched inventory used in Check 3)
 
 ### Input Validation
 
@@ -70,7 +70,8 @@ Is the source credible enough to merit inclusion?
 Is this genuinely new evidence?
 
 - Compare the result's key claims against the existing claims in the Research Extract for the targeted component.
-- Redundant if: same factual assertion, same primary data source (even if accessed via a different URL or secondary publication), or same finding restated with different wording.
+- **Also compare against the Query Brief's Already Searched inventory** (in Section A, if present). A result that returns a source type listed as "searched but returned nothing useful" is not automatically redundant — but if the result returns the *same* source previously searched and still provides nothing beyond what was already known, flag it as a wasted retrieval.
+- Redundant if: same factual assertion, same primary data source (even if accessed via a different URL or secondary publication), same finding restated with different wording, **or same source type that was already searched and returned nothing useful — unless the result provides materially different content from that source type than what prior searches returned.**
 - Not redundant if: same topic but different data, different time period, different geography, different methodological approach, or an independent source arriving at the same conclusion (this adds independence, which has value).
 
 ## Verdict Logic
