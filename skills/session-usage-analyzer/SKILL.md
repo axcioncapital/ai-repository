@@ -3,8 +3,8 @@ name: session-usage-analyzer
 description: >
   Analyzes a Claude Code session summary for token efficiency and produces a
   structured log entry for the project's usage/usage-log.md. Invoked as a
-  subagent by the calling session's wrap-up routine — receives a structured
-  session summary and existing log contents, returns ONLY a formatted log entry.
+  subagent by the /usage-analysis command — receives a structured session
+  summary and existing log contents, returns ONLY a formatted log entry.
   Do NOT invoke interactively or use for mid-session optimization. This is a
   post-session review tool.
 ---
@@ -67,7 +67,7 @@ When the usage log contains previous entries, briefly note whether this session'
 Return exactly this template, filled in. No deviations.
 
 ```markdown
-### {YYYY-MM-DD} — {HH:MM} | {Rating}
+### {YYYY-MM-DD} | {Rating}
 
 **Task:** {1-2 sentence summary}
 
@@ -84,58 +84,11 @@ Return exactly this template, filled in. No deviations.
 {Bulleted list of observed waste patterns using the recommendation templates above. Include category name and severity in parentheses. If no findings: "None — session was efficient."}
 
 **Recommendation:** {Single most impactful recommendation from findings. If Efficient: "No action needed."}
-
----
 ```
-
-## Calling Agent Protocol
-
-These instructions are for the main session agent that orchestrates the analysis. The subagent does not execute these steps.
-
-### Building the Session Summary
-
-1. Scan the full conversation history
-2. For each field in the Session Summary Schema, extract the data
-3. For files read: check whether the same file was read multiple times and whether edits occurred between reads
-4. For rework: identify cases where you produced output that was subsequently rejected or required correction
-5. Structure the summary as a labeled list matching the schema fields
-
-### Invoking the Subagent
-
-1. Read `usage/usage-log.md` from the project directory. If it does not exist, use the string `NEW LOG`
-2. Read this skill file
-3. Launch a subagent, passing: this skill's content, the session summary, and the log contents
-4. Instruct the subagent: "Follow the skill instructions to produce a single new log entry. Return ONLY the log entry markdown."
-
-### Writing the Entry
-
-1. If `NEW LOG`: create `usage/usage-log.md` with the standard header (below), then append the entry after the header separator
-2. If existing log: insert the new entry directly below the `---` separator that follows the file header (above all existing entries)
-3. Confirm to the operator: "Usage analysis added to usage/usage-log.md" and print the entry
-
-### Log File Header
-
-Use this header when creating a new log file:
-
-```markdown
-# Usage Log
-
-Token efficiency tracking. Each entry records one session's resource usage and waste patterns.
-
-**Ratings:** Efficient | Acceptable | Wasteful
-
----
-```
-
-### Checking Entry Count
-
-After writing, count the `###` headings in the log (excluding TREND entries). If >25, trigger the maintenance routine.
 
 ## Maintenance Routine
 
-When the log exceeds 25 session entries, the calling agent re-invokes the subagent with the full log contents and the flag `MAINTENANCE: true`.
-
-The subagent then:
+When the calling agent passes `MAINTENANCE: true` (triggered when the log has >25 session entries):
 
 1. Identify the oldest 15 non-TREND entries (by date)
 2. Produce a **Trend Summary** entry:
@@ -152,18 +105,20 @@ The subagent then:
 **Dominant pattern:** {most common waste category across the 15 entries}
 **Trend direction:** {Improving / Stable / Worsening} — {1 sentence evidence}
 **Top recommendation:** {the single recommendation that appeared most frequently}
-
----
 ```
 
 3. Return two blocks:
-   - The trend summary entry (to insert at the top of the log after the header)
-   - A list of the 15 date-stamps to archive
+   - The trend summary entry (to insert at the top of the log after the marker)
+   - The full text of the 15 archived entries (the calling agent appends these to `usage/archive.md`)
 
 The calling agent then:
-- Inserts the trend summary below the header separator
-- Moves the 15 archived entries to `usage/archive/{YYYY-MM}.md` (grouped by month)
-- Creates the archive directory if it does not exist
+- Inserts the trend summary below the `<!-- entries below -->` marker
+- Appends the 15 entries to `usage/archive.md` (creates if needed, with header `# Usage Log — Archive`)
+- Removes the 15 entries from the main log
+
+## Known Limitations
+
+- **Self-evaluation bias.** The calling agent builds its own session summary. It may undercount re-reads, miss context bloat, or underreport rework. This is inherent — only the session knows what happened. Treat findings as a lower bound, not a precise measurement.
 
 ## Guardrails
 
