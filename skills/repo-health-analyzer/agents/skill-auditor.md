@@ -76,7 +76,7 @@ Dead internal reference = **Important**.
 
 ## Output
 
-Write your findings as JSON to: `{root}/reports/.audit-temp/skill-findings.json`
+Write your findings as JSON to: `{TARGET}/reports/.audit-temp/skill-findings.json`
 
 ```json
 {

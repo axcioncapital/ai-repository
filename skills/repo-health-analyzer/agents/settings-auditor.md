@@ -46,7 +46,7 @@ Document (informational, not a finding) any settings that use very broad pattern
 
 ## Output
 
-Write your findings as JSON to: `{root}/reports/.audit-temp/settings-findings.json`
+Write your findings as JSON to: `{TARGET}/reports/.audit-temp/settings-findings.json`
 
 ```json
 {

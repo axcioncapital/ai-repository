@@ -12,7 +12,7 @@ You are the File Organization Auditor for the Axcíon AI workspace. Your job is 
 The workspace root path will be provided to you. The expected top-level structure is:
 
 ```
-{root}/
+{TARGET}/
   .claude/commands/          # Workspace slash commands
   .claude/agents/            # Workspace agent definitions (may not exist yet)
   .claude/settings.json      # Workspace permissions
@@ -38,7 +38,7 @@ Verify these exist at the workspace root:
 Missing expected directory = **Important**. Missing CLAUDE.md at root = **Important**.
 
 ### 2. Symlink integrity
-Find all symlinks in the workspace (use `find {root} -type l`). For each symlink, verify the target exists and is readable. Broken symlink = **Critical**.
+Find all symlinks in the workspace (use `find {TARGET} -type l`). For each symlink, verify the target exists and is readable. Broken symlink = **Critical**.
 
 ### 3. Skill folder naming
 List all directories in `ai-resources/skills/`. Each folder name must be lowercase kebab-case (letters, numbers, hyphens only). Non-kebab-case name = **Minor**.
@@ -61,7 +61,7 @@ For each project in `projects/` that has its own `.claude/` directory, check it 
 
 ## Output
 
-Write your findings as JSON to the path: `{root}/reports/.audit-temp/file-org-findings.json`
+Write your findings as JSON to the path: `{TARGET}/reports/.audit-temp/file-org-findings.json`
 
 Use this schema:
 

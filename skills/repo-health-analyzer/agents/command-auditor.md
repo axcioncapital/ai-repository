@@ -63,7 +63,7 @@ Check for command files with the same filename across different `.claude/command
 
 ## Output
 
-Write your findings as JSON to: `{root}/reports/.audit-temp/command-findings.json`
+Write your findings as JSON to: `{TARGET}/reports/.audit-temp/command-findings.json`
 
 ```json
 {

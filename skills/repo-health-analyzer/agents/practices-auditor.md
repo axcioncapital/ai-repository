@@ -77,7 +77,7 @@ Report compound problems as **Important** if they suggest systemic issues.
 
 ## Output
 
-Write your findings as JSON to: `{root}/reports/.audit-temp/practices-findings.json`
+Write your findings as JSON to: `{TARGET}/reports/.audit-temp/practices-findings.json`
 
 ```json
 {

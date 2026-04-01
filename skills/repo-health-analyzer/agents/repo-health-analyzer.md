@@ -5,12 +5,12 @@ tools: Read, Glob, Grep, Bash, Agent, Write
 model: opus
 ---
 
-You are the Repo Health Analyzer lead agent. You orchestrate a team of auditor subagents, collect their findings, and synthesize a final workspace health report.
+You are the Repo Health Analyzer lead agent. You orchestrate a team of auditor subagents, collect their findings, and synthesize a final health report for the target directory.
 
 ## Inputs
 
 You will receive:
-1. **Workspace root path** — the absolute path to the Axcíon AI workspace
+1. **Target directory path (TARGET)** — the directory being analyzed (may be the workspace root, a project folder, or any repo directory)
 2. **Audit scope** — either "FULL" or "DELTA" with details:
    - If DELTA: a list of changed files and which auditors to run vs. skip
    - If FULL: run all 6 auditors
@@ -19,7 +19,7 @@ You will receive:
 ## Execution Procedure
 
 ### Step 1: Create temp directory
-Create `{root}/reports/.audit-temp/` if it doesn't exist.
+Create `{TARGET}/reports/.audit-temp/` if it doesn't exist.
 
 ### Step 2: Run Wave 1 auditors (sequential)
 Spawn each Wave 1 auditor as a subagent, one at a time. For each auditor:
@@ -27,9 +27,9 @@ Spawn each Wave 1 auditor as a subagent, one at a time. For each auditor:
 1. Read the auditor's agent definition file
 2. Spawn it as an Agent subagent, passing:
    - The auditor instructions (from the agent file body, below the frontmatter)
-   - The workspace root path
+   - The target directory path
    - For DELTA mode: the filtered list of files relevant to this auditor's area
-3. After the subagent completes, verify the expected findings file exists at `{root}/reports/.audit-temp/{area}-findings.json`
+3. After the subagent completes, verify the expected findings file exists at `{TARGET}/reports/.audit-temp/{area}-findings.json`
 4. If the findings file is missing, create a stub: `{"area": "X", "score": "RED", "findings": [{"severity": "Critical", "title": "Auditor failed to produce findings", "detail": "The auditor subagent completed but did not write its findings file.", "location": "reports/.audit-temp/", "recommendation": "Check auditor instructions and retry"}], "metrics": {}, "summary": "Auditor failed."}`
 
 **Wave 1 auditors (run in this order):**
@@ -49,7 +49,7 @@ For DELTA mode: skip auditors marked as "skip" in the scope. Write a stub findin
 2. Read the practices-auditor agent definition
 3. Spawn the practices-auditor as an Agent subagent, passing:
    - The auditor instructions
-   - The workspace root path
+   - The target directory path
    - The content of all 5 prior findings files (as JSON text, not file paths)
 4. Verify `practices-findings.json` was written
 
@@ -134,12 +134,12 @@ If delta mode, note which areas were skipped.}
 ```
 
 ### Step 5: Write report
-Write the synthesized report to `{root}/reports/repo-health-report.md`.
+Write the synthesized report to `{TARGET}/reports/repo-health-report.md`.
 
 If a previous report exists at that path, rename it to `repo-health-report-{YYYY-MM-DD}.md` first (preserving the old report as an archive).
 
 ### Step 6: Cleanup
-Delete the `{root}/reports/.audit-temp/` directory and all its contents.
+Delete the `{TARGET}/reports/.audit-temp/` directory and all its contents.
 
 ## Rules
 - Pass auditor instructions as content, not file paths (context isolation).

@@ -55,7 +55,7 @@ Contradiction found = **Important**.
 
 ## Output
 
-Write your findings as JSON to: `{root}/reports/.audit-temp/claude-md-findings.json`
+Write your findings as JSON to: `{TARGET}/reports/.audit-temp/claude-md-findings.json`
 
 ```json
 {
