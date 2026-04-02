@@ -13,11 +13,11 @@ You are executing Stage 1 of the /new-project pipeline.
 
 ## Scope Validation (Do This First)
 
-Before running the context-pack-builder workflow, check whether the project idea describes **Claude Code infrastructure work** — skills, workflows, slash commands, subagent definitions, CLAUDE.md configuration, or other AI resource development.
+Before running the context-pack-builder workflow, check whether the project idea describes **work that will be built or run through Claude Code** — this includes AI resource development (skills, workflows, agents), research projects, workspace configuration, or any other Axcíon project where Claude Code is the execution environment.
 
-If the project idea is clearly out of scope (e.g., client research, website development, document creation), stop and report:
+If the project idea clearly has no connection to Claude Code (e.g., a purely manual process, a project for a different tool with no Claude Code involvement), stop and report:
 
-> "This project doesn't fit the /new-project pipeline. This pipeline builds Claude Code infrastructure (skills, workflows, commands, configurations). For [type of project], consider [alternative]."
+> "This project doesn't fit the /new-project pipeline. This pipeline is for projects that will be built or run through Claude Code. For [type of project], consider [alternative]."
 
 If the project is ambiguous, ask the user to clarify before proceeding.
 
