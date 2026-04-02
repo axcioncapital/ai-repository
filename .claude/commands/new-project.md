@@ -1,6 +1,6 @@
 # /new-project — Project Pipeline Orchestrator
 
-You are the orchestrator for Axcíon's project pipeline. This pipeline takes a raw project idea and produces a fully configured Claude Code setup through a series of staged gates.
+You are the orchestrator for Axcíon's project pipeline. This pipeline takes a user-provided context pack and produces a fully configured Claude Code setup through a series of staged gates.
 
 ## Scope Validation
 
@@ -9,6 +9,14 @@ This pipeline is for **any Axcíon project that requires Claude Code** — wheth
 **CWD guard:** Check if the current working directory is the `ai-resources` repo (look for `skills/` directory and the ai-resources `CLAUDE.md` with "Axcion AI Resource Repository"). If so, stop and tell the user:
 
 > "This command should be run from a project repo, not from ai-resources. Open your target project repo and connect ai-resources via `--add-dir`, then run `/new-project` from there."
+
+## Context Pack Requirement
+
+The user must provide a context pack before the pipeline can start. The context pack can be:
+- A file path to an existing context pack (e.g., `context-pack.md`)
+- Pasted directly into the conversation
+
+**If no context pack is provided, stop and ask for one.** Do not proceed without it.
 
 ## First Run vs. Continuation
 
@@ -24,7 +32,9 @@ This pipeline is for **any Axcíon project that requires Claude Code** — wheth
 
 2. **Create the project directory** at `projects/{project-name}/`.
 
-3. **Create `projects/{project-name}/decisions.md`** with this template:
+3. **Copy the user's context pack** to `projects/{project-name}/context-pack.md`.
+
+4. **Create `projects/{project-name}/decisions.md`** with this template:
 
 ```markdown
 # Decisions — {project-name}
@@ -33,15 +43,14 @@ This pipeline is for **any Axcíon project that requires Claude Code** — wheth
 |---|-------|----------|-----------|------------|
 ```
 
-4. **Create `projects/{project-name}/pipeline-state.md`** to track pipeline progress:
+5. **Create `projects/{project-name}/pipeline-state.md`** to track pipeline progress:
 
 ```markdown
 # Pipeline State — {project-name}
 
 | Stage | Status | Artifact |
 |-------|--------|----------|
-| 1 — Context Pack | in_progress | — |
-| 2 — Project Plan | pending | — |
+| 2 — Project Plan | in_progress | — |
 | 2.5 — Technical Spec | pending | — |
 | 3a — Repo Snapshot | pending | — |
 | 3b — Architecture Design | pending | — |
@@ -50,9 +59,9 @@ This pipeline is for **any Axcíon project that requires Claude Code** — wheth
 | 5 — Testing | pending | — |
 ```
 
-5. **Tell the user** what was created and that Stage 1 is starting.
+6. **Tell the user** what was created and that Stage 2 is starting.
 
-6. **Spawn the Stage 1 subagent** (`pipeline-stage-1`) with the user's raw project idea as input. Include in the spawn prompt: "Project directory: projects/{project-name}/"
+7. **Spawn the Stage 2 subagent** (`pipeline-stage-2`) with the context pack as input. Include in the spawn prompt: "Project directory: projects/{project-name}/"
 
 ### Continuation
 
@@ -68,7 +77,7 @@ After each stage subagent completes:
 1. Update `pipeline-state.md`: set the current stage to `completed` and record the artifact path.
 2. Wait for the user's command:
    - **`NEXT`** → Set the next stage to `in_progress` in `pipeline-state.md`. Spawn the next stage subagent.
-   - **`SKIP`** → Valid after Stage 2 (skips Stage 2.5 — marks it `skipped` in `pipeline-state.md`, sets Stage 3a to `in_progress`). Not valid at other stages.
+   - **`SKIP`** → Valid after Stage 2 (skips Stage 2.5 — marks it `skipped` in `pipeline-state.md`, sets Stage 3a to `in_progress`). Not valid at other stages. Stage 2's complexity assessment informs whether skipping 2.5 is advisable.
    - **`ABORT`** → Mark all remaining `pending` stages as `cancelled` in `pipeline-state.md`. Announce abort. Do not delete project artifacts.
 
 ## Error Handling
