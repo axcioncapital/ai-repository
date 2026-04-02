@@ -5,9 +5,11 @@ description: >
   technical spec, and repo snapshot, then produces an architecture document defining what
   components to build, how they integrate with existing infrastructure, and key design decisions.
   Use when the /new-project pipeline advances to Stage 3b, or when the user says "design the
-  architecture," "architect this," or provides project plans expecting a Claude Code architecture
+  architecture," "architect this," "what components do I need," "how should this be structured
+  in Claude Code," or provides a project plan expecting a component breakdown and integration
   design. Do NOT use for writing implementation specs (file-level instructions — that's
-  implementation-spec-writer) or for general project planning (use implementation-project-planner).
+  implementation-spec-writer), for general project planning (use implementation-project-planner),
+  or for writing technical specifications (use spec-writer).
 ---
 
 # Architecture Designer
@@ -29,7 +31,7 @@ description: >
 - Write technical specifications (that's spec-writer)
 - Execute builds (that's project-implementer)
 
-**Key distinction:** Architecture design is the "what and why" — which components exist, how they relate, why they're shaped this way. Implementation spec is the "how exactly" — file paths, content, configuration values.
+**Key distinction:** Architecture design is the "what and why" — which components exist, how they relate, why they're shaped this way. Implementation spec is the "how exactly" — file paths, content, configuration values. For example, this skill decides "we need a new validation agent that loads the evaluator skill and runs as a subagent" — the implementation spec then defines the exact agent file content, YAML frontmatter, and settings.json entries.
 
 ---
 
@@ -43,6 +45,10 @@ Optional input:
 - **Technical spec** (`technical-spec.md` from Stage 2.5) — present for complex projects, absent for simple ones
 
 If the technical spec exists, it is the primary design reference. If absent, the project plan provides the design context.
+
+**Incomplete inputs:** If the project plan or repo snapshot exists but lacks sufficient detail to make architecture decisions, ask the user for the minimum information needed: what's being built and what already exists. Do not attempt architecture design without understanding both the target and the current state.
+
+**Contradictory inputs:** If the project plan references components or capabilities not present in the repo snapshot, or if requirements within the project plan contradict each other, flag the discrepancy to the user before designing around assumptions. Surface both interpretations and ask the user to resolve.
 
 ---
 
@@ -85,6 +91,12 @@ How new components connect to existing ones:
 
 Present this as a structured description or table. The goal is that someone reading the integration map understands the full wiring without looking at individual component details.
 
+**Example integration map entry:**
+
+> `/run-analysis` (slash command) → spawns `analysis-runner` (agent, opus) → loads `data-validator` skill + `report-formatter` skill → writes `analysis-report.md` to project directory → consumed by `report-reviewer` agent in the next pipeline stage.
+>
+> Shared references: both `analysis-runner` and `report-reviewer` read `CLAUDE.md` for project-level conventions. `data-validator` reads `references/schema.json` for field definitions.
+
 ### 5. Conflict Analysis
 
 Check for and report:
@@ -93,8 +105,9 @@ Check for and report:
 - **CLAUDE.md bloat** — whether the additions push cognitive load beyond the lean threshold
 - **Permission conflicts** — settings.json entries that could interfere with existing permissions
 - **Context window pressure** — skills that might be too large for comfortable subagent operation
+- **Agent budget** — whether the total number of agents and their model assignments (opus vs. sonnet) create practical cost or latency concerns for the project's scale
 
-For each conflict found: describe the conflict, assess severity, propose resolution.
+For each conflict found: describe the conflict, assess severity, propose resolution. If a conflict has no clean resolution, document it as an unresolved risk with your best-available mitigation and flag it prominently in Step 7.
 
 ### 6. Design Decision Log
 
@@ -104,7 +117,13 @@ For each significant design choice:
 |---|----------|------------------------|-----------|------------|
 | 1 | ... | ... | ... | ... |
 
-Focus on decisions where reasonable alternatives existed. Don't log obvious choices.
+Focus on decisions where reasonable alternatives existed. Don't log obvious choices — a choice is "obvious" if a competent designer would reach the same conclusion without weighing alternatives.
+
+**Example decision log entry:**
+
+| # | Decision | Alternatives Considered | Rationale | Trade-offs |
+|---|----------|------------------------|-----------|------------|
+| 1 | Separate validation into its own agent rather than embedding in the main pipeline agent | (a) Validation as a step within the pipeline agent, (b) Validation as a skill loaded by the pipeline agent | Validation needs fresh context to avoid self-evaluation bias (per QC Independence Rule). A separate agent enforces this structurally. Option (b) loads the skill in the same context, defeating the purpose. | Adds one more agent to manage; slightly slower due to agent spawn overhead. |
 
 ---
 
@@ -125,6 +144,8 @@ For each requirement or deliverable in the project plan:
 - Does it need its own component or can it be part of something else?
 
 Apply the principle of minimal new components — don't create a new skill when an existing one can be extended. But don't force unrelated concerns into a single component either.
+
+If a requirement doesn't map naturally to any Claude Code component type (skill, agent, command, @import, CLAUDE.md section), flag it to the user rather than forcing it into an ill-fitting category. Some requirements may need external tools, manual steps, or capabilities outside Claude Code's scope.
 
 ### Step 3: Design Integration
 
@@ -149,9 +170,13 @@ For every non-obvious choice made in Steps 2–4, record:
 - What alternatives were considered
 - Why this option was chosen
 
+When you cannot confidently choose between alternatives based on available inputs, mark the decision as **open** in the Design Decision Log with a clear description of what information would resolve it. Present open decisions prominently to the user in Step 7. Do not silently commit to a choice you're uncertain about — architecture is the cheapest place to surface ambiguity.
+
+Note: The orchestrating agent may maintain a `decisions.md` file for the project. Architecture decisions recorded here should be consistent with that log, but the architecture document's Design Decision Log is self-contained — readers should not need to cross-reference `decisions.md` to understand the architecture.
+
 ### Step 6: Draft the Architecture Document
 
-Produce the full document following the structure above.
+Produce the full document following the structure above. The output artifact is typically saved as `architecture.md` in the project directory, though the orchestrating agent or user controls the exact path.
 
 ### Step 7: Review with User
 
@@ -175,6 +200,8 @@ When making architecture decisions, apply these principles in order of priority:
 3. **Lean over comprehensive** — fewer, well-designed components beat many thin ones
 4. **Explicit over implicit** — all connections and dependencies are documented, not assumed
 5. **Consistent over optimal** — follow existing repo patterns even if a "better" pattern exists, unless the existing pattern is actively harmful
+
+When Reuse (1) and Isolation (2) conflict — e.g., extending an existing component would increase coupling — prefer the option that keeps each component independently understandable and testable.
 
 ---
 
