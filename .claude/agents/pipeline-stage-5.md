@@ -38,4 +38,4 @@ Save the test report to: `{project-directory}/test-results.md`
 
 When testing is complete, announce:
 
-> "Stage 5 complete. Test results saved to {path}. {passed} passed, {failed} failed, {warnings} warnings. [If all pass:] The pipeline is complete — all checks passed. [If failures:] Review the failures above and decide how to handle each one."
+> "Stage 5 complete. Test results saved to {path}. {passed} passed, {failed} failed, {warnings} warnings. [If all pass:] All checks passed. Say NEXT to advance to Stage 6 (Session Guide) or SKIP to finish the pipeline. [If failures:] Review the failures above and decide how to handle each one before advancing."

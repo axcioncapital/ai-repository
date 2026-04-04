@@ -57,6 +57,7 @@ The user must provide a context pack before the pipeline can start. The context 
 | 3c — Implementation Spec | pending | — |
 | 4 — Implementation | pending | — |
 | 5 — Testing | pending | — |
+| 6 — Session Guide | pending | — |
 ```
 
 6. **Tell the user** what was created and that Stage 2 is starting.
@@ -70,6 +71,8 @@ The user must provide a context pack before the pipeline can start. The context 
 3. Announce: "Resuming pipeline at [stage name]. Last completed: [previous stage]."
 4. Spawn the corresponding stage subagent. Include in the spawn prompt: "Project directory: projects/{project-name}/"
 
+**Agent name mapping:** Stages 2–5 use the `pipeline-stage-{N}` naming convention. Stage 6 (Session Guide) uses the `session-guide-generator` agent instead.
+
 ## Gate Protocol
 
 After each stage subagent completes:
@@ -77,8 +80,16 @@ After each stage subagent completes:
 1. Update `pipeline-state.md`: set the current stage to `completed` and record the artifact path.
 2. Wait for the user's command:
    - **`NEXT`** → Set the next stage to `in_progress` in `pipeline-state.md`. Spawn the next stage subagent.
-   - **`SKIP`** → Valid after Stage 2 (skips Stage 2.5 — marks it `skipped` in `pipeline-state.md`, sets Stage 3a to `in_progress`). Not valid at other stages. Stage 2's complexity assessment informs whether skipping 2.5 is advisable.
+   - **`SKIP`** → Valid after Stage 2 (skips Stage 2.5 — marks it `skipped` in `pipeline-state.md`, sets Stage 3a to `in_progress`) and after Stage 5 (skips Stage 6 — marks it `skipped`, announces pipeline complete). Not valid at other stages. Stage 2's complexity assessment informs whether skipping 2.5 is advisable.
    - **`ABORT`** → Mark all remaining `pending` stages as `cancelled` in `pipeline-state.md`. Announce abort. Do not delete project artifacts.
+
+## Post-Stage 5 Behavior
+
+After Stage 5 completes successfully, announce:
+
+> "Pipeline core stages complete. Say NEXT to generate a Session Guide (Stage 6 — a step-by-step execution playbook for running this project), SKIP to finish the pipeline without one, or ABORT to cancel."
+
+If the user says NEXT, spawn the `session-guide-generator` agent. If SKIP, mark Stage 6 as `skipped` and announce the pipeline is complete. After Stage 6 completes (or is skipped), announce: "Pipeline complete. All artifacts saved to projects/{project-name}/."
 
 ## Error Handling
 
