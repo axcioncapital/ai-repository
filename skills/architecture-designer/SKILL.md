@@ -41,8 +41,9 @@ Required inputs:
 - **Project plan** (`project-plan.md` from Stage 2)
 - **Repo snapshot** (`repo-snapshot.md` from Stage 3a)
 
-Optional input:
+Optional inputs:
 - **Technical spec** (`technical-spec.md` from Stage 2.5) — present for complex projects, absent for simple ones
+- **Project baseline template** (`templates/project-baseline/manifest.md` in ai-resources) — read this when designing a new project setup to understand what baseline components and optional modules are available before designing custom components
 
 If the technical spec exists, it is the primary design reference. If absent, the project plan provides the design context.
 
@@ -138,7 +139,13 @@ Read the project plan, technical spec (if present), and repo snapshot. Build a m
 
 ### Step 2: Map Requirements to Components
 
-For each requirement or deliverable in the project plan:
+If the project baseline template manifest is available, start here:
+- Which baseline components apply to this project? (Most do — they're universal.)
+- Which optional modules should be included? Read each module's README.md for "when to include" guidance.
+- Record module selections as design decisions in the Design Decision Log.
+- Only after establishing the baseline + modules, identify what custom components are still needed.
+
+For each remaining requirement or deliverable in the project plan:
 - What Claude Code component type best serves it?
 - Can an existing component be reused or extended?
 - Does it need its own component or can it be part of something else?
@@ -195,13 +202,14 @@ Incorporate feedback and finalize.
 
 When making architecture decisions, apply these principles in order of priority:
 
-1. **Reuse over creation** — extend an existing component before creating a new one
-2. **Isolation over coupling** — components should be independently understandable and testable
-3. **Lean over comprehensive** — fewer, well-designed components beat many thin ones
-4. **Explicit over implicit** — all connections and dependencies are documented, not assumed
-5. **Consistent over optimal** — follow existing repo patterns even if a "better" pattern exists, unless the existing pattern is actively harmful
+1. **Baseline first** — start from the project baseline template (`templates/project-baseline/`). Custom components layer on top — don't reinvent patterns the template already provides
+2. **Reuse over creation** — extend an existing component before creating a new one
+3. **Isolation over coupling** — components should be independently understandable and testable
+4. **Lean over comprehensive** — fewer, well-designed components beat many thin ones
+5. **Explicit over implicit** — all connections and dependencies are documented, not assumed
+6. **Consistent over optimal** — follow existing repo patterns even if a "better" pattern exists, unless the existing pattern is actively harmful
 
-When Reuse (1) and Isolation (2) conflict — e.g., extending an existing component would increase coupling — prefer the option that keeps each component independently understandable and testable.
+When Reuse (2) and Isolation (3) conflict — e.g., extending an existing component would increase coupling — prefer the option that keeps each component independently understandable and testable.
 
 ---
 

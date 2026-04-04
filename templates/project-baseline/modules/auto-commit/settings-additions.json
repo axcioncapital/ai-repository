@@ -1,0 +1,16 @@
+{
+  "_comment": "Merge these entries into the project's settings.json hooks object. Adjust the grep and sed patterns to match the project's stage directories.",
+  "PostToolUse": [
+    {
+      "matcher": "Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "jq -r '.tool_input.file_path' | { read -r f; echo \"$f\" | grep -qE '/({{STAGE_DIRS_PATTERN}})/' || exit 0; stage=$(echo \"$f\" | sed -E 's|.*/{{PROJECT_DIR_NAME}}/([^/]+)/.*|\\1|'); bn=$(basename \"$f\"); cd \"$(dirname \"$f\")\"; git add \"$f\" && git commit -m \"Auto-commit [$stage]: $bn\"; } 2>/dev/null || true",
+          "timeout": 15,
+          "statusMessage": "Auto-committing artifact..."
+        }
+      ]
+    }
+  ]
+}

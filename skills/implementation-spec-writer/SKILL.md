@@ -47,6 +47,8 @@ Optional inputs:
 
 The repo snapshot provides the current filesystem state. The architecture document provides the target state. The implementation spec bridges the gap.
 
+**Project baseline template:** If the architecture document references baseline components or modules from `templates/project-baseline/`, read the specific template files it references. These provide canonical patterns for common components (CLAUDE.md structure, settings.json, commands, agents, hooks). Use them as starting points — resolve `{{PLACEHOLDER}}` markers with project-specific values rather than writing from scratch.
+
 ---
 
 ## Implementation Spec Structure
@@ -247,6 +249,12 @@ If the project's specific dependencies require deviating from this default seque
 ### Step 4: Write Each Operation
 
 For every component in the architecture, produce one operation block following the templates above. Be exhaustive — if the architecture says "create a skill called X," the operation must specify frontmatter, sections, key behaviors, and verification steps.
+
+**Baseline template integration:** For components that come from the project baseline template (`templates/project-baseline/`), read the corresponding template file and adapt it:
+- Resolve all `{{PLACEHOLDER}}` markers with project-specific values from the project plan and architecture
+- For modules with `settings-additions.json`, merge the hook entries into the base settings.json operation
+- For modules with `claude-md-additions.md`, merge the sections into the CLAUDE.md operation
+- The resolved content goes into the operation block — the implementer never sees `{{PLACEHOLDER}}` markers
 
 **Critical rule:** If the architecture is ambiguous about a component's behavior, do NOT fill in the gap with your own interpretation. Instead, flag it:
 
