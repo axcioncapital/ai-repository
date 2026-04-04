@@ -1,0 +1,124 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read",
+      "Edit",
+      "Write",
+      "MultiEdit"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(rm *)",
+      "Bash(sudo *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/friction-log-auto.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking friction log..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; echo \"$f\" | grep -qE '/(report/chapters|final/modules)/' && echo '{\"decision\":\"block\",\"reason\":\"BRIGHT-LINE RULE: Before editing report prose, run the three checks: (1) Multi-paragraph scope? (2) Analytical claim alteration? (3) Sourced statement modification? If ANY is true, get operator approval first. Log to /logs/decisions.md.\"}' || exit 0; }",
+            "timeout": 5,
+            "statusMessage": "Checking bright-line rule..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; echo \"$f\" | grep -qE '/(preparation|execution|analysis|report)/' || exit 0; stage=$(echo \"$f\" | grep -oE '(preparation|execution|analysis|report)' | head -1); bn=$(basename \"$f\"); cd \"$(dirname \"$f\")\"; git add \"$f\" && git commit -m \"Auto-commit [$stage]: $bn\"; } 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "Auto-committing artifact..."
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/check-claim-ids.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking Claim ID coverage..."
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/log-write-activity.sh\"",
+            "timeout": 5,
+            "statusMessage": "Logging write activity..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/log-write-activity.sh\"",
+            "timeout": 5,
+            "statusMessage": "Logging write activity..."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; latest=$(ls -t \"$PROJECT_DIR\"/{preparation,execution,analysis,report}/checkpoints/**/*checkpoint* 2>/dev/null | head -1); if [ -n \"$latest\" ]; then section=$(echo \"$latest\" | grep -oE '[0-9]+\\.[0-9]+' | head -1); stage_dir=$(echo \"$latest\" | grep -oE '(preparation|execution|analysis|report)' | head -1); echo \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"SessionStart\\\",\\\"additionalContext\\\":\\\"Session context: Section $section, Stage: $stage_dir. Latest checkpoint: $latest\\\"}}\"; fi",
+            "timeout": 10,
+            "statusMessage": "Loading project context..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; recent=$(find \"$PROJECT_DIR\" -path '*/checkpoints/*checkpoint*' -mmin -120 2>/dev/null | head -1); if [ -z \"$recent\" ]; then echo '{\"systemMessage\":\"No checkpoint written this session. Consider running the checkpoint step before ending.\"}'; fi",
+            "timeout": 5,
+            "statusMessage": "Checking for checkpoint..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; NOTES=\"$PROJECT_DIR/logs/session-notes.md\"; grep -q \"wrap-session\" /tmp/claude-session-log 2>/dev/null || echo \"$(date '+%Y-%m-%d %H:%M') — Session ended without /wrap-session\" >> \"$NOTES\" 2>/dev/null || true",
+            "timeout": 5,
+            "statusMessage": "Logging session end..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; DECISIONS=\"$PROJECT_DIR/logs/decisions.md\"; jq -r '.transcript // empty' 2>/dev/null | grep -qE '(GATE|bright-line|PAUSE for operator)' && { input=$(jq -r '.user_input // empty' 2>/dev/null); echo \"$(date '+%Y-%m-%d %H:%M') — Operator decision: $input\" >> \"$DECISIONS\"; } || true",
+            "timeout": 5,
+            "statusMessage": "Logging decision..."
+          }
+        ]
+      }
+    ]
+  }
+}
