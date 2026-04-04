@@ -106,7 +106,7 @@ Record the failure and the user's choice in the implementation log.
 
 ## Implementation Log Format
 
-Maintain a running log throughout execution. Save to: `{project-directory}/implementation-log.md`
+Maintain a running log throughout execution. Save to: `{pipeline-directory}/implementation-log.md`
 
 ```markdown
 # Implementation Log — {project-name}

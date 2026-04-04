@@ -145,6 +145,15 @@ If the project baseline template manifest is available, start here:
 - Record module selections as design decisions in the Design Decision Log.
 - Only after establishing the baseline + modules, identify what custom components are still needed.
 
+**Directory structure decision:** Determine whether the project is flat (single working directory) or multi-level (root directory with subprojects inside).
+
+Signals that indicate multi-level:
+- The project has distinct operational phases that don't share a pipeline
+- The project plan describes separable tools or workflows
+- The context pack mentions multiple deliverables with different infrastructure needs
+
+If multi-level: the root gets a navigation CLAUDE.md (use `baseline/root-claude.md` template) with project description, subproject listing, and spec file locations. Each subproject gets the full baseline. No `.claude/` directory at root — sessions are opened in the subproject. Record this as a design decision.
+
 For each remaining requirement or deliverable in the project plan:
 - What Claude Code component type best serves it?
 - Can an existing component be reused or extended?

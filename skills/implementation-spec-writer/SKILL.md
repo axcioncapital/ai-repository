@@ -255,6 +255,7 @@ For every component in the architecture, produce one operation block following t
 - For modules with `settings-additions.json`, merge the hook entries into the base settings.json operation
 - For modules with `claude-md-additions.md`, merge the sections into the CLAUDE.md operation
 - The resolved content goes into the operation block — the implementer never sees `{{PLACEHOLDER}}` markers
+- For multi-level projects: produce a root CLAUDE.md operation using the `baseline/root-claude.md` template. This operation should come first in the sequence (before subproject operations), since it creates the project root directory.
 
 **Critical rule:** If the architecture is ambiguous about a component's behavior, do NOT fill in the gap with your own interpretation. Instead, flag it:
 

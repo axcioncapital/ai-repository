@@ -31,8 +31,8 @@ description: >
 ## Input Expectation
 
 Required:
-- **Implementation spec** (`implementation-spec.md` from Stage 3c) — defines what should exist
-- **Implementation log** (`implementation-log.md` from Stage 4) — records what was actually done
+- **Implementation spec** (`implementation-spec.md` from Stage 3c, in the pipeline directory) — defines what should exist
+- **Implementation log** (`implementation-log.md` from Stage 4, in the pipeline directory) — records what was actually done
 
 The repo under test should be the current working directory or connected via `--add-dir`.
 

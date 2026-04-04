@@ -43,6 +43,22 @@ Each module directory contains:
 
 Stage 3c merges selected modules' additions into the base files when writing the implementation spec.
 
+## Multi-Level Projects
+
+Some projects have a root directory with one or more subprojects inside (e.g., `market-research-project/fund-triage/`). The baseline template applies to the **working directory** — usually the subproject where sessions are opened and commands run. But the root level also needs scaffolding to avoid a dead orientation gap.
+
+**Root level gets:**
+- A CLAUDE.md for orientation — project description, subproject listing, spec file locations, and an explicit instruction to open sessions in the subproject directory. Use `baseline/root-claude.md` as the template.
+
+**Root level does NOT get:**
+- No `.claude/` directory (no commands, agents, settings, or hooks)
+- No logs/, reference/, or other working directories
+
+**Subproject level gets:**
+- The full baseline template (CLAUDE.md, .claude/, logs/, reference/) plus any selected modules
+
+Stage 3b (architecture-designer) decides whether a project is flat or multi-level. Signals for multi-level: the project has distinct operational phases, describes separable tools or workflows, or mentions multiple deliverables that don't share a pipeline.
+
 ## Adding New Modules
 
 When a project develops a pattern that proves valuable and reusable:

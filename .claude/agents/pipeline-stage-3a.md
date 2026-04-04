@@ -93,7 +93,7 @@ Produce a single markdown document following this structure:
 
 ## Output
 
-Save the snapshot to: `{project-directory}/repo-snapshot.md`
+Save the snapshot to: `{pipeline-directory}/repo-snapshot.md`
 
 When complete, announce:
 

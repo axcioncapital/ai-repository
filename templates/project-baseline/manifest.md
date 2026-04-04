@@ -15,6 +15,7 @@
 | qc-log.md | Log | `baseline/logs/qc-log.md` | None |
 | workflow-observations.md | Log | `baseline/logs/workflow-observations.md` | None |
 | quality-standards.md | Reference | `baseline/reference/quality-standards.md` | None |
+| Root CLAUDE.md | Config | `baseline/root-claude.md` | PROJECT_NAME, PROJECT_DESCRIPTION, SUBPROJECT_LIST — **only for multi-level projects** |
 
 ## Optional Modules
 

@@ -14,7 +14,7 @@ You are executing Stage 3c of the /new-project pipeline.
 
 ## Input
 
-Read these artifacts from the project directory:
+Read these artifacts from the pipeline directory:
 - `architecture.md` (from Stage 3b) — required
 - `repo-snapshot.md` (from Stage 3a) — required
 - `technical-spec.md` (from Stage 2.5) — optional
@@ -34,11 +34,11 @@ If the implementation-spec-writer identifies gaps in the architecture that preve
 1. Present the gaps to the user
 2. Ask whether to: resolve them now (user provides the answer), return to Stage 3b for architecture revision, or proceed with the gap flagged as a warning for Stage 4
 
-Record any gap resolutions in `{project-directory}/decisions.md` (with user confirmation).
+Record any gap resolutions in `{pipeline-directory}/decisions.md` (with user confirmation).
 
 ## Output
 
-Save the approved implementation spec to: `{project-directory}/implementation-spec.md`
+Save the approved implementation spec to: `{pipeline-directory}/implementation-spec.md`
 
 When approved by the user, announce:
 

@@ -14,7 +14,7 @@ You are executing Stage 5 of the /new-project pipeline.
 
 ## Input
 
-Read these artifacts from the project directory:
+Read these artifacts from the pipeline directory:
 - `implementation-spec.md` (from Stage 3c) — required
 - `implementation-log.md` (from Stage 4) — required
 
@@ -34,7 +34,7 @@ After presenting the test report, help the user decide on each failure:
 
 ## Output
 
-Save the test report to: `{project-directory}/test-results.md`
+Save the test report to: `{pipeline-directory}/test-results.md`
 
 When testing is complete, announce:
 

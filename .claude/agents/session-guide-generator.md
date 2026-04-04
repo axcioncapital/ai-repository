@@ -14,14 +14,19 @@ You generate session-by-session execution guides for configured Claude Code proj
 
 ## Input
 
-Read the project artifacts identified in the spawn prompt. The spawn prompt will include:
-- **Primary document** — the main project spec, plan, or brief (path provided by caller)
-- **Reference docs** — any additional supporting documents (paths provided by caller)
-- **Project description** — if no documents were found, a text description of the project
+**If running as Pipeline Stage 6:** The spawn prompt provides paths to pipeline artifacts via `{pipeline-directory}`. Read all available artifacts from there (project-plan.md, architecture.md, implementation-spec.md, technical-spec.md, decisions.md).
 
-If no primary document path AND no project description were provided in the spawn prompt, stop and report the error to the user.
+**If running standalone (via /session-guide):** The spawn prompt may or may not include document paths. Follow this sequence:
 
-Also scan the repo state independently: CLAUDE.md, `skills/` directory, `.claude/commands/`, `.claude/agents/`.
+1. If the spawn prompt includes explicit document paths, use those.
+2. If not, search for pipeline artifacts automatically:
+   - Check `pipeline/` directory first (new layout), then project root (legacy layout)
+   - Look for: `project-plan.md`, `architecture.md`, `implementation-spec.md`, `technical-spec.md`, and any `*-spec.md` files
+   - Use whatever exists — the best available document becomes the primary input
+3. If no pipeline artifacts are found, scan for any markdown files at the project root that look like specs, plans, or briefs (e.g., files containing "## Scope", "## Requirements", "## Architecture", or similar structural headings).
+4. Only if no documents are found at all, ask the user for a project description or document path.
+
+In all cases, also scan the repo state independently: CLAUDE.md, `skills/` directory, `.claude/commands/`, `.claude/agents/`.
 
 ## Existing Guide Check
 
@@ -33,7 +38,7 @@ Run the full session-guide-generator workflow as loaded from the skill.
 
 ## Output
 
-Save the session guide to: `{project-directory}/session-guide.md`
+Save the session guide to: `{pipeline-directory}/session-guide.md`
 
 When complete, announce:
 

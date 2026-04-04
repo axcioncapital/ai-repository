@@ -22,9 +22,9 @@ The user must provide a context pack before the pipeline can start. The context 
 
 **Determine which mode you're in:**
 
-1. Look for any `projects/*/pipeline-state.md` files in the current working directory.
+1. Look for `projects/*/pipeline/pipeline-state.md` files first. If none found, fall back to `projects/*/pipeline-state.md` (legacy layout).
 2. If no pipeline state files exist → **First Run**
-3. If pipeline state files exist → **Continuation** (if multiple projects have pipeline state files, ask the user which project to resume)
+3. If pipeline state files exist → **Continuation** (if multiple projects have pipeline state files, ask the user which project to resume). Note whether the state file is in `pipeline/` (new layout) or at root (legacy layout) — use the same layout for all subsequent artifact paths in that project.
 
 ### First Run
 
@@ -32,11 +32,11 @@ The user must provide a context pack before the pipeline can start. The context 
 
 2. **Ask for the GitHub repository link.** The user should provide the URL of the project's GitHub repo (e.g., `https://github.com/axcion-ai/project-name`).
 
-3. **Create the project directory** at `projects/{project-name}/`.
+3. **Create the project directory** at `projects/{project-name}/` and the pipeline artifact subdirectory at `projects/{project-name}/pipeline/`.
 
-4. **Copy the user's context pack** to `projects/{project-name}/context-pack.md`.
+4. **Copy the user's context pack** to `projects/{project-name}/pipeline/context-pack.md`.
 
-5. **Create `projects/{project-name}/decisions.md`** with this template:
+5. **Create `projects/{project-name}/pipeline/decisions.md`** with this template:
 
 ```markdown
 # Decisions — {project-name}
@@ -45,7 +45,7 @@ The user must provide a context pack before the pipeline can start. The context 
 |---|-------|----------|-----------|------------|
 ```
 
-6. **Create `projects/{project-name}/pipeline-state.md`** to track pipeline progress:
+6. **Create `projects/{project-name}/pipeline/pipeline-state.md`** to track pipeline progress:
 
 ```markdown
 # Pipeline State — {project-name}
@@ -67,14 +67,14 @@ The user must provide a context pack before the pipeline can start. The context 
 
 7. **Tell the user** what was created and that Stage 2 is starting.
 
-8. **Spawn the Stage 2 subagent** (`pipeline-stage-2`) with the context pack as input. Include in the spawn prompt: "Project directory: projects/{project-name}/"
+8. **Spawn the Stage 2 subagent** (`pipeline-stage-2`) with the context pack as input. Include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
 
 ### Continuation
 
 1. Read the pipeline state file for the project.
 2. Find the stage that is `in_progress`, or the first `pending` stage whose predecessor is `completed` (or `skipped`).
 3. Announce: "Resuming pipeline at [stage name]. Last completed: [previous stage]."
-4. Spawn the corresponding stage subagent. Include in the spawn prompt: "Project directory: projects/{project-name}/"
+4. Spawn the corresponding stage subagent. Include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
 
 **Agent name mapping:** Stages 2–5 use the `pipeline-stage-{N}` naming convention. Stage 6 (Session Guide) uses the `session-guide-generator` agent instead.
 
@@ -108,6 +108,6 @@ If a stage subagent reports failure:
 - Never advance a stage without user confirmation (`NEXT`)
 - Never modify decisions.md without user confirmation
 - Always announce which stage is running and what it expects as input
-- When spawning any subagent, always include in the spawn prompt: "Project directory: projects/{project-name}/"
-- The pipeline-state.md file is the source of truth for pipeline progress — always read it before taking action, always update it after state changes
+- When spawning any subagent, always include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
+- The `pipeline/pipeline-state.md` file is the source of truth for pipeline progress — always read it before taking action, always update it after state changes. All pipeline artifacts (context-pack, project-plan, architecture, specs, logs, test-results) live in `pipeline/`. Only the project's working files live at the project root.
 - If the project involves creating new skills, inform the user that skill creation must use the `/create-skill` command from ai-resources. Ensure ai-resources is connected via `--add-dir` so the command is available.

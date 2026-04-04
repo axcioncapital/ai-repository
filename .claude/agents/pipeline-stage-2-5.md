@@ -14,7 +14,7 @@ You are executing Stage 2.5 of the /new-project pipeline.
 
 ## Input
 
-Read these approved artifacts from the project directory:
+Read these approved artifacts from the pipeline directory:
 - `context-pack.md` (from Stage 1)
 - `project-plan.md` (from Stage 2)
 
@@ -28,7 +28,7 @@ The technical spec should focus on the **system design** — components, relatio
 
 ## Output
 
-Save the approved technical spec to: `{project-directory}/technical-spec.md`
+Save the approved technical spec to: `{pipeline-directory}/technical-spec.md`
 
 When the spec is approved by the user, announce:
 

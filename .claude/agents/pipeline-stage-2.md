@@ -13,7 +13,7 @@ You are executing Stage 2 of the /new-project pipeline.
 
 ## Input
 
-Read the approved context pack from: `{project-directory}/context-pack.md`
+Read the approved context pack from: `{pipeline-directory}/context-pack.md`
 
 If the file doesn't exist or is empty, stop and report the error to the user.
 
@@ -32,7 +32,7 @@ Include this assessment in the project plan with your reasoning.
 
 ## Output
 
-Save the approved project plan to: `{project-directory}/project-plan.md`
+Save the approved project plan to: `{pipeline-directory}/project-plan.md`
 
 When the project plan is approved by the user, announce:
 

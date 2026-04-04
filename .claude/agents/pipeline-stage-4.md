@@ -22,9 +22,9 @@ This stage runs in an isolated git worktree. All file changes happen on a separa
 
 ## Input
 
-Read the approved implementation spec from: `{project-directory}/implementation-spec.md`
+Read the approved implementation spec from: `{pipeline-directory}/implementation-spec.md`
 
-Also read `decisions.md` for any constraints from earlier stages.
+Also read `{pipeline-directory}/decisions.md` for any constraints from earlier stages.
 
 If the implementation spec doesn't exist or is empty, stop and report the error to the user.
 
@@ -37,7 +37,7 @@ Run the full project-implementer workflow as loaded from the skill.
 **Partial failure** (some operations complete, others don't):
 
 1. Do NOT re-run completed operations
-2. The implementation log (`{project-directory}/implementation-log.md`) records what was completed
+2. The implementation log (`{pipeline-directory}/implementation-log.md`) records what was completed
 3. Resume from the failed operation after the issue is resolved
 
 **Fundamental failure** (wrong architecture, spec errors, implementation is structurally wrong):
@@ -53,7 +53,7 @@ Run the full project-implementer workflow as loaded from the skill.
 
 ## Output
 
-Save the implementation log to: `{project-directory}/implementation-log.md`
+Save the implementation log to: `{pipeline-directory}/implementation-log.md`
 
 All created and modified files are in the worktree branch.
 
