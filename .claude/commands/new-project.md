@@ -30,11 +30,13 @@ The user must provide a context pack before the pipeline can start. The context 
 
 1. **Ask for the project name.** Use lowercase-with-hyphens format (e.g., `context-aware-skill-router`).
 
-2. **Create the project directory** at `projects/{project-name}/`.
+2. **Ask for the GitHub repository link.** The user should provide the URL of the project's GitHub repo (e.g., `https://github.com/axcion-ai/project-name`).
 
-3. **Copy the user's context pack** to `projects/{project-name}/context-pack.md`.
+3. **Create the project directory** at `projects/{project-name}/`.
 
-4. **Create `projects/{project-name}/decisions.md`** with this template:
+4. **Copy the user's context pack** to `projects/{project-name}/context-pack.md`.
+
+5. **Create `projects/{project-name}/decisions.md`** with this template:
 
 ```markdown
 # Decisions — {project-name}
@@ -43,10 +45,13 @@ The user must provide a context pack before the pipeline can start. The context 
 |---|-------|----------|-----------|------------|
 ```
 
-5. **Create `projects/{project-name}/pipeline-state.md`** to track pipeline progress:
+6. **Create `projects/{project-name}/pipeline-state.md`** to track pipeline progress:
 
 ```markdown
 # Pipeline State — {project-name}
+
+## Metadata
+- **GitHub:** {github-url}
 
 | Stage | Status | Artifact |
 |-------|--------|----------|
@@ -60,9 +65,9 @@ The user must provide a context pack before the pipeline can start. The context 
 | 6 — Session Guide | pending | — |
 ```
 
-6. **Tell the user** what was created and that Stage 2 is starting.
+7. **Tell the user** what was created and that Stage 2 is starting.
 
-7. **Spawn the Stage 2 subagent** (`pipeline-stage-2`) with the context pack as input. Include in the spawn prompt: "Project directory: projects/{project-name}/"
+8. **Spawn the Stage 2 subagent** (`pipeline-stage-2`) with the context pack as input. Include in the spawn prompt: "Project directory: projects/{project-name}/"
 
 ### Continuation
 
@@ -105,3 +110,4 @@ If a stage subagent reports failure:
 - Always announce which stage is running and what it expects as input
 - When spawning any subagent, always include in the spawn prompt: "Project directory: projects/{project-name}/"
 - The pipeline-state.md file is the source of truth for pipeline progress — always read it before taking action, always update it after state changes
+- If the project involves creating new skills, inform the user that skill creation must use the `/create-skill` command from ai-resources. Ensure ai-resources is connected via `--add-dir` so the command is available.
