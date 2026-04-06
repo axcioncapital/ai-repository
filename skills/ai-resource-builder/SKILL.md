@@ -107,6 +107,8 @@ For the full operational frontmatter field table (allowed-tools, paths, context,
 
 ## Create Workflow
 
+Progress: [ ] Understand [ ] Plan resources [ ] Initialize [ ] Write [ ] Validate
+
 ### Step 1: Understand the Resource
 
 Clarify concrete examples of how the skill will be used. Ask targeted questions:
@@ -116,9 +118,11 @@ Clarify concrete examples of how the skill will be used. Ask targeted questions:
 - Can you give examples of typical usage?
 - What should it NOT do? (Exclusions matter as much as inclusions)
 
-Avoid overwhelming — start with the most important questions and follow up as needed. Conclude when there is a clear sense of the functionality the skill should support.
+Avoid overwhelming — start with the most important questions and follow up as needed. Conclude by summarizing: use cases, trigger conditions, and exclusions.
 
 Skills operate in a multi-tool ecosystem. They may interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Account for cross-tool workflows where applicable.
+
+**If requirements contradict each other**, surface the conflict and ask the user to resolve it before proceeding.
 
 ### Step 2: Plan Bundled Resources
 
@@ -151,7 +155,7 @@ The skill is written for another Claude instance. Include information that is be
 
 #### 4a. Start with Bundled Resources
 
-Implement scripts, references, and assets first. Test added scripts by running them. This prevents SKILL.md from referencing nonexistent files.
+Implement scripts, references, and assets first. Test added scripts by running them — if a script fails, fix it before writing SKILL.md. This prevents SKILL.md from referencing nonexistent or broken files.
 
 #### 4b. Write the Frontmatter
 
@@ -229,9 +233,10 @@ See the Required Sections Checklist below. Ensure each applicable section is pre
 ### Step 5: Validate
 
 1. Run the Evaluate Workflow on the draft
-2. Fix any Critical or Major issues
-3. Test the skill on real tasks
-4. Iterate: notice struggles, update SKILL.md or resources, test again
+2. Fix any Critical or Major issues before proceeding
+3. If the body exceeds 500 lines, identify content to split into reference files before continuing
+4. Test the skill on real tasks
+5. Iterate: notice struggles, update SKILL.md or resources, test again
 
 ## Evaluate Workflow
 
@@ -239,7 +244,7 @@ See the Required Sections Checklist below. Ensure each applicable section is pre
 
 Determine: Skill, prompt, or project instruction. If ambiguous, default to best-fit and note it.
 
-Include when available: resource name, target platform, dependencies, intended runtime context.
+Include when available: resource name, target platform, dependencies, intended runtime context. If the resource is too incomplete to evaluate meaningfully (e.g., only a title or a few bullet points), say so and recommend what to add before evaluation can proceed.
 
 ### Step 2: Apply Eight-Layer Evaluation
 
@@ -300,6 +305,8 @@ Critical: [n] | Major: [n] | Minor: [n]
 ```
 
 ## Improve Workflow
+
+Progress: [ ] Confirm [ ] Triage [ ] Propose [ ] Approve [ ] Iterate [ ] Quality check [ ] Deliver
 
 ### Inputs
 
@@ -405,62 +412,14 @@ These sections are the implementation mechanism for several evaluation layers (F
 
 ## Writing Standards
 
-### Degrees of Freedom
+For the full writing standards guide including degrees of freedom, anti-railroading, capability vs. preference skills, bias countering, skill composition, and the complete anti-patterns table, read `references/writing-standards.md`.
 
-Match specificity to the task's fragility and variability:
-
-- **High freedom** (text instructions): Multiple valid approaches. Use for analysis, recommendations, style guidance.
-- **Medium freedom** (pseudocode/parameterized): Preferred pattern with some variation. Use for workflow steps, data processing.
-- **Low freedom** (exact scripts, few params): Fragile operations requiring strict consistency. Use for API calls, migrations, deployments.
-
-### Anti-Railroading
-
-If you find yourself writing ALWAYS or NEVER in all caps, or enforcing super-rigid structures, reframe and explain the reasoning instead. Claude works better understanding *why* a constraint matters than following rote rules.
-
-**Skill obsolescence risk:** As models improve, skills that over-specify can degrade output. The skill constrains Claude to follow steps written for a less capable version. Periodically compare skill output vs. no-skill output. If raw Claude wins, simplify or retire the skill.
-
-### Capability vs. Preference Skills
-
-- **Capability skills** extend what the base model can do (complex PDF extraction, specialized transforms). Need more procedural detail but may become obsolete as models improve.
-- **Preference skills** encode how you want work done (your formatting, review process, brand voice). Durable because preferences don't change when models do. Most skills worth building are preference skills.
-
-### Bias Countering
-
-For analytical/generative skills: permit "I don't know," accept gaps over invention, encourage pushback on flawed premises, prioritize accuracy over comprehensiveness.
-
-### Time-Sensitive Information
-
-Don't embed information that will become outdated. If historical context is useful, isolate it in a collapsible "old patterns" section with a date stamp.
-
-### Skills vs. MCP Servers
-
-Skills provide procedural knowledge (how to use tools). MCP servers provide tool access (connecting to external systems). They are complementary. When an MCP server primarily provides guidance rather than tool connectivity, a skill may serve the same purpose with the advantage of transparency.
-
-### Skill Composition
-
-When skills form natural chains (research -> analysis -> document production):
-- Design compatible output formats between pipeline stages
-- Keep each skill independently invocable — even in a pipeline, each should work standalone
-- Don't build monolithic orchestrator skills that just call other skills in sequence
-
-## Anti-Patterns
-
-| Anti-Pattern | Why It Fails | Instead |
-|---|---|---|
-| Over-specifying with rigid MUSTs/NEVERs | Makes output rigid, degrades as models improve | Explain the *why*, use flexible templates |
-| Vague descriptions | Skill never triggers | Include specific trigger phrases and file types |
-| Trigger phrases past 250 characters | Claude never sees them — descriptions truncated | Front-load key use case within first 250 chars |
-| No negative triggers on overlapping skills | Wrong skill fires | Add "Do NOT use for..." to delineate boundaries |
-| Not using `paths` field | Every skill burns context every session | Scope skills to relevant directories |
-| Deeply nested references (>1 level) | Claude partially reads or misses content | Keep all references one level from SKILL.md |
-| Mixing multiple jobs in one skill | Hard to trigger, hard to maintain | One skill, one job |
-| Skills >500 lines without splitting | Context bloat, important rules lost | Split into reference files |
-| Deterministic checks in skill body | Not guaranteed to run, wastes reasoning | Convert to hooks |
-| "Voodoo constants" in scripts | Claude can't determine the right value | Document why every constant is what it is |
-| Inconsistent terminology | Confuses Claude's understanding | Pick one term per concept |
-| Keeping dead skills | Consume description budget, risk false triggers | Retire skills that haven't triggered in weeks |
-| Offering too many options | Confuses Claude, wastes tokens | Provide a default with an escape hatch |
-| Teaching Claude what it already knows | Token waste, may constrain better default behavior | Only add non-obvious context |
+**Key principles** (always apply, no need to load the reference):
+- Match specificity to fragility: high freedom for analysis, low freedom for migrations
+- Explain *why* constraints matter — Claude works better with reasoning than rote rules
+- Preference skills (encoding how you want work done) are more durable than capability skills (extending what the model can do)
+- One skill, one job — don't mix unrelated responsibilities
+- Don't teach Claude what it already knows
 
 ## Reference Files
 
@@ -470,6 +429,8 @@ Read these on demand. Do not load all references at the start of a session.
 |------|-----------|
 | `references/evaluation-framework.md` | Running a full evaluation, or the pipeline commands need to pass a standalone framework to a subagent. Contains the complete 8-layer definitions, priority matrix, type-specific criteria, convention gate, and combined output format. |
 | `references/operational-frontmatter.md` | Configuring frontmatter fields beyond `name` and `description`. Contains the full field table: allowed-tools, paths, context, effort, model, hooks, disable-model-invocation, and more. |
+| `references/writing-standards.md` | Writing or reviewing SKILL.md body content. Contains degrees of freedom with examples, anti-railroading, capability vs. preference skills, bias countering, skill composition, and the full anti-patterns table. |
+| `references/examples.md` | Needing calibration on what good output looks like for each mode. Contains condensed worked examples for Create, Evaluate, and Improve. |
 
 All references link directly from this file. References do not link to other references.
 
@@ -479,6 +440,8 @@ All references link directly from this file. References do not link to other ref
 - **Evaluate mode:** Works best on complete drafts. Partial resources get partial evaluations — note what could not be assessed.
 - **Improve mode:** Always work on a copy. Present the change summary before the full modified resource.
 - **Context budget:** When operating on a resource with multiple reference files, prioritize loading SKILL.md and the most relevant reference rather than all references.
+- **Tool access:** This skill requires write access (Create/Improve modes), so no `allowed-tools` restriction is applied.
+- **Paths:** No `paths` restriction — this skill may be invoked from any directory context.
 
 ## Validation
 
