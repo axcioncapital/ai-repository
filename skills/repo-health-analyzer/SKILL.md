@@ -36,3 +36,17 @@ Report is written to `reports/repo-health-report.md`.
 ## Findings Flow
 
 Each auditor writes a JSON findings file to `reports/.audit-temp/`. The lead agent reads all findings and synthesizes the final markdown report. Temp files are deleted after synthesis.
+
+## Failure Behavior
+
+- **Not run from workspace root:** Flag to the operator — auditors expect the Axcíon workspace structure. Do not attempt to audit an arbitrary directory.
+- **Auditor fails or returns empty findings:** Log the failure in the report under the relevant section. Continue with remaining auditors — do not halt the full audit for one failed section.
+- **No CLAUDE.md files found:** The claude-md-auditor reports this as a Critical finding. Other auditors continue independently.
+- **Skill directory missing or empty:** The skill-auditor reports this as a Critical finding. Other auditors continue.
+- **Reports directory does not exist:** Create it before writing the report.
+
+## Runtime Recommendations
+
+- **Model:** Lead agent uses Opus (cross-section reasoning). Wave 1 auditors use Sonnet (mechanical analysis). Wave 2 uses Opus.
+- **Context:** Each auditor runs as a subagent with its own context. The lead agent receives findings summaries, not raw file contents.
+- **Invocation:** Via `/audit-repo` command. Can also be triggered by asking for "workspace health check" or "repo audit."
