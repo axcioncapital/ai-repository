@@ -1,5 +1,34 @@
 # Session Notes
 
+## 2026-04-06 — Built /repo-dd-deep command, then merged into /repo-dd
+
+### Summary
+Built the `/repo-dd-deep` operational health review command from the brief in `inbox/repo-review-brief.md`. The command adds judgment, recommendations, and optional pipeline testing on top of `/repo-dd` factual data. After building it as a standalone command, decided to merge it into `/repo-dd` as depth levels (`/repo-dd`, `/repo-dd deep`, `/repo-dd full`) to eliminate the two-session dependency. Evidence and interpretation stay in separate report files.
+
+### Files Created
+- `inbox/repo-review-brief.md` — build brief (created before this session, used as input)
+
+### Files Modified
+- `.claude/commands/repo-dd.md` — extended with Steps 7-13 (deep assessment) and Step 14 (pipeline testing), gated behind `$ARGUMENTS` depth control
+
+### Files Deleted
+- `.claude/commands/repo-dd-deep.md` — removed after merging into `/repo-dd`
+
+### Decisions Made
+- **Combined into one command:** Instead of two separate commands (`/repo-dd` + `/repo-dd-deep`), merged into one with depth arguments. Preserves facts/judgment separation via separate report files while eliminating the freshness dependency.
+- **Pipeline testing is static validation:** Tests check preconditions (files exist, symlinks resolve, templates have placeholders) rather than running live commands. 80% of the value at 10% of the risk.
+- **No subagent delegation:** The review needs full workspace context for cross-repo synthesis — no evaluation independence requirement.
+- **One operator gate:** Only at pipeline testing (Step 12). Assessment steps are read-only and run without pausing.
+
+### Next Steps
+- Run `/repo-dd deep` to validate the command works end-to-end
+- Consider whether the brief at `inbox/repo-review-brief.md` should be archived or deleted now that the command is built
+
+### Open Questions
+None
+
+---
+
 ## 2026-04-06 — Created /wrap-session command and Stop hook for ai-resources
 
 ### Summary
@@ -22,6 +51,124 @@ Added `/wrap-session` as a repo-level command for ai-resources, completing the i
 - Triage the 4 detected innovations in the registry (see below)
 - Run `/graduate-resource` for any items marked for graduation
 - Consider adding `logs/session-notes.md` and `logs/decisions.md` to the research-workflow template
+
+### Open Questions
+None
+
+## 2026-04-06 — Created /prime command for ai-resources
+
+### Summary
+Added `/prime` as a session-start orientation command for the ai-resources repo. The command reads session notes, innovation registry, inbox, and decisions, then outputs a structured brief and waits for operator direction. Follows the pattern established by project-specific prime commands (research-workflow, buy-side-service-plan) but scoped to repo-level activities. Plan went through a refinement pass before implementation.
+
+### Files Created
+- `.claude/commands/prime.md` — session-start orientation command (read state, brief operator, wait for direction)
+
+### Files Modified
+None
+
+### Decisions Made
+- `/prime` scoped to ai-resources level — visible to all projects via `--add-dir`, but local project primes take precedence (no conflict)
+- No frontmatter added — kept consistent with command style after verifying during refinement pass
+
+### Next Steps
+- Triage remaining detected innovations in the registry (clarify, scope, qc-pass, refinement-pass, prime)
+- Run `/graduate-resource` for any items marked for graduation
+
+### Open Questions
+None
+
+## 2026-04-06 — First repo due diligence audit + /repo-dd command
+
+### Summary
+Ran the first full workspace due diligence audit across all repos (ai-resources, buy-side-service-plan, nordic-pe, workflows) using a standardized questionnaire. Produced a 601-line factual audit report covering inventory, CLAUDE.md health, dependency references, consistency checks, context load, and drift/staleness. Then built `/repo-dd` as a reusable command that automates the full pipeline: audit → delta comparison → triage → operator-approved fixes → commit. Also captured a build brief for a future `/repo-review` command (operational health assessment).
+
+### Files Created
+- `audits/repo-due-diligence-2026-04-06.md` — first baseline audit report (601 lines, all 25 questions answered)
+- `audits/questionnaire.md` — standardized v2.0 questionnaire (reference file for /repo-dd)
+- `.claude/commands/repo-dd.md` — reusable due diligence pipeline command (6 steps with operator gate)
+- `inbox/repo-review-brief.md` — build brief for future /repo-review command (operational health assessment)
+
+### Files Modified
+- None
+
+### Decisions Made
+- Audit scope: full workspace (all 4 repos), single report with Repo column in tables
+- Inapplicable questions (Q4.3): skip with "N/A — [reason]" rather than reinterpret — keeps questionnaire portable
+- Output path: `audits/` directory in ai-resources (new directory, created this session)
+- Questionnaire versioning: git tracks history, no manual file renaming — just overwrite and commit
+- AUTO-FIX triage is strictly conservative: only unambiguous, single-file, no-cascade fixes qualify; everything else defaults to OPERATOR
+- `/repo-dd` and `/repo-review` are separate commands — structural audit vs. operational health assessment
+- Clean audits still get committed as baseline data
+
+### Next Steps
+- Test `/repo-dd` in a fresh session to verify it produces a valid report with deltas
+- Build `/repo-review` from the brief in `inbox/repo-review-brief.md` (separate session)
+- Act on audit findings: missing `templates/workflow-need.md`, diverged `report-compliance-qc` copies, `fund-triage-scanner` in project instead of ai-resources
+- Commit all session files (audit report, questionnaire, command, brief, plus existing uncommitted agents/commands)
+
+### Open Questions
+None
+
+## 2026-04-06 — Fixed all audit findings from repo due diligence
+
+### Summary
+Applied fixes for all 9 issues identified in the first repo due diligence audit across 3 repos (ai-resources, buy-side-service-plan, nordic-pe) plus the root workspace. Fixes covered dead references, diverged skill copies, inconsistent symlinks, undocumented directories, and non-standard commit message formats. Root workspace changes were applied directly (not git-tracked).
+
+### Files Created
+None
+
+### Files Modified
+- `CLAUDE.md` (ai-resources) — documented prompts/, reports/, logs/, audits/ directories
+- `skills/report-compliance-qc/SKILL.md` — synced input paths to section-specific format (matching deployed copies)
+- `tests/.gitkeep` — deleted (empty directory removed)
+- `projects/buy-side-service-plan/.claude/settings.json` — auto-commit message format fixed
+- `projects/buy-side-service-plan/reference/skills/report-compliance-qc/` — physical copy replaced with symlink
+- `projects/buy-side-service-plan/reference/skills/knowledge-file-producer` — symlink normalized to absolute path
+- `projects/nordic-pe/CLAUDE.md` — documented fund-triage-scanner as intentional project-specific exception
+- `projects/nordic-pe/.claude/hooks/auto-commit.sh` — commit message format fixed
+- `projects/nordic-pe/reference/skills/repo-health-analyzer` — symlink normalized to absolute path
+- `projects/nordic-pe/.claude/commands/session-guide.md` — symlink normalized to absolute path
+- Root `.claude/commands/new-workflow.md` — removed dead templates/workflow-need.md reference
+- Root `CLAUDE.md` — removed mention of deleted skills symlink
+- Root `skills` symlink — deleted (was unused)
+
+### Decisions Made
+- fund-triage-scanner stays in nordic-pe as project-specific (too tightly coupled to graduate)
+- report-compliance-qc canonical updated to match deployed copies (copies had the correct paths)
+- templates/workflow-need.md reference removed rather than creating the missing template
+- tests/ directory removed rather than documented (empty, no planned use)
+- prompts/ and reports/ directories kept and documented in CLAUDE.md (contain active content)
+
+### Next Steps
+- Test `/repo-dd` in a fresh session to verify it produces a valid report with deltas
+- Build `/repo-review` from the brief in `inbox/repo-review-brief.md`
+- Push all three repos after reviewing commits
+
+### Open Questions
+None
+
+## 2026-04-06 — Added feature enrichment step to project deployment pipelines
+
+### Summary
+Added a shared-feature enrichment step to both `/deploy-workflow` and `/new-project` so that new projects automatically receive the latest commands, agents, and hooks from ai-resources. Uses an exclusion-list approach — repo-specific items (skill lifecycle commands, pipeline agents) are excluded, everything else flows to projects by default. This eliminates the problem of stale templates missing recently added features.
+
+### Files Created
+None
+
+### Files Modified
+- `.claude/commands/deploy-workflow.md` — Added Step 4 (Enrich with shared ai-resources features), renumbered Steps 5-11
+- `.claude/commands/new-project.md` — Added Post-Pipeline Enrichment section before Key Rules
+
+### Decisions Made
+- Exclusion-list approach chosen over inclusion-list (new features auto-flow to projects without manifest updates)
+- Template files take precedence over ai-resources copies (no overwriting)
+- Hooks are copied but settings.json is NOT auto-modified (operator warned to register manually)
+- Same enrichment logic applied to both `/deploy-workflow` and `/new-project`
+
+### Next Steps
+- Test `/deploy-workflow` in a fresh session to verify enrichment step works end-to-end
+- Build `/repo-review` from the brief in `inbox/repo-review-brief.md`
+- Push all repos after reviewing commits
 
 ### Open Questions
 None
