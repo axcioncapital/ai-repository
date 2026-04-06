@@ -24,8 +24,9 @@ Workspace-level health check that audits the Axcíon AI repo structure, configur
   - `skill-auditor` — Skill inventory & overlap detection
   - `command-auditor` — Commands & subagents
   - `settings-auditor` — Settings & permissions
-- **Wave 2 auditor** (Opus — cross-section reasoning, runs after Wave 1):
+- **Wave 2 auditors** (Opus — cross-section reasoning, run after Wave 1):
   - `practices-auditor` — 2026 best practices check
+  - `context-health-auditor` — Cross-reference integrity and context drift detection
 
 ## Execution
 
