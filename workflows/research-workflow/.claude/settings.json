@@ -59,6 +59,12 @@
             "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/log-write-activity.sh\"",
             "timeout": 5,
             "statusMessage": "Logging write activity..."
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-innovation.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking for innovation..."
           }
         ]
       },
@@ -70,6 +76,12 @@
             "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/log-write-activity.sh\"",
             "timeout": 5,
             "statusMessage": "Logging write activity..."
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-innovation.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking for innovation..."
           }
         ]
       }
@@ -82,6 +94,12 @@
             "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; latest=$(ls -t \"$PROJECT_DIR\"/{preparation,execution,analysis,report}/checkpoints/**/*checkpoint* 2>/dev/null | head -1); if [ -n \"$latest\" ]; then section=$(echo \"$latest\" | grep -oE '[0-9]+\\.[0-9]+' | head -1); stage_dir=$(echo \"$latest\" | grep -oE '(preparation|execution|analysis|report)' | head -1); echo \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"SessionStart\\\",\\\"additionalContext\\\":\\\"Session context: Section $section, Stage: $stage_dir. Latest checkpoint: $latest\\\"}}\"; fi",
             "timeout": 10,
             "statusMessage": "Loading project context..."
+          },
+          {
+            "type": "command",
+            "command": "AI_RESOURCES=$(cd \"$CLAUDE_PROJECT_DIR\" && find ../.. -maxdepth 2 -name 'ai-resources' -type d 2>/dev/null | head -1); [ -n \"$AI_RESOURCES\" ] && \"$AI_RESOURCES/.claude/hooks/check-template-drift.sh\" || true",
+            "timeout": 10,
+            "statusMessage": "Checking for template updates..."
           }
         ]
       }

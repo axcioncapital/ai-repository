@@ -1,1 +1,19 @@
+# OS artifacts
 .DS_Store
+*.swp
+*~
+
+# Sensitive files
+*.env
+.env.*
+credentials*.json
+*.key
+*.pem
+
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
