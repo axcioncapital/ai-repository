@@ -4,6 +4,12 @@
 
 This repo stores AI resources — primarily skills (SKILL.md files), plus occasional prompts and project instructions. Each skill lives in its own folder under `skills/`. Resource briefs from project workspaces land in `inbox/` — these are requests for new skills, created via `/request-skill` in project sessions and picked up by `/create-skill` here.
 
+Other directories:
+- `prompts/` — Standalone prompts for cross-tool workflows (e.g., supplementary research prompts consumed by GPT-5)
+- `reports/` — Generated audit and health reports
+- `logs/` — Session notes, decisions, innovation registry
+- `audits/` — Due diligence and audit artifacts
+
 These resources operate across a multi-tool ecosystem — not just Claude. Skills may reference or interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Do not design resources that assume a single-tool environment.
 
 ## How I Work

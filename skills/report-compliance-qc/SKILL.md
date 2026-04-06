@@ -22,10 +22,10 @@ All required unless noted. Content is passed directly (not file paths).
 
 1. **Chapter draft** — the prose content produced at Step 4.2a
 2. **Review findings** — the chapter-prose-reviewer output from Step 4.2b
-3. **Report architecture** — from `/report/architecture.md`
-4. **Style reference** — from `/report/style-reference.md`
-5. **Scarcity register** — from `/execution/scarcity-register.md` (if it exists)
-6. **Section directive** — the directive for this chapter from `/analysis/section-directives/`
+3. **Report architecture** — from `/report/architecture/{section}/{section}-architecture.md`
+4. **Style reference** — from `/report/style-reference/{section}/{section}-style-reference.md`
+5. **Scarcity register** — from `/execution/scarcity-register/{section}/{section}-scarcity-register.md` (if it exists)
+6. **Section directive** — the directive for this chapter from `/analysis/section-directives/{section}/`
 
 **Missing input protocol:** If the section directive is not available, note that directive compliance was not checked and flag this as an issue — the directive should exist before report prose is produced. If the scarcity register doesn't exist, note that scarcity compliance was not applicable. All other inputs are required; if missing, halt and report which input is absent.
 
