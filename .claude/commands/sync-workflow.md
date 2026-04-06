@@ -71,7 +71,29 @@ File exists only in the project, not in the canonical template.
 File exists only in the canonical template, not in the project.
 - **Action:** Candidate for addition. May have been intentionally omitted at deploy time — present to operator for decision.
 
-## Step 4: Generate sync report
+## Step 4: Validate skill symlinks
+
+If `{PROJECT_DIR}/reference/skills/` exists:
+
+1. List all symlinks in the directory.
+2. For each symlink, verify the target exists (`test -e` on the resolved path).
+3. Classify each symlink:
+   - **Valid:** target exists and contains a `SKILL.md` file
+   - **Broken:** target does not exist (skill may have been renamed or moved in ai-resources)
+   - **Stale:** target directory exists but `SKILL.md` is missing
+4. Include the results in the sync report (Step 5) as a "Skill Symlinks" section:
+   ```markdown
+   ### Skill symlinks ({count})
+   | Symlink | Target | Status |
+   |---------|--------|--------|
+   | research-prompt-creator | ai-resources/skills/research-prompt-creator | Valid |
+   | old-skill-name | ai-resources/skills/old-skill-name | Broken |
+   ```
+5. For broken symlinks, offer to re-link to the correct target (if a skill with a similar name exists in ai-resources/skills/) or remove the broken link.
+
+If `{PROJECT_DIR}/reference/skills/` does not exist, skip this step silently.
+
+## Step 5: Generate sync report
 
 Present a structured report:
 
@@ -105,7 +127,7 @@ Present a structured report:
 | commands/usage-analysis.md | command | Added to template after deployment |
 ```
 
-## Step 5: Operator decides [Operator]
+## Step 6: Operator decides [Operator]
 
 After presenting the report, ask the operator:
 
@@ -113,7 +135,7 @@ After presenting the report, ask the operator:
 2. **For conflicts:** Show the diff for each and ask: keep project version, take canonical version, or skip.
 3. **For new canonical files:** "Add these to the project?" (yes/no/select specific files)
 
-## Step 6: Apply approved changes
+## Step 7: Apply approved changes
 
 For each approved update or addition:
 1. Copy the canonical file to the project location, overwriting if it exists.

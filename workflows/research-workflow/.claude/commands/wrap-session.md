@@ -4,7 +4,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 
 **Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context. Auto-commits track file changes separately.
 
-1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point).
+1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Session Notes` as the header. **Format guard:** If the file exists but has no `# Session Notes` header, prepend it. If the last non-empty line is a partial block (unclosed heading, unterminated list), append a blank line before the new entry.
 2. Read `/logs/decisions.md` (last 5 lines only — to find the append point).
 3. Using conversation context and the operator's summary, append a session note to `/logs/session-notes.md` with:
    - `## {date} — {one-line title}` (e.g., "Stage 1 Preparation complete for Section 1.3")

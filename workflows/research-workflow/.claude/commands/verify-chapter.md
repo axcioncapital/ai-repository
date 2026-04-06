@@ -18,6 +18,21 @@ Skill loading: Read skill files from `/ai-resources/skills/` as specified below.
 
 ---
 
+### Step 1b: Check Claim ID Coverage
+
+Run the claim ID checker by piping the chapter file path as JSON to stdin (the script reads JSON via `cat` and extracts `tool_input.file_path`):
+
+```bash
+echo '{"tool_input":{"file_path":"CHAPTER_PATH"}}' | bash "$CLAUDE_PROJECT_DIR/.claude/hooks/check-claim-ids.sh"
+```
+
+Replace `CHAPTER_PATH` with the actual chapter file path from Step 1. Check stderr output:
+- If it contains "INVARIANT WARNING" (report-stage prose): PAUSE and present the count to the operator before proceeding to fact verification.
+- If it contains "CLAIM ID CHECK" (analysis-stage files): warn but continue.
+- If no output: all clear, proceed.
+
+---
+
 ### Step 2: Execute Fact Verification
 
 3. Construct GPT-5 API call: read fact verification prompt from `/reference/sops/`, use chapter prose + evidence table as input.

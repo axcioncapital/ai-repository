@@ -44,9 +44,9 @@ Copy shared commands, agents, and hooks from `ai-resources/.claude/` to the depl
 
 These are ai-resources-specific and should NOT be copied to projects:
 
-**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`
+**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`, `session-guide`
 
-**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`
+**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`, `repo-dd-auditor`
 
 **Hooks:** `pre-commit`, `check-template-drift.sh`
 
@@ -61,8 +61,8 @@ For each category (`commands`, `agents`, `hooks`):
 
 ```bash
 AI_RESOURCES="{WORKSPACE_ROOT}/ai-resources"
-EXCLUDE_COMMANDS="create-skill deploy-workflow new-project graduate-resource migrate-skill improve-skill request-skill sync-workflow repo-dd"
-EXCLUDE_AGENTS="pipeline-stage session-guide-generator"
+EXCLUDE_COMMANDS="create-skill deploy-workflow new-project graduate-resource migrate-skill improve-skill request-skill sync-workflow repo-dd session-guide"
+EXCLUDE_AGENTS="pipeline-stage session-guide-generator repo-dd-auditor"
 EXCLUDE_HOOKS="pre-commit check-template-drift.sh"
 
 # Commands

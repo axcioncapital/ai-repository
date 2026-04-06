@@ -50,12 +50,6 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/check-claim-ids.sh\"",
-            "timeout": 5,
-            "statusMessage": "Checking Claim ID coverage..."
-          },
-          {
-            "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/log-write-activity.sh\"",
             "timeout": 5,
             "statusMessage": "Logging write activity..."
@@ -119,9 +113,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; NOTES=\"$PROJECT_DIR/logs/session-notes.md\"; grep -q \"wrap-session\" /tmp/claude-session-log 2>/dev/null || echo \"$(date '+%Y-%m-%d %H:%M') — Session ended without /wrap-session\" >> \"$NOTES\" 2>/dev/null || true",
+            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; NOTES=\"$PROJECT_DIR/logs/session-notes.md\"; if [ -f \"$NOTES\" ] && tail -20 \"$NOTES\" | grep -q \"$(date '+%Y-%m-%d')\"; then exit 0; fi; echo '{\"systemMessage\":\"SESSION NOT WRAPPED. Run /wrap-session before ending. Without it: no session note, no coaching data, no innovation triage. Work from this session becomes invisible to future sessions.\"}'",
             "timeout": 5,
-            "statusMessage": "Logging session end..."
+            "statusMessage": "Checking session wrap..."
           }
         ]
       }

@@ -10,6 +10,15 @@ This pipeline is for **any Axcíon project that requires Claude Code** — wheth
 
 > "This command should be run from a project repo, not from ai-resources. Open your target project repo and connect ai-resources via `--add-dir`, then run `/new-project` from there."
 
+## Pre-Flight Validation
+
+Before starting the pipeline, verify all required agent files exist in `ai-resources/.claude/agents/`:
+- `pipeline-stage-2.md`, `pipeline-stage-2-5.md`, `pipeline-stage-3a.md`, `pipeline-stage-3b.md`, `pipeline-stage-3c.md`, `pipeline-stage-4.md`, `pipeline-stage-5.md`, `session-guide-generator.md`
+
+Check with: `ls ai-resources/.claude/agents/pipeline-stage-*.md ai-resources/.claude/agents/session-guide-generator.md 2>&1`
+
+If ANY file is missing, list all missing files and stop. Do not start the pipeline.
+
 ## Context Pack Requirement
 
 The user must provide a context pack before the pipeline can start. The context pack can be:
@@ -111,9 +120,9 @@ After the pipeline completes (all stages done or final stage skipped), enrich th
 
 These are ai-resources-specific and should NOT be copied to projects:
 
-**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`
+**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`, `session-guide`
 
-**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`
+**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`, `repo-dd-auditor`
 
 **Hooks:** `pre-commit`, `check-template-drift.sh`
 

@@ -4,7 +4,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 
 **Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context. Auto-commits track file changes separately.
 
-1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Session Notes` as the header.
+1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Session Notes` as the header. **Format guard:** If the file exists but has no `# Session Notes` header, prepend it. If the last non-empty line is a partial block (unclosed heading, unterminated list), append a blank line before the new entry.
 2. Read `/logs/decisions.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Decision Journal` as the header.
 3. Using conversation context and the operator's summary, append a session note to `/logs/session-notes.md` with:
    - `## {date} — {one-line title}` (e.g., "Created supplementary-query-brief-drafter skill")
@@ -35,7 +35,8 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
    - Also surface any new CLAUDE.md rules added this session (from conversation context) and ask if they should graduate to root CLAUDE.md.
 8. **Shared command drift check.** If any `.claude/commands/` files were modified this session, ask: "These shared commands were modified: [list]. Should any changes be synced back to ai-resources or to other projects?" If yes, note the sync action in Next Steps.
 9. **Optional reflection.** Before the git commit step, ask: "Session reflection (optional, one line — what felt hard, easy, or surprising):" If Patrik provides one, add it as the `Reflection:` line in the coaching-data entry. If skipped, proceed without it.
-10. **Remind about /improve.** If the session had friction events logged (check `/logs/friction-log.md` for today's entries), suggest: "Friction events were logged this session. Consider running `/improve` to analyze them."
+10. **Improvement verification.** Read `/logs/improvement-log.md` (if it exists). Find entries with status "applied" that have no "Verified:" line. If any exist, present: "Unverified improvements: [list with date and title]." Ask: "Verify any, or skip?" If confirmed, append `- **Verified:** {date} — confirmed by operator` to each entry. If skipped, proceed.
+11. **Remind about /improve.** If the session had friction events logged (check `/logs/friction-log.md` for today's entries), suggest: "Friction events were logged this session. Consider running `/improve` to analyze them."
 
 After updating logs, stage and commit changes:
 - First run: git add logs/ skills/ prompts/ .claude/
