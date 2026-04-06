@@ -9,6 +9,8 @@ Other directories:
 - `reports/` — Generated audit and health reports
 - `logs/` — Session notes, decisions, innovation registry
 - `audits/` — Due diligence and audit artifacts
+- `docs/` — Process documentation (session rituals, etc.)
+- `scripts/` — Utility scripts for repo maintenance
 
 These resources operate across a multi-tool ecosystem — not just Claude. Skills may reference or interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Do not design resources that assume a single-tool environment.
 
