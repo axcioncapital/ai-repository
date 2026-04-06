@@ -146,6 +146,8 @@ For lightweight specs, include this section only when a non-obvious choice was m
 
 ## Workflow
 
+Progress: [ ] Read inputs [ ] Assess complexity [ ] Identify components [ ] Map interactions [ ] Constraints & edge cases [ ] Draft spec [ ] Review
+
 ### Step 1: Read Inputs
 
 Read the context pack and project plan (if available). Identify:
@@ -204,6 +206,21 @@ The spec writer documents the design from the inputs — it does not redesign th
 When uncertain whether a design choice is intentional or an oversight, note the uncertainty and proceed with the design as given. The review step (Step 7) is where the user resolves these.
 
 ---
+
+## Failure Behavior
+
+- **Context pack missing entirely:** Halt. State what is needed before a spec can be written.
+- **Context pack too sparse:** Produce a gap analysis listing missing information. Do not attempt a spec from guesses.
+- **Inputs describe a non-system deliverable (single document, research question):** State that spec-writer is not the right tool. Suggest alternatives (task-plan-creator for planning, ai-resource-builder for skills).
+- **Inputs contain contradictions:** List contradictions as open questions and present to the user before drafting. Do not silently resolve conflicts.
+- **Ambiguous requirements supporting different designs:** State which interpretation was adopted and why. Do not silently choose one path.
+- **Project too simple for a spec:** If the project is a single file with no interactions, say so. A one-paragraph design note may suffice — do not force a six-section spec.
+
+## Runtime Recommendations
+
+- **Model:** No specific requirement — works with any Claude model. More complex systems benefit from Opus for interaction mapping.
+- **Context:** Requires context pack and project plan in context. For large projects, load the context pack first, assess complexity, then load additional inputs as needed.
+- **Pipeline position:** Stage 2.5 of /new-project. Receives context pack from Stage 2 (implementation-project-planner). Feeds into Stage 3b (architecture-designer) or Stage 3c (implementation-spec-writer).
 
 ## Quality Criteria
 
