@@ -16,3 +16,11 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
    - `### Open Questions` — blockers or unresolved items; write "None" if clean
 4. If operator decisions with analytical or scoping judgment were made, append to `/logs/decisions.md` with: date, context, decision, rationale, alternatives considered. Skip this if all decisions were routine (operator-directed text edits, QC auto-fixes).
 5. If the operator didn't mention decisions but significant ones occurred in the session, list them and ask: "Should I log any of these to the decision journal?"
+6. **Innovation triage.** Read `/logs/innovation-registry.md`. For any entries with status `detected`:
+   - Present the list: "Innovations detected this session: [list with type and filename]"
+   - For each, recommend: `graduate` (useful beyond this project) or `project-specific` (stays local). One line per item.
+   - Ask the operator to confirm or override. Accept "looks good" as blanket confirmation.
+   - For items marked `graduate`: update registry status to `triaged:graduate` and remind: "Run `/graduate-resource {name}` to move it to ai-resources."
+   - For items marked project-specific: update registry status to `triaged:project-specific`.
+   - If no `detected` entries exist, skip silently.
+   - Also surface any new CLAUDE.md rules added this session (from conversation context) and ask if they should graduate to root CLAUDE.md.
