@@ -13,7 +13,7 @@ description: >
   redesigning workflows (workflow-creator), formatting/documenting workflows
   from scratch (workflow-documenter), evaluating non-workflow resources like
   single-stage procedures, SOPs without tool transitions, or checklists
-  (ai-resource-evaluator).
+  (ai-resource-builder).
 ---
 
 # Workflow Evaluator
@@ -26,7 +26,7 @@ Evaluate workflows against two standards before production use: **workflow-creat
 
 **Skill repo access:** Required for Skill Reference Integrity checks (R1–R4) and for skill-informed architecture evaluation. If the skill repository is not accessible, skip R1/R2/R4 checks, note in the report that skill reference verification was not performed, and flag it as a limitation. R3 (purpose alignment) can still be assessed from the skill name and workflow context, but architecture checks will lack skill-level detail.
 
-**Scope:** Evaluation only — do not rewrite, redesign, or restructure workflows. If asked to create or redesign a workflow, redirect to workflow-creator. If asked to format/document a workflow from scratch, redirect to workflow-documenter. If given a non-workflow resource, redirect to ai-resource-evaluator.
+**Scope:** Evaluation only — do not rewrite, redesign, or restructure workflows. If asked to create or redesign a workflow, redirect to workflow-creator. If asked to format/document a workflow from scratch, redirect to workflow-documenter. If given a non-workflow resource, redirect to ai-resource-builder.
 
 ## Evaluation Modes
 

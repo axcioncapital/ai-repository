@@ -4,7 +4,7 @@ Execute this pipeline when Patrik provides skill content from Claude Chat (paste
 
 ## Step 1: Analyze the Source
 
-Read `skills/skill-creator/SKILL.md` for the creation methodology and format standard.
+Read `skills/ai-resource-builder/SKILL.md` for the creation methodology and format standard.
 
 Then analyze the pasted Chat skill content and present:
 
@@ -32,7 +32,7 @@ Then analyze the pasted Chat skill content and present:
 After Patrik approves the migration plan:
 
 1. Create the skill directory at `skills/{skill-name}/`
-2. Write the complete SKILL.md following skill-creator methodology, applying the migration map from Step 1
+2. Write the complete SKILL.md following ai-resource-builder methodology, applying the migration map from Step 1
 3. Create any bundled resources (references/, scripts/, assets/) as identified
 4. If scripts were created, test each one by running it
 
@@ -45,12 +45,12 @@ Key migration rules:
 
 ## Step 3: Evaluate (Subagent)
 
-**The main agent** reads `skills/ai-resource-evaluator/SKILL.md` from the repo. Then spawn a subagent, passing it ONLY:
+**The main agent** reads `skills/ai-resource-builder/references/evaluation-framework.md` from the repo. Then spawn a subagent, passing it ONLY:
 
-- The evaluator skill contents (that you just read)
+- The evaluation framework contents (that you just read)
 - The newly created SKILL.md (and any bundled resources)
 
-The subagent's task: "Apply the eight-layer evaluation framework with the priority matrix for a skill. Return the full evaluation report."
+The subagent's task: "Apply the evaluation framework (behavioral analysis + convention gate). Return the full evaluation report."
 
 The subagent must NOT receive the original Chat skill content, the migration conversation, or any other context. It evaluates the skill cold, as a fresh Claude would encounter it.
 

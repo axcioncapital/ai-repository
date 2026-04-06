@@ -2,7 +2,7 @@
 
 ## What This Repo Contains
 
-This repo stores AI resources — primarily skills (SKILL.md files), plus occasional prompts and project instructions. Each skill lives in its own folder under `skills/`.
+This repo stores AI resources — primarily skills (SKILL.md files), plus occasional prompts and project instructions. Each skill lives in its own folder under `skills/`. Resource briefs from project workspaces land in `inbox/` — these are requests for new skills, created via `/request-skill` in project sessions and picked up by `/create-skill` here.
 
 These resources operate across a multi-tool ecosystem — not just Claude. Skills may reference or interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Do not design resources that assume a single-tool environment.
 
@@ -14,7 +14,7 @@ I am Patrik, a non-developer. Explain technical details in plain language. I rev
 
 Skills are consumed by other Claude instances, not by humans. Write instructions that would be beneficial and non-obvious to a fresh Claude encountering the skill for the first time. Omit what Claude already knows from general training. Include procedural knowledge, domain-specific details, and failure mode handling that a general-purpose Claude would lack.
 
-Every skill follows the structure defined in the skill-creator-2 methodology:
+Every skill follows the structure defined in the ai-resource-builder methodology:
 
 - YAML frontmatter with `name` and `description` (required)
 - Markdown body with instructions
@@ -59,7 +59,7 @@ When creating or improving AI resources, follow this sequence.
 
 ### Quality Check (Default: Lightweight)
 
-After every creation or improvement, read `skills/ai-resource-evaluator/SKILL.md` in this repo and apply its eight-layer evaluation framework with the priority matrix for the relevant resource type. Flag issues as Critical / Major / Minor with specific fixes. This is the default — I will tell you when to skip it.
+After every creation or improvement, read `skills/ai-resource-builder/references/evaluation-framework.md` in this repo and apply the evaluation framework (behavioral analysis + convention gate) with the priority matrix for the relevant resource type. Flag issues as Critical / Major / Minor with specific fixes. This is the default — I will tell you when to skip it.
 
 ## General Session Rules
 

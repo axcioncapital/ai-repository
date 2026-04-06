@@ -12,7 +12,7 @@ Before making any changes, verify the current version of the skill is committed 
 
 ## Step 1: Understand the Feedback
 
-Read the skill Patrik points to. Then read `skills/ai-resource-improver/SKILL.md` for the improvement methodology.
+Read the skill Patrik points to. Then read `skills/ai-resource-builder/SKILL.md` for the improvement methodology (see the Improve Workflow section).
 
 Before doing anything else, present:
 
@@ -24,7 +24,7 @@ Before doing anything else, present:
 
 If any suggestions conflict with each other, flag the conflict explicitly.
 
-**Decision point:** If the feedback is pushing the skill beyond its original scope — adding unrelated responsibilities, combining different domains, requiring 2+ new sections — flag that this may warrant a new skill rather than an improvement. Do not scope-creep an existing skill. The ai-resource-improver methodology includes a complexity threshold for this — apply it.
+**Decision point:** If the feedback is pushing the skill beyond its original scope — adding unrelated responsibilities, combining different domains, requiring 2+ new sections — flag that this may warrant a new skill rather than an improvement. Do not scope-creep an existing skill. The ai-resource-builder methodology includes a complexity threshold for this — apply it.
 
 **Stop here and wait for Patrik's response.** Do not proceed until he confirms or adjusts.
 
@@ -36,18 +36,18 @@ If scripts were modified or created, test each one by running it. A script passe
 
 ## Step 3: Iteration Suggestions
 
-Review the modified skill and generate 2–4 iteration suggestions per the ai-resource-improver methodology.
+Review the modified skill and generate 2–4 iteration suggestions per the ai-resource-builder improvement methodology.
 
 For each suggestion, check whether it conflicts with a change just applied in Step 2. Apply non-conflicting suggestions automatically. Skip any that would modify or reverse a Step 2 change, and note what was skipped and why.
 
 ## Step 4: Evaluate (Subagent)
 
-**The main agent** reads `skills/ai-resource-evaluator/SKILL.md` from the repo. Then spawn a subagent, passing it ONLY:
+**The main agent** reads `skills/ai-resource-builder/references/evaluation-framework.md` from the repo. Then spawn a subagent, passing it ONLY:
 
-- The evaluator skill contents (that you just read)
+- The evaluation framework contents (that you just read)
 - The modified SKILL.md (and any bundled resources)
 
-The subagent's task: "Apply the eight-layer evaluation framework with the priority matrix for a skill. Return the full evaluation report."
+The subagent's task: "Apply the evaluation framework (behavioral analysis + convention gate). Return the full evaluation report."
 
 The subagent must NOT receive the original feedback, the improvement conversation, or any other context. It evaluates the skill cold.
 

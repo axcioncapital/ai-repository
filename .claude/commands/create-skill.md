@@ -4,7 +4,7 @@ Execute this pipeline when Patrik provides a resource brief for a new skill.
 
 ## Step 1: Understand the Need
 
-Read the resource brief Patrik provides. Then read `skills/skill-creator/SKILL.md` for the creation methodology.
+Read the resource brief Patrik provides. Then read `skills/ai-resource-builder/SKILL.md` for the creation methodology.
 
 Before doing anything else, present:
 
@@ -22,18 +22,18 @@ Before doing anything else, present:
 After Patrik approves the plan:
 
 1. Create the skill directory at `skills/{skill-name}/`
-2. Write the complete SKILL.md following skill-creator methodology
+2. Write the complete SKILL.md following ai-resource-builder methodology
 3. Create any bundled resources (scripts/, references/, assets/) as planned
 4. If scripts were created, test each one by running it. A script passes if it: (a) executes without errors, and (b) produces output consistent with what SKILL.md says it should do. If a script runs but produces unexpected output, flag it — don't mark it as tested.
 
 ## Step 3: Evaluate (Subagent)
 
-**The main agent** reads `skills/ai-resource-evaluator/SKILL.md` from the repo. Then spawn a subagent, passing it ONLY:
+**The main agent** reads `skills/ai-resource-builder/references/evaluation-framework.md` from the repo. Then spawn a subagent, passing it ONLY:
 
-- The evaluator skill contents (that you just read)
+- The evaluation framework contents (that you just read)
 - The newly created SKILL.md (and any bundled resources)
 
-The subagent's task: "Apply the eight-layer evaluation framework with the priority matrix for a skill. Return the full evaluation report."
+The subagent's task: "Apply the evaluation framework (behavioral analysis + convention gate). Return the full evaluation report."
 
 The subagent must NOT receive the resource brief, the creation conversation, or any other context. It evaluates the skill cold, as a fresh Claude would encounter it.
 

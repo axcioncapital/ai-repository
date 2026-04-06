@@ -1,42 +1,43 @@
----
-name: ai-resource-evaluator
-description: >
-  Evaluates AI resources (skills, prompts, project instructions) against an
-  eight-layer quality framework to identify structural weaknesses before
-  deployment. Use when: (1) evaluating a newly created skill, prompt, or
-  project instruction, (2) reviewing an existing resource for quality issues,
-  (3) checking a resource before deployment. Designed for same-chat evaluation
-  of drafts.
----
+# AI Resource Evaluation Framework
 
-# AI Resource Evaluator
+## Table of Contents
 
-Evaluate AI resources against the eight-layer framework to identify structural weaknesses before deployment.
+1. [How to Use This Document](#how-to-use-this-document)
+2. [Phase 1: Behavioral Analysis](#phase-1-behavioral-analysis)
+3. [Phase 2: Convention Gate](#phase-2-convention-gate)
+4. [Output Format](#output-format)
+5. [Severity Definitions](#severity-definitions)
+6. [Worked Example](#worked-example)
 
-## Input Requirements
+## How to Use This Document
 
-Include when available:
-- Resource name (or infer from YAML `name` field → first H1 → filename → "Untitled resource")
+This is a standalone evaluation framework. It is passed directly to evaluation subagents that have no other context about the resource being evaluated.
+
+**Input requirements.** Include when available:
+- Resource name (or infer from YAML `name` field -> first H1 -> filename -> "Untitled resource")
 - Target platform (Claude/ChatGPT/other) — platform-specific constraints may apply
 - Dependencies or referenced assets
 - Intended runtime context (standalone, embedded in project, API use)
 
 For multi-file input, delimit with `--- file: path ---` between each file.
 
-## Workflow
+**Workflow:**
+1. Identify resource type (Skill, Prompt, or Project Instruction). If ambiguous, default to best-fit and note it.
+2. Run Phase 1: Behavioral Analysis (eight-layer evaluation)
+3. Run Phase 2: Convention Gate (structural and metadata checks)
+4. Produce combined report using the Output Format
 
-1. **Identify resource type** — Skill, prompt, or project instruction. If ambiguous, default to best-fit and note it.
-2. **Apply eight-layer evaluation** — Check each layer using the priority matrix and scoring rubric. For Failure Behavior, mentally test: What happens if required input is missing? If the model is uncertain? If constraints conflict?
-3. **Apply type-specific criteria** — Check implementation details specific to that resource type
-4. **Report findings** — Present numbered issues with severity and suggested fixes
+---
 
-## The Eight Layers
+## Phase 1: Behavioral Analysis
 
-Evaluate each layer by asking:
+Evaluate each layer by asking four questions:
 1. **Present?** Can you identify content serving this layer?
 2. **Complete?** Does it address the completeness criteria?
 3. **Consistent?** Does it conflict with other layers?
 4. **Appropriate?** Over- or under-engineered for the resource type?
+
+### The Eight Layers
 
 | Layer | What It Does | Signs It's Weak | Completeness Criteria |
 |-------|--------------|-----------------|----------------------|
@@ -69,7 +70,7 @@ A resource violates single-responsibility when it tries to accomplish multiple u
 
 Flag violations as **Critical** under Purpose layer.
 
-## Priority Matrix
+### Priority Matrix
 
 Calibrates evaluation intensity by resource type. Severity flows from layer priority.
 
@@ -85,15 +86,15 @@ Calibrates evaluation intensity by resource type. Severity flows from layer prio
 | Output Contract | Critical | Optional | Important |
 
 **Severity assignment:**
-- **Critical** layer missing/weak → Critical issue
-- **Important** layer missing/weak → Major issue
-- **Optional** layer missing → Minor or no issue
+- **Critical** layer missing/weak -> Critical issue
+- **Important** layer missing/weak -> Major issue
+- **Optional** layer missing -> Minor or no issue
 
-## Type-Specific Criteria
+### Type-Specific Criteria
 
 After eight-layer evaluation, check these implementation details.
 
-### Skills
+#### Skills
 
 | Category | What to Check |
 |----------|---------------|
@@ -103,7 +104,7 @@ After eight-layer evaluation, check these implementation details.
 | **Resource references** | Bundled resources (scripts, references, assets) properly referenced? |
 | **Progressive disclosure** | SKILL.md lean? Should content move to references/? |
 
-### Prompts
+#### Prompts
 
 | Category | What to Check |
 |----------|---------------|
@@ -113,7 +114,7 @@ After eight-layer evaluation, check these implementation details.
 | **Variable handling** | Placeholders/variables clear? Default values needed? |
 | **Standalone usability** | Works without additional explanation? |
 
-### Project Instructions
+#### Project Instructions
 
 | Category | What to Check |
 |----------|---------------|
@@ -123,11 +124,68 @@ After eight-layer evaluation, check these implementation details.
 | **Integration** | How does this interact with skills? Potential conflicts? |
 | **Methodology references** | Referenced skills/workflows available and correct? |
 
+---
+
+## Phase 2: Convention Gate
+
+These checks catch structural and convention issues that behavioral analysis cannot detect. They are binary: Pass, Fail, or N-A.
+
+**Applicability:**
+- C1-C9: Skills only (prompts and project instructions skip these)
+- C10-C14: Skills primarily; C14 also applies to prompts
+- C15-C19: Skills with bundled resources only
+
+### Metadata Conventions
+
+| # | Check | Pass Criteria |
+|---|-------|---------------|
+| C1 | Name format | `name` is kebab-case, matches folder name, uses namespace prefix if applicable |
+| C2 | Description front-loading | First 250 characters contain the primary trigger phrases |
+| C3 | Description constraints | Third person voice, specific (not generic), under 1024 characters |
+| C4 | Negative triggers | If skill's domain overlaps with another skill, description includes "Do NOT use for" exclusions |
+| C5 | Body length | SKILL.md body under 500 lines |
+
+### Frontmatter Configuration
+
+| # | Check | Pass Criteria |
+|---|-------|---------------|
+| C6 | Invocation control | `disable-model-invocation` decision documented if skill has side effects |
+| C7 | Tool restrictions | `allowed-tools` decision documented if scope matters |
+| C8 | Paths field | `paths` field considered (included or explicitly ruled out) |
+| C9 | Runtime config | Agent/effort/model preferences considered and documented in runtime recommendations |
+
+### Structural Conventions
+
+| # | Check | Pass Criteria |
+|---|-------|---------------|
+| C10 | Reference depth | All reference files are one level deep from SKILL.md |
+| C11 | Reference TOC | Reference files over 100 lines include a table of contents |
+| C12 | Time-sensitive content | No time-sensitive info in body, or isolated in collapsible section with date stamp |
+| C13 | Runtime recommendations | Section present documenting model, context, and performance notes |
+| C14 | Examples present | For output-dependent resources, concrete input/output examples are included |
+
+### Bundled Resource Quality
+
+| # | Check | Pass Criteria |
+|---|-------|---------------|
+| C15 | Execute vs. read | For every bundled script, SKILL.md clarifies whether to execute or read as reference |
+| C16 | Script error handling | Bundled scripts handle errors explicitly (no silent failures) |
+| C17 | No magic constants | Scripts and instructions contain no unexplained numeric thresholds or constants |
+| C18 | Dependencies verified | External dependencies (packages, tools, APIs) listed and confirmed available |
+| C19 | Progress tracking | Instruction-only skills (no scripts/tools) use checklist-based progress tracking for complex workflows |
+
+### Convention Gate Severity
+
+- Failed metadata conventions (C1-C5) → Major issue (these affect discoverability and compliance)
+- Failed frontmatter configuration (C6-C9) → Minor issue (these affect runtime behavior but not correctness)
+- Failed structural conventions (C10-C14) → Major issue (these affect usability)
+- Failed bundled resource quality (C15-C19) → Major issue (these affect reliability)
+
+---
+
 ## Output Format
 
-Number all issues sequentially. User can reply with just numbers (e.g., "1, 4, 7") to indicate which to address.
-
-**Resource name inference:** YAML `name` field → first H1 → filename → "Untitled resource".
+Number all issues sequentially across both phases. User can reply with just numbers (e.g., "1, 4, 7") to indicate which to address.
 
 ```
 ## Evaluation: [Resource Name]
@@ -136,7 +194,7 @@ Number all issues sequentially. User can reply with just numbers (e.g., "1, 4, 7
 **Target platform:** [If specified, else "—"]
 **Classification note:** [If ambiguous, explain. Otherwise: "—"]
 
-### Layer Coverage
+### Layer Coverage (Phase 1)
 
 | Layer | Status | Notes |
 |-------|--------|-------|
@@ -149,29 +207,40 @@ Number all issues sequentially. User can reply with just numbers (e.g., "1, 4, 7
 | Failure Behavior | ✓ / ⚠️ / ✗ | [Brief note] |
 | Output Contract | ✓ / ⚠️ / ✗ | [Brief note] |
 
+### Convention Gate (Phase 2)
+
+| # | Check | Status | Notes |
+|---|-------|--------|-------|
+[Applicable items only — skip N-A items]
+
 ### Issues Found
 
-**1. [Severity: Critical / Major / Minor]** — [Layer or Category]
+**1. [Severity: Critical / Major / Minor]** — [Layer or Convention #]
 - **Issue:** [Description]
 - **Location:** [Where in the resource]
 - **Fix:** [Specific suggestion]
 
-[Continue sequential numbering]
+[Continue sequential numbering across both phases]
 
 ### Summary
 - Critical: [n]
 - Major: [n]
 - Minor: [n]
+- Convention gate: [n]/[n] passed
 - Total issues: [n]
 ```
 
 If no issues found, show all layers as ✓ Present and state: "No issues identified. Resource appears ready for testing."
 
+---
+
 ## Severity Definitions
 
 - **Critical** — Will cause incorrect behavior or failures. Must fix before use. Includes: missing Critical-priority layers, single-responsibility violations, contradictions between layers.
-- **Major** — Likely to cause problems in common scenarios. Should fix. Includes: missing Important-priority layers, incomplete coverage, weak failure behavior.
-- **Minor** — Edge cases, style, improvements. Nice to fix. Includes: missing Optional layers, over-engineering, minor inconsistencies.
+- **Major** — Likely to cause problems in common scenarios. Should fix. Includes: missing Important-priority layers, incomplete coverage, weak failure behavior, failed structural conventions.
+- **Minor** — Edge cases, style, improvements. Nice to fix. Includes: missing Optional layers, over-engineering, minor inconsistencies, failed frontmatter configuration items.
+
+---
 
 ## Worked Example
 
@@ -181,6 +250,12 @@ You are a helpful assistant. Answer the user's questions about our product catal
 ```
 
 **Evaluation:**
+
+**Resource type:** Prompt
+**Target platform:** —
+**Classification note:** —
+
+### Layer Coverage (Phase 1)
 
 | Layer | Status | Notes |
 |-------|--------|-------|
@@ -193,13 +268,35 @@ You are a helpful assistant. Answer the user's questions about our product catal
 | Failure Behavior | ✗ Missing | No guidance when uncertain |
 | Output Contract | ✗ Missing | No format specified |
 
-**1. Critical** — Context Boundary: No specification of where to draw product information from. Fix: "Use only the product catalog provided in context. Do not invent product details."
+### Convention Gate (Phase 2)
 
-**2. Critical** — Failure Behavior: No guidance when product isn't in catalog. Fix: "If a product is not in the catalog, say so. Do not guess."
+Skipped — resource is a prompt, not a skill.
 
-**3. Major** — Purpose: "Helpful assistant" is generic; model may over-help outside scope. Fix: "You are a product catalog assistant. Help users find products using only the provided catalog."
+### Issues Found
 
-Summary: Critical: 2, Major: 1, Minor: 0, Total: 3
+**1. Critical** — Context Boundary
+- **Issue:** No specification of where to draw product information from.
+- **Location:** Entire prompt
+- **Fix:** Add: "Use only the product catalog provided in context. Do not invent product details."
+
+**2. Critical** — Failure Behavior
+- **Issue:** No guidance when product isn't in catalog.
+- **Location:** Entire prompt
+- **Fix:** Add: "If a product is not in the catalog, say so. Do not guess."
+
+**3. Major** — Purpose
+- **Issue:** "Helpful assistant" is generic; model may over-help outside scope.
+- **Location:** Opening sentence
+- **Fix:** "You are a product catalog assistant. Help users find products using only the provided catalog."
+
+### Summary
+- Critical: 2
+- Major: 1
+- Minor: 0
+- Convention gate: N/A (prompt)
+- Total issues: 3
+
+---
 
 ## Evaluation Principles
 
