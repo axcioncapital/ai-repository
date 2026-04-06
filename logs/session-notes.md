@@ -172,3 +172,65 @@ None
 
 ### Open Questions
 None
+
+## 2026-04-06 — Synced wrap-session command across projects + added drift check
+
+### Summary
+Compared the `/wrap-session` command between ai-resources and buy-side-service-plan, then updated the ai-resources version to gain buy-side improvements: coaching data capture, optional reflection prompt, and auto-commit. Also added a new "shared command drift check" step to both versions so future modifications to shared commands get flagged for cross-project sync during session wrap.
+
+### Files Created
+None
+
+### Files Modified
+- `.claude/commands/wrap-session.md` (ai-resources) — added coaching data capture, optional reflection, auto-commit, shared command drift check
+- `/projects/buy-side-service-plan/.claude/commands/wrap-session.md` — added shared command drift check step
+
+### Decisions Made
+- Sync direction: ai-resources updated to match buy-side improvements (not the reverse)
+- Project-specific content (service development tracking, buy-side git paths) excluded from ai-resources version
+- Friction log `/improve` reminder kept in ai-resources version (not in buy-side) — useful for the resource repo
+- Shared command drift check added to both versions as lightweight sync mechanism (option 2 over building a dedicated `/sync-command` skill)
+
+### Next Steps
+- Test `/wrap-session` in a project session to verify coaching data and drift check steps work
+- Push ai-resources and buy-side-service-plan repos
+- Consider building `/sync-command` if the drift check alone proves insufficient
+
+### Open Questions
+None
+
+---
+
+## 2026-04-06 — Session rituals doc + subagent isolation for 6 commands
+
+### Summary
+Created a session rituals reference document for Patrik and Daniel covering the full session lifecycle (start, during, end, on-demand). Then analyzed all 25 commands for subagent usage, identified 6 that should use subagents for independent evaluation, and built the agents and updated the commands. Also saved repo-dd tier reference to memory.
+
+### Files Created
+- `docs/session-rituals.md` — Session rituals quick reference for Patrik & Daniel
+- `.claude/agents/qc-reviewer.md` — Independent QC reviewer subagent
+- `.claude/agents/refinement-reviewer.md` — Independent refinement reviewer subagent
+- `.claude/agents/triage-reviewer.md` — Independent triage reviewer subagent
+- `.claude/agents/repo-dd-auditor.md` — Independent repo audit subagent
+
+### Files Modified
+- `.claude/commands/qc-pass.md` — Rewired to delegate to `qc-reviewer` subagent
+- `.claude/commands/refinement-pass.md` — Rewired to delegate to `refinement-reviewer` subagent
+- `.claude/commands/triage.md` — Rewired to delegate to `triage-reviewer` subagent
+- `.claude/commands/repo-dd.md` — Steps 1-2 now delegate factual audit to `repo-dd-auditor` subagent
+- `.claude/commands/improve.md` — Tightened handoff (passes paths only, agent gathers own context)
+
+### Decisions Made
+- All 6 commands that involve evaluating own output now use subagents (QC Independence Rule enforcement)
+- `/session-guide` already used a subagent — no change needed
+- `/repo-dd` deep assessment steps (7-13) still run in main context since they need audit report as input — only factual audit delegated
+- Session rituals doc placed in `docs/` directory (new directory)
+- `/usage-analysis` added as optional session-end step; `/sync-workflow` added to on-demand section
+
+### Next Steps
+- Test `/qc-pass` and `/refinement-pass` with subagents in a fresh session
+- Test `/repo-dd` with new subagent delegation
+- Push all repos after reviewing commits
+
+### Open Questions
+None

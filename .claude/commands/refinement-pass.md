@@ -1,19 +1,20 @@
-Run a refinement pass on the work you just produced.
+Run an independent refinement pass on the work you just produced.
 
-First, state in one line what you are refining.
+## Why a subagent?
 
-Then evaluate against these criteria:
+You produced the work — you're anchored to your own phrasing and structure. The refinement reviewer runs as a separate agent with fresh eyes, no knowledge of your drafting process.
 
-1. **Clarity** — Is anything ambiguous, vague, or likely to be misunderstood by its intended audience? Propose specific rewording only where needed.
-2. **Redundancy** — Is anything repeated or said twice in different ways? Flag for removal.
-3. **Gaps** — Is anything implied that should be made explicit? Flag only gaps that would cause a problem, not nice-to-haves.
-4. **Structure** — Is the organization logical? Would reordering any sections improve flow?
-5. **Economy** — Can anything be cut without losing meaning?
+## Steps
 
-Rules:
-- Do NOT add new content, features, or scope
-- Do NOT rewrite sections that are already clear
-- Propose minimal targeted changes — state what you would change and why
-- If nothing meaningful needs refinement, say "Clean — no refinements needed" and stop
+1. **Identify the artifact.** State in one line what you are refining.
 
-Format each finding as: **what to change** → proposed change → why.
+2. **Prepare the handoff.** Gather:
+   - One-line description of the artifact
+   - The file path(s) of the artifact, or the content if it hasn't been written to file yet
+   - The intended audience (e.g., "another Claude instance", "a human operator", "a technical team")
+
+3. **Launch the `refinement-reviewer` subagent.** Pass it the three items above. Do NOT pass conversation history, your reasoning, or creation context.
+
+4. **Present the results.** Show the subagent's review to the operator exactly as returned. Do not filter or soften findings.
+
+5. **Wait for direction.** The operator decides which refinements to apply.

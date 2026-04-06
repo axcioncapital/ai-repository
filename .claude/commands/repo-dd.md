@@ -11,26 +11,23 @@ Input: $ARGUMENTS (optional) — depth control:
 
 1. Set WORKSPACE to the Axcion AI workspace root (parent of `ai-resources/`).
 2. Set AUDIT_DIR to `ai-resources/audits/`.
-3. Read the questionnaire from `{AUDIT_DIR}/questionnaire.md`.
-4. Check for the most recent previous audit in `{AUDIT_DIR}/` by looking for files matching `repo-due-diligence-*.md` (exclude `*-partial.md`). Set PREVIOUS_AUDIT to that file path, or "None" if no previous audit exists.
-5. Set REPORT_PATH to `{AUDIT_DIR}/repo-due-diligence-YYYY-MM-DD.md` using today's date.
-6. Get the current HEAD short hash for each git repo in the workspace (ai-resources, any repos under projects/, workflows/).
+3. Check for the most recent previous audit in `{AUDIT_DIR}/` by looking for files matching `repo-due-diligence-*.md` (exclude `*-partial.md`). Set PREVIOUS_AUDIT to that file path, or "None" if no previous audit exists.
+4. Set REPORT_PATH to `{AUDIT_DIR}/repo-due-diligence-YYYY-MM-DD.md` using today's date.
 
 ---
 
-### Step 2: Execute Questionnaire
+### Step 2: Delegate Factual Audit to Subagent
 
-7. Run the questionnaire against the full workspace — all git repos, all levels (.claude/ directories, skills, commands, hooks, workflows, projects).
-8. Follow every rule in the questionnaire's Instructions section exactly:
-   - Be specific: file names, line counts, exact paths, exact counts.
-   - Say "None found — checked [describe what was compared or searched]" when a check turns up clean.
-   - Say "Unknown — cannot determine from repo contents" only if you genuinely can't answer.
-   - If a question asks you to list things, list all of them — don't summarize or truncate.
-9. If PREVIOUS_AUDIT is not "None", include DELTA notes under each answer using the format specified in the questionnaire.
-10. For questions that reference "the current repo" — interpret this as the full workspace (all repos under WORKSPACE).
-11. If Q4.3 is not applicable (no skill creation templates exist), mark it as: `N/A — No skill creation template file exists. Skills are created via /create-skill which references ai-resource-builder/SKILL.md for format standards.`
-12. Save the completed audit to REPORT_PATH.
-13. The audit report must contain facts only — no recommendations, no suggested fixes, no commentary.
+5. **Launch the `repo-dd-auditor` subagent.** Pass it:
+   - WORKSPACE path
+   - AUDIT_DIR path
+   - PREVIOUS_AUDIT path (or "None")
+   - REPORT_PATH
+   - DEPTH: "standard", "deep", or "full" based on $ARGUMENTS
+
+   The subagent reads the questionnaire, executes it against the workspace, and saves the report. This ensures the factual audit runs with fresh context and no bias from recent session work.
+
+6. When the subagent returns, read the saved report at REPORT_PATH to verify it was written.
 
 ---
 

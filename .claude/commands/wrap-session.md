@@ -2,7 +2,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 
 ## Instructions
 
-**Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context.
+**Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context. Auto-commits track file changes separately.
 
 1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Session Notes` as the header.
 2. Read `/logs/decisions.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Decision Journal` as the header.
@@ -11,17 +11,33 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
    - `### Summary` — 2-4 sentences: what was accomplished, what was the focus
    - `### Files Created` — list from conversation context (path + short description)
    - `### Files Modified` — list from conversation context
-   - `### Decisions Made` — operator-directed decisions; QC fixes listed separately
-   - `### Next Steps` — what to work on next, any pending items
+   - `### Decisions Made` — operator-directed decisions grouped by artifact; QC fixes listed separately
+   - `### Next Steps` — what command to run next, any recommended groupings or sequencing
    - `### Open Questions` — blockers or unresolved items; write "None" if clean
 4. If operator decisions with analytical or scoping judgment were made, append to `/logs/decisions.md` with: date, context, decision, rationale, alternatives considered. Skip this if all decisions were routine (operator-directed text edits, QC auto-fixes).
 5. If the operator didn't mention decisions but significant ones occurred in the session, list them and ask: "Should I log any of these to the decision journal?"
-6. **Innovation triage.** Read `/logs/innovation-registry.md`. For any entries with status `detected`:
+6. **Coaching data capture.** After writing the session note, auto-append a session profile entry to `/logs/coaching-data.md`. Derive all fields from the session note you just wrote — no extra operator input needed:
+   ```
+   ### {YYYY-MM-DD} — {session title}
+   - **Commands used:** {slash commands triggered this session, from conversation context}
+   - **Iterations:** {draft iteration count and section, e.g., "3 (skill-name draft-01 → draft-03)", or "0" if no drafting}
+   - **Decisions logged:** {count of decisions appended to decisions.md this session}
+   - **QC cycles:** {count and outcome, e.g., "1 (conditional pass → fixes → approved)", or "0"}
+   - **Reflection:** {operator's reflection if provided, otherwise omit this line}
+   ```
+7. **Innovation triage.** Read `/logs/innovation-registry.md`. For any entries with status `detected`:
    - Present the list: "Innovations detected this session: [list with type and filename]"
-   - For each, recommend: `graduate` (useful beyond this project — route to `/graduate-resource`) or `project-specific` (stays local). Keep recommendations brief — one line per item.
+   - For each, recommend: `graduate` (useful beyond this project) or `project-specific` (stays local). One line per item.
    - Ask the operator to confirm or override. Accept "looks good" as blanket confirmation.
-   - For items marked `graduate`: update the registry entry status to `triaged:graduate`. Note: actual graduation happens via `/graduate-resource` in a separate step.
-   - For items marked `project-specific`: update the registry entry status to `triaged:project-specific`.
+   - For items marked `graduate`: update registry status to `triaged:graduate` and remind: "Run `/graduate-resource {name}` to move it to ai-resources."
+   - For items marked project-specific: update registry status to `triaged:project-specific`.
    - If no `detected` entries exist, skip silently.
-7. **CLAUDE.md rule check.** Surface any new CLAUDE.md rules added this session (from conversation context) and ask if they should graduate to root CLAUDE.md.
-8. **Remind about /improve.** If the session had friction events logged (check `/logs/friction-log.md` for today's entries), suggest: "Friction events were logged this session. Consider running `/improve` to analyze them."
+   - Also surface any new CLAUDE.md rules added this session (from conversation context) and ask if they should graduate to root CLAUDE.md.
+8. **Shared command drift check.** If any `.claude/commands/` files were modified this session, ask: "These shared commands were modified: [list]. Should any changes be synced back to ai-resources or to other projects?" If yes, note the sync action in Next Steps.
+9. **Optional reflection.** Before the git commit step, ask: "Session reflection (optional, one line — what felt hard, easy, or surprising):" If Patrik provides one, add it as the `Reflection:` line in the coaching-data entry. If skipped, proceed without it.
+10. **Remind about /improve.** If the session had friction events logged (check `/logs/friction-log.md` for today's entries), suggest: "Friction events were logged this session. Consider running `/improve` to analyze them."
+
+After updating logs, stage and commit changes:
+- First run: git add logs/ skills/ prompts/ .claude/
+- Then run: git commit -m "session: [brief description of session work]"
+Run these as two separate commands, not chained.

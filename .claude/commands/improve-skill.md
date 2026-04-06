@@ -55,25 +55,49 @@ Capture the subagent's evaluation report.
 
 **Evaluation quality gate:** If the evaluation report contains no issues across both phases (behavioral analysis and convention gate), or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 7 results.
 
-## Step 5: Auto-Fix
+## Step 5: Auto-Fix (Severity-Calibrated Iteration)
 
-Review the evaluation report. For any **Critical** or **Major** issues:
+### 5a: Triage
 
-1. Apply fixes directly to the skill file
-2. Log each fix: what was changed and why
+Before fixing anything, classify every issue from the evaluation report:
+
+- **BLOCKING** — Will cause incorrect behavior or prevent the skill from working. Must fix.
+- **IMPORTANT** — Degrades quality in common scenarios. Should fix.
+- **MINOR** — Edge cases, style, polish. Note for Patrik's review, do not fix.
+
+### 5b: Fix (Pass 1)
+
+For BLOCKING and IMPORTANT issues only:
+
+1. Apply the smallest change that resolves each issue. Do not rewrite surrounding content, reorder sections, or "improve" adjacent text.
+2. Log each fix: what was changed, why, and which issue it resolves.
 3. For each fix, explicitly check: does this fix create a mismatch between the YAML description and the body? If a trigger condition, exclusion, or output format was changed, update the YAML description to match.
 
-Do NOT auto-fix Minor issues — note them for Patrik's review.
+### 5c: Regression Check (Pass 2)
 
-## Step 5b: Verify Fixes
-
-After all auto-fixes are applied, do a lightweight re-check:
+After all fixes are applied:
 
 1. Re-read the fixed skill end-to-end
-2. Check that fixes didn't introduce contradictions (e.g., tightening a trigger that now conflicts with an exclusion)
-3. Check that fixes didn't break something the evaluator approved (e.g., removing content that was marked as a strength)
+2. Check specifically for regressions introduced by the fixes:
+   - Contradictions (e.g., tightening a trigger that now conflicts with an exclusion)
+   - Broken content the evaluator approved (e.g., removing text that was marked as a strength)
+   - New BLOCKING or IMPORTANT issues that didn't exist before the fixes
+3. If regressions found, fix them and log the secondary fix
 
-If new issues are found, fix them and log the secondary fix. Do not loop more than once — if issues persist after one round of secondary fixes, flag them for Patrik's review.
+### 5d: Stall Detection
+
+If the same issue persists after Pass 1 and the regression check (2 fix attempts):
+
+1. Stop trying to fix the output
+2. Log a structured escalation to `logs/improvement-log.md`:
+   ```
+   - **Category:** stall-escalation
+   - **Issue:** [what the issue is]
+   - **Attempts:** [what was tried in each pass]
+   - **Likely fix layer:** [CLAUDE.md rule / skill instruction / command step / evaluation framework]
+   - **Recommendation:** [specific instruction change that would prevent this issue from recurring]
+   ```
+3. Flag the stall for Patrik in Step 7 results
 
 ## Step 6: Verify Against Embedded Spec and Original Feedback
 

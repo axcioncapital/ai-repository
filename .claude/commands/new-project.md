@@ -103,6 +103,31 @@ If a stage subagent reports failure:
 - Report the failure to the user
 - Offer options: retry the stage, abort the pipeline, or fix manually and resume
 
+## Post-Pipeline Enrichment
+
+After the pipeline completes (all stages done or final stage skipped), enrich the project with shared ai-resources features using the same logic as `/deploy-workflow` Step 4.
+
+### Exclusion lists
+
+These are ai-resources-specific and should NOT be copied to projects:
+
+**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`
+
+**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`
+
+**Hooks:** `pre-commit`, `check-template-drift.sh`
+
+### Copy logic
+
+For each category (`commands`, `agents`, `hooks`):
+
+1. List all files in `{WORKSPACE_ROOT}/ai-resources/.claude/{category}/`
+2. Skip any file whose basename (without extension) matches the exclusion list
+3. Skip any file that already exists in the project's `.claude/{category}/` — pipeline output takes precedence
+4. Copy the remaining files, creating directories if needed
+
+Report what was added. If a copied hook has no `settings.json` entry, warn the operator. Do not auto-modify `settings.json`. Do not commit — the operator reviews the enrichment alongside the pipeline output.
+
 ## Key Rules
 
 - Never advance a stage without user confirmation (`NEXT`)

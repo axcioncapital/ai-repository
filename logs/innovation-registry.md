@@ -18,3 +18,9 @@
 | 2026-04-06 | command | .claude/commands/deploy-workflow.md | triaged:project-specific | — |
 | 2026-04-06 | command | .claude/commands/new-project.md | triaged:project-specific | — |
 | 2026-04-06 | command | .claude/commands/repo-dd-deep.md | merged into repo-dd.md | — |
+| 2026-04-06 | agent | .claude/agents/qc-reviewer.md | triaged:project-specific | — |
+| 2026-04-06 | agent | .claude/agents/refinement-reviewer.md | triaged:project-specific | — |
+| 2026-04-06 | agent | .claude/agents/triage-reviewer.md | triaged:project-specific | — |
+| 2026-04-06 | agent | .claude/agents/repo-dd-auditor.md | triaged:project-specific | — |
+| 2026-04-06 | command | .claude/commands/improve.md | graduated | ai-resources/.claude/commands/improve.md |
+| 2026-04-06 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/wrap-session.md | triaged:project-specific | — |

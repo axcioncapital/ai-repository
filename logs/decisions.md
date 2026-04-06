@@ -40,3 +40,9 @@
 - **Decision:** Use an exclusion list (repo-specific items blocked) rather than an inclusion list (shared items allowed). New features flow to projects by default.
 - **Rationale:** Patrik constantly adds new features. An inclusion list requires manual updates every time. An exclusion list only needs updating when a new repo-specific tool is created, which is rare. The 9 excluded commands, pipeline agents, and 2 hooks are clearly ai-resources-only.
 - **Alternatives considered:** (a) Inclusion list — rejected, requires constant maintenance. (b) Keep template manually updated — rejected, that's the discipline problem this fix solves. (c) Symlinks instead of copies — rejected, projects are standalone repos that may diverge intentionally.
+
+### 2026-04-06 — Shared command drift check over dedicated sync command
+- **Context:** Improvements made to shared commands in project workspaces (e.g., buy-side adding coaching data to wrap-session) don't automatically flow back to ai-resources. No mechanism existed to catch this drift.
+- **Decision:** Add a lightweight drift check step to `/wrap-session` rather than building a dedicated `/sync-command` skill.
+- **Rationale:** Piggybacks on an existing routine (session wrap) so it costs zero extra process. Only asks the question — doesn't force action. If this proves insufficient, a dedicated command can be built later.
+- **Alternatives considered:** (a) Manual habit — rejected, relies on memory. (b) Dedicated `/sync-command` — deferred, over-engineering for a problem that may be fully solved by a prompt. (c) Automated diffing — rejected, too complex for the current volume of shared commands.

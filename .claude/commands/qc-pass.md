@@ -1,18 +1,20 @@
-Stop and run a QC pass on the work you just produced or proposed.
+Stop and run an independent QC pass on the work you just produced or proposed.
 
-First, identify what you are QC'ing (a plan, a drafted file, an edit, a set of changes) — state it in one line.
+## Why a subagent?
 
-Then check against these criteria:
+You produced the work — you cannot objectively evaluate it. The QC reviewer runs as a separate agent with no access to your conversation, ensuring independent assessment per the QC Independence Rule.
 
-1. **Request match** — Does the output do what the user actually asked for? Flag anything added that was not requested, and anything missing from the original request.
-2. **Scope creep** — Did you touch, change, or propose changes to anything outside the scope of the request?
-3. **Risky assumptions** — What are you assuming that the user has not explicitly confirmed?
-4. **Things that could break** — What could go wrong if this is executed or accepted as-is?
-5. **Simpler alternative** — Is there a meaningfully simpler way to achieve the same result?
+## Steps
 
-Format rules:
-- One short bullet per finding
-- If a criterion is clear, say "Clear" and move on — do not pad
-- End with: **GO** / **REVISE** / **FLAG FOR EXTERNAL QC**
-- Use REVISE if you find anything substantive
-- Use FLAG FOR EXTERNAL QC if the work is high-stakes and you are checking your own reasoning
+1. **Identify the artifact.** State in one line what you are QC'ing (a plan, a drafted file, an edit, a set of changes).
+
+2. **Prepare the handoff.** Gather:
+   - One-line description of the artifact
+   - The file path(s) of the artifact, or the content if it hasn't been written to file yet
+   - The original operator request (what was asked for — quote or paraphrase)
+
+3. **Launch the `qc-reviewer` subagent.** Pass it the three items above. Do NOT pass conversation history, your reasoning, or creation context.
+
+4. **Present the results.** Show the subagent's review to the operator exactly as returned. Do not filter or soften findings.
+
+5. **Wait for direction.** The operator decides whether to act on findings.
