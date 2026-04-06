@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_DIR=\"$CLAUDE_PROJECT_DIR\"; REGISTRY=\"$PROJECT_DIR/logs/innovation-registry.md\"; detected=0; [ -f \"$REGISTRY\" ] && detected=$(grep -c '| detected |' \"$REGISTRY\" 2>/dev/null || echo 0); if [ \"$detected\" -gt 0 ]; then echo \"{\\\"systemMessage\\\":\\\"$detected innovation(s) pending triage. Run /wrap-session before ending to log this session and triage innovations.\\\"}\"; else echo '{\"systemMessage\":\"Consider running /wrap-session before ending to log this session.\"}'; fi",
+            "timeout": 5,
+            "statusMessage": "Checking for /wrap-session..."
+          }
+        ]
+      }
+    ]
+  }
+}
