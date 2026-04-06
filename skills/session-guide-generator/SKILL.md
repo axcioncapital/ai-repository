@@ -218,6 +218,8 @@ Every session guide follows this template:
 
 ## Workflow
 
+Progress: [ ] Load inputs [ ] Scan repo [ ] Estimate sessions [ ] Draft guide [ ] Review
+
 ### Step 1: Load Inputs
 
 Read all available artifacts from the project directory:
@@ -282,6 +284,20 @@ Present the complete guide. Specifically ask:
 Incorporate feedback and finalize.
 
 ---
+
+## Failure Behavior
+
+- **No primary document and no project description provided:** Halt. Report the error — do not guess at project scope.
+- **Primary document is a draft or unapproved:** Flag to the user. Session guides built on unstable plans will need regeneration. Proceed only if confirmed.
+- **Repo state inaccessible (no skills/, no CLAUDE.md):** Generate the guide from project artifacts alone. Note which sections have reduced fidelity due to missing repo context.
+- **Project too small for a session guide (single session of work):** State this. Produce a compact one-session checklist instead of a multi-session guide.
+- **Project artifacts contradict each other (e.g., plan says 3 components, spec says 7):** Flag the discrepancy. Use the most recent/authoritative artifact and note the conflict.
+
+## Runtime Recommendations
+
+- **Model:** No specific requirement — works with any Claude model.
+- **Context:** Requires project artifacts and repo state in context. For large projects, load the primary document first, then scan repo state, then load reference docs as needed.
+- **Pipeline position:** Stage 6 of /new-project (optional). Can also be invoked standalone via `/session-guide`.
 
 ## Quality Criteria
 
