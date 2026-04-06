@@ -443,6 +443,14 @@ All references link directly from this file. References do not link to other ref
 - **Tool access:** This skill requires write access (Create/Improve modes), so no `allowed-tools` restriction is applied.
 - **Paths:** No `paths` restriction — this skill may be invoked from any directory context.
 
+## Failure Behavior
+
+- **Resource too incomplete to evaluate (Evaluate mode):** Say so. List what's missing before evaluation can proceed.
+- **Improvement suggestions contradict each other (Improve mode):** Surface the conflict. Do not silently choose one.
+- **Resource exceeds 500-line limit after changes:** Identify content to split into reference files before finalizing.
+- **User's feedback is ambiguous (Improve mode):** Restate as a hypothesis ("I think you're saying...") and confirm before acting.
+- **Resource type is ambiguous:** Default to best-fit and note the assumption.
+
 ## Validation
 
 After completing any mode, run these checks:
