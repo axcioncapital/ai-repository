@@ -138,6 +138,8 @@ Unresolved items that need answers before or during architecture design. For eac
 
 ## Workflow
 
+Progress: [ ] Read context pack [ ] Assess infrastructure [ ] Draft plan [ ] Review with user
+
 ### Step 1: Read the Context Pack
 
 Read the approved context pack thoroughly. Identify:
@@ -172,6 +174,21 @@ Present the draft plan. Specifically ask:
 Incorporate feedback and finalize.
 
 ---
+
+## Failure Behavior
+
+- **No context pack provided:** Halt. State that an approved context pack is required before planning can begin.
+- **Context pack is unapproved or clearly draft:** Flag this to the user. Planning from an unstable context pack wastes effort — changes to scope will cascade through the plan. Proceed only if the user confirms.
+- **Context pack describes a non-Claude-Code project:** State that implementation-project-planner is specifically for Claude Code infrastructure. Suggest task-plan-creator for general projects.
+- **Repo access unavailable for infrastructure assessment:** Note this as a gap in Section 2. Proceed with what the context pack mentions — Stage 3a (repo snapshot) will provide the full picture.
+- **Context pack requirements contradict each other:** List contradictions in the Open Questions section. Do not silently resolve conflicts.
+- **Project scope exceeds what a single planning pass can cover:** Flag the scale, suggest splitting into sub-projects, and present a high-level plan with sub-project boundaries for user review.
+
+## Runtime Recommendations
+
+- **Model:** No specific requirement — works with any Claude model.
+- **Context:** Requires the context pack in context. If repo scanning is needed (Step 2), the repo should be accessible via --add-dir.
+- **Pipeline position:** Stage 2 of /new-project. Receives context pack from Stage 1. Feeds into Stage 2.5 (spec-writer, if complexity warrants) or Stage 3a (repo snapshot).
 
 ## Quality Criteria
 
