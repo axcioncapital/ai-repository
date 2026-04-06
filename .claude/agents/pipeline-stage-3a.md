@@ -30,23 +30,38 @@ Scan for it by looking for the CLAUDE.md file containing "Axcion AI Resource Rep
 - For each skill: extract name, description (from YAML frontmatter), and estimate file size (line count)
 - Report as a table sorted alphabetically
 
-### Slash Commands
-- Find all files in `.claude/commands/`
-- For each: extract name and brief purpose (first meaningful line or heading)
-- Report as a table
+### .claude/ Infrastructure (dynamic discovery)
+Scan every subdirectory under `.claude/` — do not assume a fixed list. As of writing, known subdirectories include `commands/`, `agents/`, and `hooks/`, but new ones may appear at any time.
 
-### Subagent Definitions
-- Find all files in `.claude/agents/`
-- For each: extract name, description (from YAML frontmatter), and model setting
-- Report as a table
+For each subdirectory found:
+1. List all files in it
+2. Extract metadata appropriate to the file type:
+   - Files with YAML frontmatter: extract `name`, `description`, `model` (if present)
+   - Shell scripts: extract the event trigger (from comments or filename) and a one-line purpose
+   - Markdown without frontmatter: extract the first heading or meaningful line as purpose
+3. Report as a table per subdirectory, titled by the subdirectory name
+
+Also read `.claude/settings.local.json` if it exists and summarize permission entries.
+
+### Workflows (dynamic discovery)
+Find all directories under `workflows/`. For each:
+- Recursively scan for any `.claude/` subdirectory within it, applying the same discovery logic as above
+- Note whether it has its own CLAUDE.md or settings.json
+- Report as a nested list grouped by workflow
+
+### Top-Level Directories (dynamic discovery)
+List all top-level directories in the repo root (excluding `.git/`, `node_modules/`, `.claude/`, `skills/`, and `workflows/` which are already covered above).
+
+For each directory found:
+- List contents (files only, 1 level deep)
+- Infer approximate purpose from filenames
+- Report as a bullet list
+
+This ensures new directories (e.g. `inbox/`, `reports/`, `logs/`) are inventoried without requiring updates to this agent definition.
 
 ### File Tree
 - Produce a 2-level deep directory listing of the repo root
 - Exclude `.git/`, `node_modules/`, and hidden directories
-
-### settings.json
-- Read `.claude/settings.local.json` if it exists
-- Summarize permission entries (allow/deny lists)
 
 ## Output Format
 
@@ -70,25 +85,39 @@ Produce a single markdown document following this structure:
 |------|-------------------------------|-------|
 | ... | ... | ... |
 
-## Slash Commands ({count})
+## .claude/ Infrastructure
+
+{One section per subdirectory discovered under .claude/, each with a table of files and extracted metadata. Example:}
+
+### commands/ ({count})
 
 | Command | Purpose |
 |---------|---------|
 | ... | ... |
 
-## Subagent Definitions ({count})
+### agents/ ({count})
 
 | Name | Description | Model |
 |------|-------------|-------|
 | ... | ... | ... |
 
+{Continue for every subdirectory found — hooks/, or any new ones}
+
+### settings.json Summary
+
+{permission entries, if settings file exists}
+
+## Workflows ({count})
+
+{nested list of workflows with their local .claude/ infrastructure, CLAUDE.md, and settings}
+
+## Other Directories
+
+{bullet list of all other top-level directories with contents and inferred purpose}
+
 ## File Tree
 
 {2-level listing}
-
-## settings.json Summary
-
-{permission entries}
 ```
 
 ## Output
@@ -97,7 +126,7 @@ Save the snapshot to: `{pipeline-directory}/repo-snapshot.md`
 
 When complete, announce:
 
-> "Repo snapshot complete — {X} skills, {Y} commands, {Z} agents found. Saved to {path}. Say NEXT to advance to Stage 3b (Architecture Design), or review the snapshot first."
+> "Repo snapshot complete — {X} skills, {Y} .claude/ subdirectories ({total files} files), {W} workflows found. Saved to {path}. Say NEXT to advance to Stage 3b (Architecture Design), or review the snapshot first."
 
 ## Important
 
