@@ -1,10 +1,14 @@
 ---
 name: prompt-creator
 description: >
-  Creates effective prompts for Claude. Use when asked to create, draft, or
-  develop a prompt, or when task requirements are provided with an expectation
-  of a reusable prompt as output. Triggers on: "create a prompt for,"
-  "write a prompt that," "help me prompt Claude to."
+  Creates standalone, reusable prompts — task-activation instructions that tell
+  Claude *what* to do for a specific situation. Triggers on: "create a prompt
+  for," "write a prompt that," "help me prompt Claude to," or when a task
+  description is provided with an explicit expectation of a reusable prompt as
+  output. Do NOT use for: research execution prompts (use research-prompt-creator),
+  SKILL.md creation or editing (use create-skill / improve-skill), CLAUDE.md
+  rules or project instructions (use update-claude-md), or CustomGPT / Perplexity
+  prompt formats (these follow tool-specific conventions in their respective skills).
 ---
 
 # Prompt Creator
