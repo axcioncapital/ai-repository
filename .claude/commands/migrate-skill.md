@@ -4,7 +4,7 @@ Execute this pipeline when Patrik provides skill content from Claude Chat (paste
 
 ## Step 1: Analyze the Source
 
-Read `skills/ai-resource-builder/SKILL.md` for the creation methodology and format standard.
+Read `skills/ai-resource-builder/SKILL.md` for the creation methodology and format standard (see the Create Workflow section).
 
 Then analyze the pasted Chat skill content and present:
 
@@ -56,7 +56,7 @@ The subagent must NOT receive the original Chat skill content, the migration con
 
 Capture the subagent's evaluation report.
 
-**Evaluation quality gate:** If the evaluation report contains no issues across all eight layers, or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 6 results.
+**Evaluation quality gate:** If the evaluation report contains no issues across both phases (behavioral analysis and convention gate), or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 6 results.
 
 ## Step 4: Auto-Fix
 

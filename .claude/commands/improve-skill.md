@@ -53,7 +53,7 @@ The subagent must NOT receive the original feedback, the improvement conversatio
 
 Capture the subagent's evaluation report.
 
-**Evaluation quality gate:** If the evaluation report contains no issues across all eight layers, or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 7 results.
+**Evaluation quality gate:** If the evaluation report contains no issues across both phases (behavioral analysis and convention gate), or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 7 results.
 
 ## Step 5: Auto-Fix
 

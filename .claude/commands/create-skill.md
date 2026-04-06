@@ -4,7 +4,7 @@ Execute this pipeline when Patrik provides a resource brief for a new skill.
 
 ## Step 1: Understand the Need
 
-Read the resource brief Patrik provides. Then read `skills/ai-resource-builder/SKILL.md` for the creation methodology.
+Read the resource brief Patrik provides. Then read `skills/ai-resource-builder/SKILL.md` for the creation methodology (see the Create Workflow section).
 
 Before doing anything else, present:
 
@@ -39,7 +39,7 @@ The subagent must NOT receive the resource brief, the creation conversation, or 
 
 Capture the subagent's evaluation report.
 
-**Evaluation quality gate:** If the evaluation report contains no issues across all eight layers, or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 6 results.
+**Evaluation quality gate:** If the evaluation report contains no issues across both phases (behavioral analysis and convention gate), or provides only surface-level assessments without specific findings, flag this as a potentially shallow evaluation and note it in the Step 6 results.
 
 ## Step 4: Auto-Fix
 
