@@ -164,6 +164,8 @@ For each new skill:
 
 ## Workflow
 
+Progress: [ ] Load inputs [ ] Checks 1-8 [ ] Dry-run tests [ ] Compile report [ ] Present
+
 ### Step 1: Load Inputs
 
 Read the implementation spec and implementation log. Build a checklist of everything that should exist.
@@ -185,6 +187,20 @@ Produce the test report. Highlight failures and provide specific recommended act
 Show the summary first (pass/fail counts), then details on failures. Let the user decide how to handle each failure.
 
 ---
+
+## Failure Behavior
+
+- **Implementation spec missing:** Halt. Cannot test without knowing what should exist.
+- **Implementation log missing:** Proceed with spec-based checks only. Note in the report that the log was unavailable and results reflect spec expectations, not recorded implementation actions.
+- **Repo under test not accessible:** Halt. Tests require filesystem access to the implemented project.
+- **Individual check fails to execute (e.g., settings.json unparseable):** Record the check as ERROR (distinct from FAIL), explain why it couldn't run, and continue with remaining checks.
+- **No new skills/commands/agents to test:** Skip the relevant checks. Report as N/A, not PASS.
+
+## Runtime Recommendations
+
+- **Model:** No specific requirement — works with any Claude model. Dry-run tests (Check 9) spawn subagents, so model choice affects cost.
+- **Context:** Requires implementation spec and log in context. Repo state is scanned via filesystem access.
+- **Pipeline position:** Stage 5 of /new-project. Receives implementation spec from Stage 3c and implementation log from Stage 4.
 
 ## Quality Criteria
 
