@@ -24,3 +24,7 @@
 | 2026-04-06 | agent | .claude/agents/repo-dd-auditor.md | triaged:project-specific | — |
 | 2026-04-06 | command | .claude/commands/improve.md | graduated | ai-resources/.claude/commands/improve.md |
 | 2026-04-06 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/wrap-session.md | triaged:project-specific | — |
+| 2026-04-06 | command | workflows/research-workflow/.claude/commands/verify-chapter.md | triaged:project-specific | — |
+| 2026-04-06 | command | workflows/research-workflow/.claude/commands/wrap-session.md | triaged:project-specific | — |
+| 2026-04-06 | command | .claude/commands/note.md | triaged:project-specific | — |
+| 2026-04-06 | command | workflows/research-workflow/.claude/commands/note.md | triaged:project-specific | — |

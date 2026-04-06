@@ -234,3 +234,79 @@ Created a session rituals reference document for Patrik and Daniel covering the 
 
 ### Open Questions
 None
+
+---
+
+## 2026-04-06 — Full repo due diligence (deep) + strategic workspace review
+
+### Summary
+Ran `/repo-dd deep` — the first deep operational assessment of the full workspace. Produced both a factual audit report (Sections 1-6) and a deep review report covering feature criticality, context management, and friction synthesis. Then conducted an extended strategic review covering: what's missing from the repo, underutilized Claude 4/2026 capabilities, buy-side project state analysis, delegation/automation opportunities, process and prompting improvements, session rituals, and advanced operator techniques.
+
+### Files Created
+- `audits/repo-due-diligence-2026-04-06.md` — Fresh factual audit (replaced earlier version, now at commit `241dfb4`)
+- `audits/repo-dd-deep-2026-04-06.md` — Deep operational assessment (feature criticality, context management, friction synthesis)
+
+### Files Modified
+- `CLAUDE.md` — Added `docs/` and `scripts/` to "What This Repo Contains" section
+
+### Decisions Made
+- **Auto-fix applied:** `docs/` and `scripts/` directories documented in CLAUDE.md (previously undocumented)
+- **4 operator items deferred:** templates/workflow-need.md resolution, fund-triage-scanner ownership, auto-commit format convention, symlink path consistency — all recorded in audit report for future action
+- **report-compliance-qc divergence confirmed resolved** — commit `241dfb4` synced all copies; removed from findings
+
+### Next Steps
+- **High priority (buy-side project):**
+  - Build `/complete-section` command to chain draft → QC → challenge → service-design-review autonomously
+  - Populate `domain-knowledge.md` from Part 1 knowledge files
+  - Run cross-section coherence check across 5 approved sections before drafting 2.5
+  - Consider parallelizing sections 2.5 and 2.6 via background agents
+- **High priority (infrastructure):**
+  - Consolidate improve-reminder.sh and coach-reminder.sh from PostToolUse to Stop hook (saves 10s per write)
+  - Graduate friction-log infrastructure from buy-side to ai-resources
+  - Set up scheduled agents for weekly health checks
+- **Medium priority:**
+  - Connect MCP servers for Notion and Perplexity
+  - Re-evaluate which research pipeline stages still need GPT-5 delegation vs. direct Claude execution
+  - Establish weekly improvement flush ritual and Monday project-state scan
+- **Action deferred operator items** from audit when convenient (4 items in audit report)
+
+### Open Questions
+- Should Design Judgment Principles (11 lines, root CLAUDE.md) migrate to a skill reference to reduce per-session context load, or stay as always-on behavioral guidance?
+- Which research pipeline stages genuinely require GPT-5 vs. could be handled by Claude directly with web search?
+
+## 2026-04-06 — Audit remediation: 11 findings from repo-dd-deep
+
+### Summary
+Implemented fixes for 11 of 20 findings from the repo-dd-deep audit (3 Critical, 5 High, 1 Medium). Changes span 9 files across commands, hooks, and template settings. Plan went through QC pass (3 issues found and fixed) and refinement pass (5 clarity improvements applied) before implementation.
+
+### Files Created
+None
+
+### Files Modified
+- `workflows/research-workflow/.claude/settings.json` — removed check-claim-ids from PostToolUse Write hook (-5s/write), replaced silent Stop hook with conditional systemMessage warning
+- `workflows/research-workflow/.claude/commands/verify-chapter.md` — added Step 1b: explicit Claim ID check as gate
+- `workflows/research-workflow/.claude/commands/wrap-session.md` — added format guard for session-notes.md
+- `workflows/research-workflow/.claude/commands/note.md` — added friction: prefix routing
+- `.claude/commands/new-project.md` — added Pre-Flight Validation (agent existence check), updated exclusion lists
+- `.claude/commands/wrap-session.md` — added format guard + improvement verification loop (step 10)
+- `.claude/commands/deploy-workflow.md` — updated exclusion lists (added session-guide, repo-dd-auditor)
+- `.claude/commands/note.md` — added friction: prefix routing to friction-log.md
+- `.claude/commands/sync-workflow.md` — added Step 4: symlink validation, renumbered Steps 5-7
+
+### Decisions Made
+- H1 (friction-log graduation) deferred — template already includes hooks; `/note friction:` partially closes gap; full graduation is a separate session
+- buy-side improve-reminder/coach-reminder consolidation left as operator manual action (project-specific, not in template)
+- Stop hook condition: check today's date in session-notes.md rather than unreliable /tmp markers
+- check-claim-ids.sh kept in hooks directory for explicit invocation; only removed from auto-trigger
+- QC fix: Stop hook made conditional to avoid alert fatigue
+- QC fix: verify-chapter documents exact script interface (stdin JSON with tool_input.file_path)
+- QC fix: H1 omission explicitly justified in out-of-scope section
+
+### Next Steps
+- Run `/sync-workflow` on buy-side-service-plan to propagate template changes
+- Run `/sync-workflow` on nordic-pe-landscape-mapping-4-26
+- Optional: move improve-reminder + coach-reminder to Stop hook in buy-side settings.json
+- Push ai-resources repo
+
+### Open Questions
+None
