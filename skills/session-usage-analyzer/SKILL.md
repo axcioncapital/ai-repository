@@ -116,6 +116,20 @@ The calling agent then:
 - Appends the 15 entries to `usage/archive.md` (creates if needed, with header `# Usage Log — Archive`)
 - Removes the 15 entries from the main log
 
+## Failure Behavior
+
+- **Missing session summary entirely:** Return an error message to the calling agent: "No session summary provided — cannot analyze." Do not produce a log entry.
+- **Session summary missing required fields:** Fill affected metric rows with `not reported`. Do not infer or estimate. Proceed with analysis on available data.
+- **Usage log contents not provided:** Treat as `NEW LOG` — skip trend comparison. Note "No prior entries for comparison" in Findings.
+- **Session summary describes no substantive work (e.g., only a greeting or aborted session):** Return a minimal entry with "N/A" for all metrics and "Session too short for meaningful analysis" as the finding.
+- **Maintenance triggered but fewer than 15 entries exist:** Skip maintenance. Return only the new session entry.
+
+## Runtime Recommendations
+
+- **Model:** No specific requirement — works with any Claude model. Designed for subagent invocation (lightweight context).
+- **Context:** Receives session summary and log contents from the calling agent. Does not read files directly.
+- **Invocation:** Subagent only — invoked by the `/usage-analysis` command. Not designed for interactive use.
+
 ## Known Limitations
 
 - **Self-evaluation bias.** The calling agent builds its own session summary. It may undercount re-reads, miss context bloat, or underreport rework. This is inherent — only the session knows what happened. Treat findings as a lower bound, not a precise measurement.
