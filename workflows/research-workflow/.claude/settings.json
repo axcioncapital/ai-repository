@@ -97,7 +97,7 @@
           },
           {
             "type": "command",
-            "command": "AI_RESOURCES=$(cd \"$CLAUDE_PROJECT_DIR\" && find ../.. -maxdepth 2 -name 'ai-resources' -type d 2>/dev/null | head -1); [ -n \"$AI_RESOURCES\" ] && \"$AI_RESOURCES/.claude/hooks/check-template-drift.sh\" || true",
+            "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '/' ]; do d=$(dirname \"$d\"); [ -d \"$d/ai-resources/.claude/hooks\" ] && { \"$d/ai-resources/.claude/hooks/check-template-drift.sh\"; exit; }; done",
             "timeout": 10,
             "statusMessage": "Checking for template updates..."
           }
