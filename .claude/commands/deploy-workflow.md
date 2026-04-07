@@ -38,56 +38,48 @@ Confirm the copy succeeded by checking `{PROJECT_DIR}/CLAUDE.md` exists.
 
 ## Step 4: Enrich with shared ai-resources features
 
-Copy shared commands, agents, and hooks from `ai-resources/.claude/` to the deployed project. This ensures new projects get the latest shared tooling, not just what the template snapshot includes.
+Symlink shared commands and agents from `ai-resources/.claude/` into the deployed project. The template includes a **shared manifest** (`.claude/shared-manifest.json`) that declares which files are shared (symlinked to ai-resources) vs local (template-owned copies). A SessionStart hook (`auto-sync-shared.sh`) reads this manifest to auto-create missing symlinks on every session start — so new commands added to ai-resources appear in projects automatically.
 
-### Exclusion lists
+### How it works
 
-These are ai-resources-specific and should NOT be copied to projects:
+The manifest has two sections per category (`commands`, `agents`):
+- **`local`** — template-owned files. Already in the project from Step 3. Never overwritten, never symlinked.
+- **`shared`** — symlinked to ai-resources. Created here in Step 4, and auto-maintained by the SessionStart hook.
 
-**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`, `session-guide`
+### Hooks
 
-**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`, `repo-dd-auditor`
+Hooks are always **copied** (not symlinked) because they may need project-specific paths. Hooks excluded from copying:
 
 **Hooks:** `pre-commit`, `check-template-drift.sh`
 
-### Copy logic
-
-For each category (`commands`, `agents`, `hooks`):
-
-1. List all files in `{WORKSPACE_ROOT}/ai-resources/.claude/{category}/`
-2. Skip any file whose basename (without extension) matches the exclusion list
-3. Skip any file that already exists in `{PROJECT_DIR}/.claude/{category}/` — template takes precedence
-4. Copy the remaining files to `{PROJECT_DIR}/.claude/{category}/`, creating the directory if needed
+### Enrichment logic
 
 ```bash
 AI_RESOURCES="{WORKSPACE_ROOT}/ai-resources"
-EXCLUDE_COMMANDS="create-skill deploy-workflow new-project graduate-resource migrate-skill improve-skill request-skill sync-workflow repo-dd session-guide"
-EXCLUDE_AGENTS="pipeline-stage session-guide-generator repo-dd-auditor"
-EXCLUDE_HOOKS="pre-commit check-template-drift.sh"
+MANIFEST="{PROJECT_DIR}/.claude/shared-manifest.json"
 
-# Commands
+# Commands — symlink shared entries from manifest
 mkdir -p "{PROJECT_DIR}/.claude/commands"
-for f in "$AI_RESOURCES/.claude/commands/"*.md; do
-  name=$(basename "$f" .md)
-  echo "$EXCLUDE_COMMANDS" | grep -qw "$name" && continue
-  [ -f "{PROJECT_DIR}/.claude/commands/$(basename "$f")" ] && continue
-  cp "$f" "{PROJECT_DIR}/.claude/commands/"
+for name in $(jq -r '.commands.shared[]' "$MANIFEST"); do
+  src="$AI_RESOURCES/.claude/commands/${name}.md"
+  target="{PROJECT_DIR}/.claude/commands/${name}.md"
+  [ -f "$src" ] || continue
+  [ -e "$target" ] || [ -L "$target" ] && continue
+  ln -s "$src" "$target"
 done
 
-# Agents
+# Agents — symlink shared entries from manifest
 mkdir -p "{PROJECT_DIR}/.claude/agents"
-for f in "$AI_RESOURCES/.claude/agents/"*.md; do
-  name=$(basename "$f" .md)
-  skip=false
-  for pattern in $EXCLUDE_AGENTS; do
-    echo "$name" | grep -q "^$pattern" && skip=true && break
-  done
-  $skip && continue
-  [ -f "{PROJECT_DIR}/.claude/agents/$(basename "$f")" ] && continue
-  cp "$f" "{PROJECT_DIR}/.claude/agents/"
+for name in $(jq -r '.agents.shared[]' "$MANIFEST"); do
+  src="$AI_RESOURCES/.claude/agents/${name}.md"
+  target="{PROJECT_DIR}/.claude/agents/${name}.md"
+  [ -f "$src" ] || continue
+  [ -e "$target" ] || [ -L "$target" ] && continue
+  ln -s "$src" "$target"
 done
 
-# Hooks
+# Hooks (copy — not symlinked)
+EXCLUDE_HOOKS="pre-commit check-template-drift.sh auto-sync-shared.sh"
 mkdir -p "{PROJECT_DIR}/.claude/hooks"
 for f in "$AI_RESOURCES/.claude/hooks/"*; do
   [ ! -f "$f" ] && continue

@@ -116,26 +116,21 @@ If a stage subagent reports failure:
 
 After the pipeline completes (all stages done or final stage skipped), enrich the project with shared ai-resources features using the same logic as `/deploy-workflow` Step 4.
 
-### Exclusion lists
+### Shared manifest
 
-These are ai-resources-specific and should NOT be copied to projects:
+If a `.claude/shared-manifest.json` exists in the project (created by a workflow template or manually), use it to determine which commands and agents are **symlinked** to ai-resources vs kept as **local copies**. The manifest lists `shared` entries (symlinked) and `local` entries (project-owned). See `/deploy-workflow` Step 4 for the manifest format and enrichment logic.
 
-**Commands:** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`, `session-guide`
+If no manifest exists, fall back to the exclusion-list approach:
 
-**Agents:** any file matching `pipeline-stage-*`, `session-guide-generator`, `repo-dd-auditor`
+**Excluded commands (ai-resources-specific):** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `repo-dd`, `session-guide`
 
-**Hooks:** `pre-commit`, `check-template-drift.sh`
+**Excluded agents:** any file matching `pipeline-stage-*`, `session-guide-generator`, `repo-dd-auditor`
 
-### Copy logic
+**Excluded hooks:** `pre-commit`, `check-template-drift.sh`, `auto-sync-shared.sh`
 
-For each category (`commands`, `agents`, `hooks`):
+Without a manifest: symlink all non-excluded commands and agents that don't already exist in the project. Hooks are always **copied** (not symlinked).
 
-1. List all files in `{WORKSPACE_ROOT}/ai-resources/.claude/{category}/`
-2. Skip any file whose basename (without extension) matches the exclusion list
-3. Skip any file that already exists in the project's `.claude/{category}/` — pipeline output takes precedence
-4. Copy the remaining files, creating directories if needed
-
-Report what was added. If a copied hook has no `settings.json` entry, warn the operator. Do not auto-modify `settings.json`. Do not commit — the operator reviews the enrichment alongside the pipeline output.
+Report what was added (note which are symlinks vs copies). If a copied hook has no `settings.json` entry, warn the operator. Do not auto-modify `settings.json`. Do not commit — the operator reviews the enrichment alongside the pipeline output.
 
 ## Key Rules
 

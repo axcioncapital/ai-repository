@@ -1,0 +1,56 @@
+{
+  "_doc": "Declares which .claude/ files are shared (symlinked to ai-resources) vs local (template-owned copies). The auto-sync hook reads this manifest. Files not listed here are ignored by auto-sync.",
+  "commands": {
+    "local": [
+      "audit-repo",
+      "audit-structure",
+      "create-context-pack",
+      "friction-log",
+      "improve",
+      "inject-dependency",
+      "intake-reports",
+      "prime",
+      "produce-knowledge-file",
+      "review",
+      "run-analysis",
+      "run-cluster",
+      "run-execution",
+      "run-preparation",
+      "run-report",
+      "run-synthesis",
+      "status",
+      "usage-analysis",
+      "verify-chapter",
+      "workflow-status",
+      "wrap-session"
+    ],
+    "shared": [
+      "analyze-workflow",
+      "clarify",
+      "coach",
+      "note",
+      "qc-pass",
+      "refinement-deep",
+      "refinement-pass",
+      "scope",
+      "triage",
+      "update-claude-md"
+    ]
+  },
+  "agents": {
+    "local": [
+      "execution-agent",
+      "improvement-analyst",
+      "qc-gate",
+      "verification-agent"
+    ],
+    "shared": [
+      "collaboration-coach",
+      "qc-reviewer",
+      "refinement-reviewer",
+      "triage-reviewer",
+      "workflow-analysis-agent",
+      "workflow-critique-agent"
+    ]
+  }
+}

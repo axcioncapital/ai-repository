@@ -94,6 +94,12 @@
             "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '/' ]; do d=$(dirname \"$d\"); [ -d \"$d/ai-resources/.claude/hooks\" ] && { \"$d/ai-resources/.claude/hooks/check-template-drift.sh\"; exit; }; done",
             "timeout": 10,
             "statusMessage": "Checking for template updates..."
+          },
+          {
+            "type": "command",
+            "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '/' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\" ] && { \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\"; exit; }; done",
+            "timeout": 10,
+            "statusMessage": "Syncing shared commands..."
           }
         ]
       }
