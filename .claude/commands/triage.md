@@ -6,7 +6,11 @@ You generated these suggestions — you're biased toward your own recommendation
 
 ## Steps
 
-1. **Collect the suggestions.** Gather all changes or recommendations you just proposed into a numbered list.
+1. **Collect the suggestions.** Gather all changes or recommendations you just proposed into a numbered list. Suggestions may appear as:
+   - **Inline in conversation** — scan your recent messages for proposed changes, recommendations, improvements, or action items. Extract each distinct suggestion as a numbered item.
+   - **In a file output** — if you wrote suggestions to a file, read them from there.
+   
+   Include every actionable suggestion. Do not filter or pre-prioritize — that's the triage reviewer's job.
 
 2. **Prepare the handoff.** Gather:
    - The numbered list of suggestions
