@@ -47,6 +47,7 @@ For each dimension, extract the specific measurable signals described below. Cou
 
 **Extract from coaching-data (if available):**
 - Feedback type distribution: which types recur most? (evidence-calibration, structural-reorganization, etc.)
+- Failure type distribution: context vs. judgment vs. instruction vs. model-limitation. Repeated context failures → drafter inputs need enrichment. Repeated judgment failures → add design principles or constraints. Repeated instruction failures → skill/plan needs rewriting. Surface the dominant pattern and what fix it implies.
 - Source distribution: is most iteration feedback from operator judgment, QC, or challenge?
 
 **Extract from friction log:**
