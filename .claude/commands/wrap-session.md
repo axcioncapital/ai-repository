@@ -23,6 +23,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
    - **Iterations:** {draft iteration count and section, e.g., "3 (skill-name draft-01 → draft-03)", or "0" if no drafting}
    - **Decisions logged:** {count of decisions appended to decisions.md this session}
    - **QC cycles:** {count and outcome, e.g., "1 (conditional pass → fixes → approved)", or "0"}
+   - **Gates:** {count of operator approval/review points this session} ({N} changed) — {comma-separated type:outcome pairs}. Types: plan-approval, content-review, qc-disposition, challenge-disposition, service-design-disposition, bright-line-review, editorial-disagreement, supplementary-research. Outcomes: confirmed (operator approved without changes) or changed (operator directed modification). Derive from conversation: "looks good"/"approved" with no changes = confirmed; operator gave feedback or directed revisions = changed. Omit this line entirely for 0-gate sessions (infrastructure work).
    - **Reflection:** {operator's reflection if provided, otherwise omit this line}
    ```
 7. **Innovation triage.** Read `/logs/innovation-registry.md`. For any entries with status `detected`:

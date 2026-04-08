@@ -68,6 +68,15 @@ For each dimension, extract the specific measurable signals described below. Cou
 
 **Minimum data threshold: 5 logged decisions.** Below this: report "Insufficient data."
 
+**Extract from coaching-data (gates field):**
+- Tally gate outcomes by type across all sessions: plan-approval, content-review, qc-disposition, challenge-disposition, service-design-disposition, bright-line-review, editorial-disagreement, supplementary-research — each with confirmed vs. changed counts
+- Calculate confirmation rate per gate type: confirmed / total
+- Identify gate types with 100% confirmation rate over 3+ occurrences — strong rubber-stamp signal
+- Identify gate types with <50% confirmation rate — high-value intervention points
+- Cross-reference with decisions.md: changed gates should correlate with logged decisions; a gap indicates under-logging
+
+**Minimum data threshold for gate analysis: 8 gate entries across 4+ sessions.** Below this: do not include gate analysis in findings. Note "Gate data: insufficient — need N more sessions with gate entries."
+
 ### Dimension 3: QC Disposition
 
 **Extract from QC log:**
@@ -122,6 +131,15 @@ For each dimension that meets its data threshold:
    - **Act** — causing measurable friction or missed value. Threshold: a pattern is directly linked to iteration churn, repeated corrections, or lost efficiency
 4. **Recommend** — one concrete behavioral change (for Act/Watch) or explicit "No action" (for Healthy). Recommendations must be things the operator can do differently, NOT system changes.
 
+### Gate intervention analysis (Decision Patterns)
+
+When gate data meets its threshold (8+ entries across 4+ sessions), the Decision Patterns finding SHOULD incorporate one of:
+- A rubber-stamp pattern: "You've confirmed {gate type} {N} consecutive times. This gate may not be adding value for this workflow pattern."
+- A high-value pattern: "{gate type} triggers changes {X}% of the time. This is where your review attention adds measurable value."
+- A mixed pattern with an actionable observation.
+
+Frame as behavioral insight, not automation recommendation. The operator decides what to do with the pattern. Example: "Your plan approvals are consistently confirmed without changes (8/8 across 4 sessions). Your QC dispositions trigger changes 70% of the time, predominantly evidence-calibration corrections. Your review time appears most impactful at the QC stage."
+
 ### What makes a good finding:
 
 - "Your iteration count dropped from 3.0 to 2.0 drafts/section after you started providing structural outlines in Phase 1. Keep doing this." -- Good. Specific, evidenced, actionable.
@@ -147,6 +165,7 @@ For each dimension that meets its data threshold:
 - Sessions analyzed: {N} (from {first date} to {last date})
 - Coaching data entries: {N} (or "Not yet instrumented")
 - Decisions analyzed: {N}
+- Gate entries analyzed: {N} (or "Not yet instrumented" if no Gates field in coaching-data)
 - QC cycles analyzed: {N}
 - Data quality: {list any gaps, sparse dimensions, or caveats}
 
