@@ -68,10 +68,13 @@ For each group, work through this analysis (this becomes Section A of the output
   - **Excludes already-searched angles.** Each query must not re-target source types, institutions, or search angles listed in the Already Searched inventory unless the query explicitly uses a different entry point (e.g., searching for a specific report by name rather than by topic, or targeting a secondary publication that cites the primary source). If a query's success depends on a source type that was already searched and returned nothing, either reframe it to target a genuinely different source type or flag it as low-probability with a note explaining why this angle might work despite prior failure.
   - Written as the literal text to paste into Perplexity — include source targeting directly in the query wording
   - **Context prefix must match the target source universe.** If the group targets practitioner content (blogs, podcasts, LinkedIn commentary, conference talks), frame the query accordingly — do not default to "professional advisory report" framing, which biases Perplexity toward formal publications. Match the register to what you're looking for: informal framing for informal sources, academic framing for academic sources.
+  - **Include native-language terminology** when the target sources are in a non-English language. Include key domain terms as they appear in those sources — even if the workflow is conducted in English. Use the pattern: `local term (English translation)`. Without native terminology, Perplexity searches in the wrong semantic space and returns English-language international results instead of local-language primary sources where the data lives.
+  - **Name primary sources explicitly** when you know the authoritative source for a data point (regulator website, provider domain, official database). Include the domain or institution name in the query text — e.g., `site:energiavirasto.fi` or naming the specific publication. Without explicit source routing, Perplexity defaults to aggregators and news articles that outrank primary sources due to higher indexing.
 - Per query, note:
   - **Success signal** — what a good result looks like (source type, specificity, geographic relevance)
   - **Minimum yield threshold** — the minimum evidence that would move the component's verdict. Be concrete: "At least 2 independent sources with quantitative data" or "One practitioner account with specific deal examples." If a query returns results below this threshold, the component remains at its current verdict — the operator should not re-run the same angle.
   - Which components it could satisfy
+  - **Recency instruction** — advise the operator which `search_recency_filter` to use when executing the query, matched to the data's natural update cadence: `"week"` for data published daily (market prices, exchange rates); `"month"` for data that changes but not daily (provider tariffs, product pricing, quarterly statistics); `"year"` for structural information that changes slowly (market frameworks, regulatory structures, background context). Default to `"month"` when uncertain. Never use `"year"` for pricing or market data — it reliably returns stale numbers that appear current.
 
 ### Step 3: Budget Check
 
@@ -111,17 +114,17 @@ Group: [Group name]
 ```
 
 ```
-Query 1:
+Query 1 [recency: month]:
 [Literal text to paste into Perplexity]
 ```
 
 ```
-Query 2:
+Query 2 [recency: week]:
 [Literal text to paste into Perplexity]
 ```
 
 ```
-Query 3 [CONTINGENT — skip if Query 1 returns [source type]]:
+Query 3 [CONTINGENT — skip if Query 1 returns [source type]] [recency: month]:
 [Literal text to paste into Perplexity]
 ```
 
@@ -182,6 +185,8 @@ For remaining groups (this becomes Section A of the output):
   - Using a **different search strategy** than pass 1 — different source types, terminology, framing, or angle
   - Written as the literal text to paste into Perplexity — include source targeting directly in the query wording
   - **Context prefix must match the target source universe.** Do not reuse the same framing as pass 1 if pass 1's framing biased results toward the wrong source types.
+  - **Include native-language terminology** when the target sources are in a non-English language (same rule as pass 1). If pass 1 used only English terms and returned thin results, this is a prime candidate for the "different strategy" requirement.
+  - **Name primary sources explicitly** when you know the authoritative source (same rule as pass 1). In pass 2, check whether pass 1 results cited primary sources that weren't directly targeted — if so, name those domains in pass 2 queries.
 - Per query, note:
   - **Success signal** — what a good result looks like
   - **Minimum yield threshold** — the minimum evidence that would move the component's verdict (same format as pass 1). In pass 2, thresholds should be tighter — if pass 1 already added some evidence, specify what's still missing, not what's needed from scratch.

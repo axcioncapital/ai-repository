@@ -50,3 +50,23 @@ When supplementary research exhausts maximum passes (2 per question in Stage 2, 
 - Stage 3 section directives MUST reference scarcity register entries for their cluster
 - Stage 4 report prose MUST implement the editorial instruction specified in the register
 - The scarcity register is a required input for `section-directive-drafter` and `evidence-to-report-writer`
+
+## Late-Stage Data Correction Propagation
+
+When a supplementary pass (Subworkflow 2.S or 3.S) closes a gap or corrects a data point that was already referenced in a downstream artifact (cluster memo, section directive, chapter draft), the correction must propagate through all dependent artifacts before the workflow advances.
+
+### Propagation Chain
+
+```
+Research Extract → Cluster Memo → Section Directive → Chapter Draft → Report Prose
+```
+
+### Rule
+
+After any supplementary evidence merge (Step 2.S4 or Step 3.S3), check whether any downstream artifact already references the affected component. If so:
+
+- **Cluster memos** that reference the component's coverage verdict or cite claims from the component must be updated to reflect the new evidence and revised verdict.
+- **Section directives** that incorporated scarcity handling for the component must be revised if the gap is now closed.
+- **Chapter drafts and report prose** are only affected if they have already been written (i.e., the correction occurs during a late-stage loop-back). If so, flag the affected passages and apply the bright-line rule before modifying.
+
+This check is the responsibility of the step that performs the merge (supplementary-evidence-merger at 2.S4, or the QC-and-merge step at 3.S3). The merge step's output summary must list any downstream artifacts that need updating, with specific file paths and the nature of the required update.

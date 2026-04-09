@@ -310,3 +310,56 @@ None
 
 ### Open Questions
 None
+
+## 2026-04-07 — Created /refinement-deep orchestrator command
+
+### Summary
+Designed and built `/refinement-deep`, a new slash command that orchestrates three existing review subagents (qc-reviewer, refinement-reviewer, triage-reviewer) in a single invocation. QC and refinement run in parallel, then triage prioritizes the combined findings. Short-circuits if both reviews come back clean. No new agents created — reuses existing infrastructure.
+
+### Files Created
+- `.claude/commands/refinement-deep.md` — Orchestrator command that chains QC + refinement + triage
+
+### Files Modified
+None
+
+### Decisions Made
+- Combined command reuses existing agents rather than creating a new monolithic reviewer
+- QC + refinement launch in parallel (independent evaluations), triage runs after (needs their output)
+- Individual commands (`/qc-pass`, `/refinement-pass`, `/triage`) remain available for standalone use
+- Named `/refinement-deep` (operator choice over `/review`)
+- Skip triage when both reviews are clean — no suggestions means nothing to triage
+
+### Next Steps
+- Test `/refinement-deep` on an existing artifact to verify parallel subagent launch and triage pipeline
+- Push ai-resources repo
+
+### Open Questions
+None
+
+## 2026-04-09 — Perplexity query improvements from API playbook
+
+### Summary
+Extracted five improvements from a Perplexity API Best Practices Playbook and applied them to the research workflow. Changes span query construction (native-language terminology, primary source routing, recency filters), citation reliability (URL hallucination guard), and data integrity (late-stage propagation rule). QC pass found three enforcement gaps; all three were fixed.
+
+### Files Created
+None
+
+### Files Modified
+- `skills/supplementary-query-brief-drafter/SKILL.md` — added native-language terminology rule, primary source routing rule, and per-query recency filter instruction (pass 1 + pass 2 + execution sheet format)
+- `skills/supplementary-research-qc/SKILL.md` — added citation reliability check (`[CITATION UNVERIFIED]` flag) to Check 2 Source Quality Screen
+- `skills/supplementary-evidence-merger/SKILL.md` — added Step 6: downstream propagation check after merge (QC fix)
+- `workflows/research-workflow/reference/quality-standards.md` — added Late-Stage Data Correction Propagation section with dependency chain
+- `workflows/research-workflow/reference/stage-instructions.md` — added recency filter instruction to Step 2.S2 and 3.S2 operator steps (QC fix); added query construction rules to Step 3.S1 (QC fix)
+
+### Decisions Made
+- Accepted all 5 improvements from the playbook as filling real gaps in the workflow
+- Query construction rules added to both Stage 2 (skill-level) and Stage 3 (inline in stage-instructions) paths
+- QC fixes: propagation enforcement added to merger skill (not just quality-standards); recency annotation bridged to operator execution steps; Stage 3 gap queries inherit all improvements
+
+### Next Steps
+- Push ai-resources repo
+- Test the recency annotation format in a live Perplexity supplementary pass
+- Consider whether the playbook itself should be stored as a reference document
+
+### Open Questions
+None

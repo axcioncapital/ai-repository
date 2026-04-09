@@ -103,9 +103,21 @@ Updated Research Extracts — one per affected question. Each is a complete, sel
 - `[SUPPLEMENTARY]` tags on individual claims
 - The metadata field noting supplementary research was performed
 
+### Step 6: Check Downstream Propagation
+
+After updating extracts, check whether any downstream artifact already references the affected components. This prevents stale data from persisting in artifacts written before the merge.
+
+- **Cluster memos** (`/analysis/cluster-memos/`): if any exist for the affected section, check whether they reference the component's prior coverage verdict or cite claims from the component. If so, list them as needing update.
+- **Section directives** (`/analysis/section-directives/`): if any exist and incorporated scarcity handling for a component whose gap is now closed, list them as needing revision.
+- **Chapter drafts and report prose** (`/analysis/chapters/`, `/report/chapters/`): if any exist, flag the affected passages. These are subject to the bright-line rule before modification.
+
+If no downstream artifacts exist yet (the typical case at Step 2.S4), note "No downstream artifacts to update" and skip.
+
+Include the propagation check results in the output summary under **Downstream Impact**. For each artifact that needs updating, list: file path, what changed (verdict upgrade, scarcity resolution, new claims), and which step should perform the update.
+
 ## Output Protocol
 
-Write updated extracts to `/execution/research-extracts/`, replacing the originals. Provide a brief summary in chat: per question, which components changed verdict, claim count before/after, and any remaining THIN/MISSING components.
+Write updated extracts to `/execution/research-extracts/`, replacing the originals. Provide a brief summary in chat: per question, which components changed verdict, claim count before/after, any remaining THIN/MISSING components, and any downstream artifacts flagged for update.
 
 ## Scope Boundaries
 

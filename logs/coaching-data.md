@@ -23,3 +23,16 @@
 - **Iterations:** 0
 - **Decisions logged:** 0 (decisions were triage-level: auto-fix approval, operator item deferral)
 - **QC cycles:** 0
+
+### 2026-04-07 — Created /refinement-deep orchestrator command
+- **Commands used:** /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 0
+- **QC cycles:** 0
+
+### 2026-04-09 — Perplexity query improvements from API playbook
+- **Commands used:** /qc-pass, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 0
+- **QC cycles:** 1 (REVISE — 3 findings, all fixed)
+- **Gates:** 2 (0 changed) — content-review:confirmed, qc-disposition:confirmed

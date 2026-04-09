@@ -64,6 +64,7 @@ Is the source credible enough to merit inclusion?
 - **Recency:** Flag sources older than 5 years unless the claim is structural/definitional (not market data or practice descriptions).
 - **Attribution clarity:** Can you identify the author, institution, or publication? If the source is unattributable, reject.
 - **Bias indicators:** Is the source selling something related to the claim? If yes, flag as vendor/advocacy — acceptable only as Low-strength corroboration, not as primary evidence.
+- **Citation reliability:** Perplexity can hallucinate or misattribute URLs. If a citation URL looks structurally implausible (broken domain, path that doesn't match the claimed source, or generic URL for a specific claim), flag it as `[CITATION UNVERIFIED]`. A claim with an unverified citation is not automatically rejected — it can still merge if the factual content is corroborated by another result with a credible citation. But a single-source claim with an unverified citation should be downgraded to Low strength regardless of its apparent quality. Note: the operator can verify flagged URLs during execution; this check flags the risk, it does not require verification at QC time.
 
 ### Check 3 — Redundancy Check
 

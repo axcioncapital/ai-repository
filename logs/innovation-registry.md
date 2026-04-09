@@ -28,3 +28,8 @@
 | 2026-04-06 | command | workflows/research-workflow/.claude/commands/wrap-session.md | triaged:project-specific | — |
 | 2026-04-06 | command | .claude/commands/note.md | triaged:project-specific | — |
 | 2026-04-06 | command | workflows/research-workflow/.claude/commands/note.md | triaged:project-specific | — |
+| 2026-04-07 | agent | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/agents/section-drafter.md | triaged:project-specific | — |
+| 2026-04-07 | command | .claude/commands/refinement-deep.md | triaged:project-specific | — |
+| 2026-04-07 | agent | .claude/agents/workflow-analysis-agent.md | triaged:project-specific | — |
+| 2026-04-07 | agent | .claude/agents/workflow-critique-agent.md | triaged:project-specific | — |
+| 2026-04-07 | command | .claude/commands/analyze-workflow.md | triaged:graduate | — |

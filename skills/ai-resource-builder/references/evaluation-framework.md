@@ -25,7 +25,8 @@ For multi-file input, delimit with `--- file: path ---` between each file.
 1. Identify resource type (Skill, Prompt, or Project Instruction). If ambiguous, default to best-fit and note it.
 2. Run Phase 1: Behavioral Analysis (eight-layer evaluation)
 3. Run Phase 2: Convention Gate (structural and metadata checks)
-4. Produce combined report using the Output Format
+4. If provided, apply domain review principles from `review-principles.md` as additional checks after Phase 2. Flag violations as issues in the report using the same severity format.
+5. Produce combined report using the Output Format
 
 ---
 
