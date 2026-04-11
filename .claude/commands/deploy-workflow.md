@@ -54,9 +54,16 @@ Hooks are always **copied** (not symlinked) because they may need project-specif
 
 ### Enrichment logic
 
+**Symlink path rule:** Always use **relative** symlinks so the workspace stays portable. From `projects/{name}/.claude/commands/` or `.claude/agents/`, the relative path back to `ai-resources/` is computed by counting directory levels between the symlink location and the workspace root. For the standard layout (`projects/{name}/.claude/commands/`), that's 4 levels up: `../../../../ai-resources/.claude/commands/{file}`. If a project is nested deeper or shallower, compute the correct depth — do not hardcode.
+
 ```bash
 AI_RESOURCES="{WORKSPACE_ROOT}/ai-resources"
 MANIFEST="{PROJECT_DIR}/.claude/shared-manifest.json"
+
+# Compute relative path from project .claude/commands/ to ai-resources .claude/commands/
+# For projects/{name}/.claude/commands/ → ../../../../ai-resources/.claude/commands/
+REL_CMD="$(python3 -c "import os; print(os.path.relpath('$AI_RESOURCES/.claude/commands', '{PROJECT_DIR}/.claude/commands'))")"
+REL_AGT="$(python3 -c "import os; print(os.path.relpath('$AI_RESOURCES/.claude/agents', '{PROJECT_DIR}/.claude/agents'))")"
 
 # Commands — symlink shared entries from manifest
 mkdir -p "{PROJECT_DIR}/.claude/commands"
@@ -65,7 +72,7 @@ for name in $(jq -r '.commands.shared[]' "$MANIFEST"); do
   target="{PROJECT_DIR}/.claude/commands/${name}.md"
   [ -f "$src" ] || continue
   [ -e "$target" ] || [ -L "$target" ] && continue
-  ln -s "$src" "$target"
+  ln -s "$REL_CMD/${name}.md" "$target"
 done
 
 # Agents — symlink shared entries from manifest
@@ -75,7 +82,7 @@ for name in $(jq -r '.agents.shared[]' "$MANIFEST"); do
   target="{PROJECT_DIR}/.claude/agents/${name}.md"
   [ -f "$src" ] || continue
   [ -e "$target" ] || [ -L "$target" ] && continue
-  ln -s "$src" "$target"
+  ln -s "$REL_AGT/${name}.md" "$target"
 done
 
 # Hooks (copy — not symlinked)

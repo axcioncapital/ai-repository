@@ -130,6 +130,8 @@ If no manifest exists, fall back to the exclusion-list approach:
 
 Without a manifest: symlink all non-excluded commands and agents that don't already exist in the project. Hooks are always **copied** (not symlinked).
 
+**Symlink path rule (critical):** Always use **relative** symlinks, as defined in `/deploy-workflow` Step 4. Compute the correct relative path from the symlink location to the ai-resources source — do not hardcode a depth. For the standard layout (`projects/{name}/.claude/commands/`), the relative path is `../../../../ai-resources/.claude/commands/{file}` (4 levels up). If the project is nested differently, adjust accordingly.
+
 Report what was added (note which are symlinks vs copies). If a copied hook has no `settings.json` entry, warn the operator. Do not auto-modify `settings.json`. Do not commit — the operator reviews the enrichment alongside the pipeline output.
 
 ## Key Rules
