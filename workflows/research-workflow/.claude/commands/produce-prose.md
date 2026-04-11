@@ -26,8 +26,8 @@ Keep this phase lightweight. Do NOT read source files yet.
    - **If exists:** read first 50 lines, verify the target section ($ARGUMENTS) appears in the section hierarchy
      - If target section is covered → note "Architecture found — skipping Phases 2–3"
      - If target section is NOT covered → PAUSE: architecture exists but doesn't cover this section. Options: regenerate architecture with updated inputs, or proceed without architecture for this section.
-   - **If does not exist:** note "No architecture found — Phases 2–3 will run. This session will produce the architecture and stop. Prose conversion will happen in a subsequent `/produce-prose` call."
-   - **Staleness check:** If architecture exists, compare its section list against currently available drafts and approved files in `{part_dir}`. If new sections exist that aren't in the architecture, flag: "Architecture may be stale — new sections found: [list]. Options: regenerate architecture or proceed with current." To regenerate: delete `{prose_output_dir}/architecture.md` and `{prose_output_dir}/architecture-qc.md`, then re-run `/produce-prose {section}`. The session will run Phases 2–3 and stop, as with a first-time architecture creation.
+   - **If does not exist:** note "No architecture found — Phases 2–3 will run. Prose conversion requires a separate `/produce-prose` call after architecture is complete."
+   - **Staleness check:** If architecture exists, compare its section list against currently available drafts and approved files in `{part_dir}`. If new sections exist that aren't in the architecture, flag: "Architecture may be stale — new sections found: [list]. Options: regenerate architecture or proceed with current." To regenerate: delete `{prose_output_dir}/architecture.md` and `{prose_output_dir}/architecture-qc.md`, then re-run `/produce-prose {section}`.
 5. If architecture is needed, inventory all available drafts:
    - Glob `{part_dir}/drafts/*` and `{part_dir}/approved/*`
    - For each section found: select the highest-numbered draft (same logic as step 2, applied to all sections). Fall back to approved/ if no drafts exist for a section.
@@ -94,7 +94,7 @@ Present the plan: which source document will be converted (and whether it comes 
 
 ## Phase 4 — Decision-to-Prose Conversion [delegate]
 
-> **Condition:** Only runs if architecture already exists (detected in Phase 1) or architecture was skipped (fewer than 2 sections). Does NOT run in the same session as Phases 2–3.
+> **Condition:** Only runs if architecture already exists (detected in Phase 1) or architecture was skipped (fewer than 2 sections).
 
 ### If no style reference exists (first section only)
 
@@ -123,7 +123,12 @@ Present the plan: which source document will be converted (and whether it comes 
      - Cross-references involving this section (dependencies, what other sections reference this one)
      - This section's entries from the traceability table (including seam notes)
      - Any structural overrides affecting this section
-   - Task: execute the decision-to-prose transformation per the skill logic. Apply the style reference for voice, tone, and editorial standards. Apply the prose quality standards throughout — particularly standards 3 (sentence rhythm — the short-long pattern), 1 (no self-annotation), and 2 (point-first paragraphs), which are the Tier 1 priorities per the violation guide, plus standard 5 (no preambles) and 7 (land on conclusions). If architecture is provided: honor the depth allocation, implement must-land content, respect seam notes from the traceability table, and write transitions consistent with the cross-reference map. The architecture defines this section's role in the whole document — prose should reflect its assigned position and emphasis. Write the prose file and return: file path, word count, section count, any flags.
+   - Task:
+     1. Execute the decision-to-prose transformation per the skill logic.
+     2. Apply the style reference for voice, tone, and editorial standards.
+     3. Apply the prose quality standards throughout — particularly Tier 1 priorities: standards 3 (sentence rhythm — the short-long pattern), 1 (no self-annotation), and 2 (point-first paragraphs), plus standard 5 (no preambles) and 7 (land on conclusions).
+     4. If architecture is provided: honor the depth allocation, implement must-land content, respect seam notes from the traceability table, and write transitions consistent with the cross-reference map. The architecture defines this section's role in the whole document — prose should reflect its assigned position and emphasis.
+     5. Write the prose file and return: file path, word count, section count, any flags.
 5. Write a brief status note (file path, word count) — do not read the full output yet.
 6. ▸ /compact — skill content and source document no longer needed in main session.
 
@@ -156,8 +161,9 @@ Merged diagnostic review (chapter-prose-reviewer) and compliance gate (prose-com
 
 7. Route on score and findings:
    - **Score 4-5 with only LOW findings:** Note findings. Proceed to Phase 6. No fix agent needed.
-   - **Score 4-5 with MEDIUM+ findings:** Launch a general-purpose sub-agent with: the prose file content, the unified findings list, the style reference, the source document, and the anti-scaffolding instruction (repeated: "Do NOT restore cross-reference codes, chain-activity anchors, value-chain stage labels, or scaffolding. Do NOT flag their absence as a gap."). Task: apply all non-bright-line fixes and write the corrected file. For bright-line items (multi-paragraph changes, analytical claim alterations, sourced statement modifications): log them and present to the operator. After fixes, proceed to Phase 6.
-   - **Score 3:** Same as above — launch fix sub-agent. Present bright-line items and any HIGH findings to the operator before proceeding.
+   - **Score 4-5 with MEDIUM+ findings:** Launch a general-purpose sub-agent with: the prose file content, the unified findings list, the style reference, the source document, and the anti-scaffolding instruction from the review pass above. Task: apply all non-bright-line fixes and write the corrected file. For bright-line items (multi-paragraph changes, analytical claim alterations, sourced statement modifications): log them and present to the operator. After fixes, proceed to Phase 6.
+   - **Score 3 with fewer than 3 HIGH findings:** Same as above — launch fix sub-agent. Present bright-line items and any HIGH findings to the operator before proceeding.
+   - **Score 3 with 3+ HIGH findings:** PAUSE — present findings to the operator. Options: re-run Phase 4 with editorial annotations addressing the failures, or proceed with fix sub-agent.
    - **Score 1-2:** PAUSE — present findings to the operator. The prose conversion has failed. Options: re-run Phase 4 with editorial annotations addressing the failures, or override and proceed.
 
 8. Write a brief Phase 5 handoff note for the main session: the score, the unified findings list (severity + one-line description per finding), which findings were auto-fixed, and which are deferred as bright-line items requiring operator review. This note feeds Phase 7. (Write this note to main session context before compacting — it must survive the compact.)
@@ -272,9 +278,11 @@ Second-pass evaluation of the formatted module using the document-integration-qc
 1. Read the prose file (post-Phase 6c fixes)
 2. Read `/ai-resources/skills/document-integration-qc/SKILL.md`
 3. Read the architecture at `{prose_output_dir}/architecture.md` (if exists) — provides document structure context for completeness checks
-4. Launch a qc-reviewer sub-agent. Pass it:
+4. If Phase 5b ran: gather the Phase 5b findings summary (redundancy/contradiction items identified and their disposition) from the Phase 5b handoff note
+5. Launch a qc-reviewer sub-agent. Pass it:
    - The skill content
    - The prose file content
+   - Phase 5b findings summary (if Phase 5b ran) — so the agent knows which redundancy/contradiction items were already identified and addressed
    - Module identifier: "{section ID} — {section title}" and position in the document (e.g., "Section 2.4 of 9 in Part 2"). Derive position from the architecture's processing order if available, otherwise from section numbering.
    - The architecture content (if exists) — as optional document architecture input for completeness checks
    - Adaptation notes:
@@ -309,3 +317,5 @@ Second-pass evaluation of the formatted module using the document-integration-qc
    - **Challenge** — run `/challenge` for strategic evaluation
    - **Service design review** — run `/service-design-review` for fund-experiential evaluation
    - **Accept** — prose is ready for its intended use
+
+   > **Note:** Per project rules, Part 2 and Working Hypotheses content requires all three review layers (QC → challenge → service-design-review) before acceptance. If these have not yet run, flag this when presenting options.
