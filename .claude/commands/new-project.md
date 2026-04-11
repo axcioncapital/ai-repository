@@ -122,7 +122,7 @@ If a `.claude/shared-manifest.json` exists in the project (created by a workflow
 
 If no manifest exists, fall back to the exclusion-list approach:
 
-**Excluded commands (ai-resources-specific):** `create-skill`, `deploy-workflow`, `new-project`, `graduate-resource`, `migrate-skill`, `improve-skill`, `request-skill`, `sync-workflow`, `session-guide`
+**Excluded commands (ai-resources-specific):** `deploy-workflow`, `new-project`, `graduate-resource`, `sync-workflow`, `session-guide`
 
 **Excluded agents:** any file matching `pipeline-stage-*`, `session-guide-generator`
 
