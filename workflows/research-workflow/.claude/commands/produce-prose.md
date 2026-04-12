@@ -3,7 +3,7 @@ friction-log: true
 ---
 Produce prose for: $ARGUMENTS
 
-Convert a Part 2 (or Part 3) decision document into polished, formatted narrative prose. Chains up to nine skills across eleven phase steps: document architecture creation (research-structure-creator), architecture QC (architecture-qc), decision-to-prose writing (decision-to-prose-writer), merged review and fix (chapter-prose-reviewer + prose-compliance-qc), cross-section integration check, AI prose decontamination (ai-prose-decontamination), merged formatting + H3 titles (prose-formatter + h3-title-pass), formatting QC (formatting-qc), and editorial integration QC (document-integration-qc). The architecture phase runs once per document part and produces a unified document structure; subsequent calls for individual sections detect the existing architecture and skip to prose conversion.
+Convert a Part 2 (or Part 3) decision document into polished, formatted narrative prose. Chains nine skills across a streamlined per-section flow: document architecture creation (research-structure-creator, conditional), architecture QC (architecture-qc, conditional), decision-to-prose writing (decision-to-prose-writer), merged review and fix (chapter-prose-reviewer + prose-compliance-qc), cross-section integration check (conditional), AI prose decontamination (ai-prose-decontamination), merged formatting + H3 pass (prose-formatter + h3-title-pass, full), and merged editorial + formatting QC (formatting-qc + document-integration-qc, two-stage). The architecture phase runs once per document part and produces a unified document structure; subsequent calls for individual sections detect the existing architecture and skip to prose conversion. Per-section run (architecture exists): 5–6 subagent launches, target ~18–22 min wall time.
 
 ---
 
@@ -216,7 +216,7 @@ This phase catches cross-section issues that single-section review cannot detect
 
 ---
 
-## Phase 5c — AI Prose Decontamination [delegate]
+## Phase 5c — AI Prose Decontamination [delegate, sonnet]
 
 Removes AI writing patterns (ornamental language, repetition, over-argumentation, flat rhythm) from substantively correct prose. Runs four sequential passes that progressively clean the voice without changing analytical content.
 
@@ -227,7 +227,7 @@ Removes AI writing patterns (ornamental language, repetition, over-argumentation
 3. Read `context/prose-quality-standards.md`
 4. Read the source document identified in Phase 1 (if available after compaction — if not, proceed without and note in the handoff)
 5. Read `/ai-resources/skills/ai-prose-decontamination/SKILL.md`
-6. Launch a general-purpose sub-agent. Pass it:
+6. Launch a general-purpose sub-agent with `model: "sonnet"` (pattern-based task, analytical judgment not required). Pass it:
    - The skill content
    - The prose file content
    - The style reference content
@@ -246,9 +246,9 @@ Removes AI writing patterns (ornamental language, repetition, over-argumentation
 
 ---
 
-## Phase 6 — Formatting + H3 Titles [delegate, sonnet]
+## Phase 6 — Formatting + H3 Full Pass [delegate, sonnet]
 
-### Phase 6a — Formatting and H3 Placement
+Merged formatting, H3 placement, and H3 refinement in a single sonnet agent. Replaces previous Phase 6a + 6b split. The former mid-pipeline pause for H3 verdict review is removed — KEEP/RENAME/REMOVE verdicts auto-apply, and all REMOVE verdicts are reported in Phase 7 with rationale and reversal instructions so the operator can catch structural deletions at the end.
 
 1. Read the prose file (post-Phase 5c decontamination — the version after review, integration check, and decontamination)
 2. Read `/ai-resources/skills/prose-formatter/SKILL.md`
@@ -260,72 +260,53 @@ Removes AI writing patterns (ornamental language, repetition, over-argumentation
    - The prose file content
    - The style reference content
    - Output path: same file (overwrite — override the prose-formatter skill's versioning default; intermediate files are not needed)
-   - Task: Execute in this order:
-     1. Run all formatting operations per the prose-formatter skill (bold/italic, lists, tables, paragraph length, horizontal rules, spacing). Write the formatted file.
-     2. Then run H3 title pass Step 1 only (placement) per the h3-title-pass skill. Add H3 titles where needed. Do NOT run Step 2 (refinement) yet.
-     3. Return: formatting change log (per-operation summary), H3 verdict table (each H3 with placement rationale and KEEP/RENAME/REMOVE recommendation), and any flagged items.
-
-6. Present the H3 verdict table to the operator. the operator may override individual verdicts (keep a heading the agent wants to remove, rename a heading, etc.).
-
-### Phase 6b — H3 Refinement
-
-7. Launch a general-purpose sub-agent with `model: "sonnet"`. Pass it:
-   - The h3-title-pass skill content
-   - The prose file content (post-formatting, post-placement from 6a)
-   - The style reference content
-   - Any operator overrides from the verdict review
-   - Output path: same file (overwrite — no intermediate versioning needed)
-   - Task: Apply H3 title pass Step 2 (refinement) per the skill logic, incorporating operator overrides. Write the final file and return: final H3 count, any renames applied.
-
-8. ▸ /compact — skill content no longer needed.
-
----
-
-### Phase 6c — Formatting QC [delegate-qc]
-
-1. Read the prose file (post-H3 refinement — the final formatted version)
-2. Read `/ai-resources/skills/formatting-qc/SKILL.md`
-3. Read the style reference at `{prose_output_dir}/style-reference.md`
-4. Collect from Phase 6a: the formatting change log and any deferred/flagged items
-5. Launch a qc-reviewer sub-agent. Pass it:
-   - The formatting-qc skill content
-   - The prose file content
-   - The formatting change log from Phase 6a
-   - The style reference content
-   - Any deferred items list (items flagged during formatting that should not be re-flagged)
-   - Task: Run all four checks per the formatting-qc skill (formatting integrity, visual rhythm, standalone coherence, footnote integrity). Produce the QC report with findings grouped by check, severity rated per finding.
-6. Route on findings:
-   - **No findings or NON-SUBSTANTIVE only:** Note results. Proceed to Phase 7.
-   - **SUBSTANTIVE findings:** Present to the operator. Fixes that are mechanical (broken list structure, missing table caption, orphaned sentence fragment) are applied directly to the prose file — these do not trigger the bright-line rule since they are formatting corrections, not content changes. Fixes that affect standalone coherence (missing orientation, vague cross-references) may involve adding prose — apply the bright-line rule for these. Proceed to Phase 6d after fixes.
-7. ▸ /compact — skill content no longer needed.
-
----
-
-### Phase 6d — Editorial Integration QC [delegate-qc]
-
-Second-pass evaluation of the formatted module using the document-integration-qc skill. Where Phase 6c checks formatting mechanics, this pass checks editorial quality: narrative structure (does each section end with an implication?), internal consistency (tone, register, sentence complexity drift), redundancy and contradiction within the module, and completeness (undefined terms, scanability). Produces transition drafts where transitions are weak.
-
-1. Read the prose file (post-Phase 6c fixes)
-2. Read `/ai-resources/skills/document-integration-qc/SKILL.md`
-3. Read the architecture at `{prose_output_dir}/architecture.md` (if exists) — provides document structure context for completeness checks
-4. If Phase 5b ran: gather the Phase 5b findings summary (redundancy/contradiction items identified and their disposition) from the Phase 5b handoff note
-5. Launch a qc-reviewer sub-agent. Pass it:
-   - The skill content
-   - The prose file content
-   - Phase 5b findings summary (if Phase 5b ran) — so the agent knows which redundancy/contradiction items were already identified and addressed
-   - Module identifier: "{section ID} — {section title}" and position in the document (e.g., "Section 2.4 of 9 in Part 2"). Derive position from the architecture's processing order if available, otherwise from section numbering.
-   - The architecture content (if exists) — as optional document architecture input for completeness checks
-   - Adaptation notes:
-     - "This module has already passed prose quality review (Phase 5), AI prose decontamination (Phase 5c), formatting (Phase 6a-b), and formatting QC (Phase 6c). Focus on editorial-level issues that those passes do not cover: narrative arc, internal consistency, redundancy/contradiction, and completeness. Phase 5c removed AI-pattern prose (ornamental language, repetition, over-argumentation, flat rhythm) without changing analytical content. If you find an abrupt section ending or a transition that feels missing, check whether it may be a decontamination artifact rather than a pre-existing issue."
-     - "Do not re-flag items from the formatting change log's deferred list or from Phase 6c's findings. Phase 5b (Integration Check) has already run against other completed prose sections — do not re-flag redundancy or contradiction issues that were identified and addressed in Phase 5b. Focus redundancy/contradiction checks on issues internal to this module only."
-     - "The `RELEASE ARTIFACT` protocol in the skill is overridden — produce the full QC report directly."
-   - Task: Run all four check categories per the skill (Narrative Structure, Consistency, Redundancy & Contradiction, Completeness). Draft transition passages where transitions are weak. Produce the QC report with findings and transition drafts.
-5. Route on findings:
-   - **No SUBSTANTIVE findings:** Note results and any NON-SUBSTANTIVE items. Proceed to Phase 7.
-   - **SUBSTANTIVE findings without transition drafts:** Present findings to the operator. Apply bright-line rule — SUBSTANTIVE narrative or consistency issues likely require prose changes. Proceed to Phase 7 after the operator reviews.
-   - **Transition drafts produced:** Present transition drafts to the operator. the operator decides which to incorporate. Approved transitions are inserted into the prose file. (Transition passages of 1–3 sentences are not bright-line items. If a transition draft exceeds one paragraph, apply the bright-line rule check before inserting.) Proceed to Phase 7.
-   - **Findings that suggest issues in other sections:** Log to `logs/decisions.md` as cross-section revision notes per the existing cross-section rule. Do not modify other sections' prose.
+   - Task: Execute in this order as a single continuous pass:
+     1. Run all formatting operations per the prose-formatter skill (bold/italic, lists, tables, paragraph length, horizontal rules, spacing). Record a formatting change log.
+     2. Run H3 title pass Step 1 (placement) per the h3-title-pass skill. Record a verdict per heading: KEEP / RENAME / REMOVE with rationale.
+     3. Run H3 title pass Step 2 (refinement) per the skill. Apply all verdicts. For RENAME, apply the refined wording. For REMOVE, delete the heading.
+     4. Write the final formatted file.
+   - **Return values (required for Phase 7 reporting — do not omit):**
+     - Formatting change log (per-operation summary)
+     - H3 decisions table: every heading processed, with verdict (KEPT / RENAMED / REMOVED), original text, final text (for RENAMED), rationale, and for REMOVED a one-line reversal instruction ("to restore, add `### {original text}` before paragraph starting '{first few words}'")
+     - Final H3 count
+     - Any flagged items
 6. ▸ /compact — skill content no longer needed.
+
+---
+
+## Phase 6-QC — Merged Formatting + Editorial Integration QC [delegate-qc]
+
+Merged two-stage QC replacing previous Phase 6c + 6d. One qc-reviewer subagent runs both checks in explicit sequence: formatting-qc first (including any mechanical fixes), then document-integration-qc on the post-fix prose. The merge preserves the former Phase 6d dependency on Phase 6c's findings — the editorial pass explicitly receives the formatting pass's output as "already addressed" context.
+
+1. Read the prose file (post-Phase 6 — final formatted version with H3 applied)
+2. Read `/ai-resources/skills/formatting-qc/SKILL.md`
+3. Read `/ai-resources/skills/document-integration-qc/SKILL.md`
+4. Read the architecture at `{prose_output_dir}/architecture.md` (if exists) — provides document structure context for completeness checks
+5. Read the style reference at `{prose_output_dir}/style-reference.md`
+6. Collect from Phase 6: the formatting change log and any deferred/flagged items
+7. If Phase 5b ran: gather the Phase 5b findings summary (redundancy/contradiction items identified and their disposition) from the Phase 5b handoff note
+8. Launch a qc-reviewer sub-agent. Pass it:
+   - The formatting-qc skill content (labeled: "STAGE 1 SKILL — formatting mechanics")
+   - The document-integration-qc skill content (labeled: "STAGE 2 SKILL — editorial quality")
+   - The prose file content
+   - The formatting change log from Phase 6
+   - Any deferred items list from Phase 6 (items flagged during formatting that should not be re-flagged in Stage 1)
+   - Phase 5b findings summary (if Phase 5b ran)
+   - Module identifier: "{section ID} — {section title}" and position in the document (e.g., "Section 2.4 of 9 in Part 2"). Derive position from the architecture's processing order if available, otherwise from section numbering.
+   - The architecture content (if exists)
+   - **Two-stage execution instructions (critical — execute strictly in this order):**
+     - **STAGE 1 — Formatting QC:** Run all four checks per the formatting-qc skill (formatting integrity, visual rhythm, standalone coherence, footnote integrity). Produce a Stage 1 findings list with severity ratings. For mechanical formatting fixes (broken list structure, missing table caption, orphaned sentence fragment, spacing errors): apply them directly to the prose file and record in a "Stage 1 fixes applied" log. For fixes that affect standalone coherence (missing orientation, vague cross-references): flag them as bright-line candidates and do NOT apply. Write the post-fix prose to the output path.
+     - **STAGE 2 — Editorial Integration QC:** Only begin after Stage 1 is complete and the post-fix prose is written. Read the post-fix prose. Run all four check categories per the document-integration-qc skill (Narrative Structure, Consistency, Redundancy & Contradiction, Completeness). Draft transition passages where transitions are weak. **Do NOT re-flag any item from the Stage 1 findings, Stage 1 fixes applied log, the Phase 6 deferred items list, or the Phase 5b findings summary.** Focus redundancy/contradiction checks on issues internal to this module only. The `RELEASE ARTIFACT` protocol in the document-integration-qc skill is overridden — produce the full QC report directly.
+   - Adaptation notes:
+     - "This module has already passed prose quality review (Phase 5), AI prose decontamination (Phase 5c), and formatting + H3 (Phase 6). Phase 5c removed AI-pattern prose (ornamental language, repetition, over-argumentation, flat rhythm) without changing analytical content. If you find an abrupt section ending or a transition that feels missing, check whether it may be a decontamination artifact rather than a pre-existing issue."
+   - Task summary: Execute Stage 1 then Stage 2 as described above. Return a structured report with: Stage 1 findings (formatting), Stage 1 fixes applied log, Stage 1 bright-line candidates, Stage 2 findings (editorial) grouped by check category, transition drafts (if any), and an overall verdict.
+9. Route on findings:
+   - **No SUBSTANTIVE findings in either stage:** Note results and any NON-SUBSTANTIVE items. Proceed to Phase 7.
+   - **Stage 1 bright-line candidates:** Present to the operator before applying. These are formatting fixes that cross into prose changes.
+   - **Stage 2 SUBSTANTIVE findings without transition drafts:** Present findings to the operator. Apply bright-line rule — SUBSTANTIVE narrative or consistency issues likely require prose changes. Proceed to Phase 7 after the operator reviews.
+   - **Stage 2 transition drafts produced:** Present transition drafts to the operator. The operator decides which to incorporate. Approved transitions are inserted into the prose file. (Transition passages of 1–3 sentences are not bright-line items. If a transition draft exceeds one paragraph, apply the bright-line rule check before inserting.) Proceed to Phase 7.
+   - **Findings that suggest issues in other sections:** Log to `logs/decisions.md` as cross-section revision notes per the existing cross-section rule. Do not modify other sections' prose.
+10. ▸ /compact — skill content no longer needed.
 
 ---
 
@@ -336,11 +317,13 @@ Second-pass evaluation of the formatted module using the document-integration-qc
    - Word count and section structure
    - Review pass score and unified findings addressed (from Phase 5)
    - Any trade-offs: bright-line items deferred, cross-spec tensions
-   - H3 titles added/renamed (from Phase 6)
-   - Formatting changes summary (from Phase 6a), formatting QC results (from Phase 6c), and editorial integration QC results (from Phase 6d)
-   - Architecture compliance notes (if architecture was used: whether depth allocation was honored, must-land content implemented)
    - Integration check results (from Phase 5b): transitions added, redundancy/contradiction findings and their disposition
    - Decontamination results (from Phase 5c): changes per pass, any constrained passages, bright-line flag disposition. Full decontamination change log available on request at `{prose_output_dir}/decontamination-log.md`.
+   - Formatting changes summary (from Phase 6)
+   - **H3 decisions table (from Phase 6):** Present the full verdict table. Highlight every REMOVED heading explicitly with its original text, rationale, and the reversal instruction from the Phase 6 return. This is the operator's opportunity to reverse any structural deletion; REMOVED verdicts were auto-applied mid-pipeline to eliminate the mechanical pause, so they must surface here for review.
+   - Formatting QC results (Stage 1 from Phase 6-QC): fixes applied, bright-line candidates
+   - Editorial integration QC results (Stage 2 from Phase 6-QC): findings, transition drafts
+   - Architecture compliance notes (if architecture was used: whether depth allocation was honored, must-land content implemented)
    - Any flagged items still unresolved
 3. Offer next steps:
    - **Review** — the operator reads and gives feedback for a targeted revision
