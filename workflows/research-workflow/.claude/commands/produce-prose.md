@@ -3,7 +3,7 @@ friction-log: true
 ---
 Produce prose for: $ARGUMENTS
 
-Convert a Part 2 (or Part 3) decision document into polished, formatted narrative prose. Chains up to eight skills across ten phase steps: document architecture creation (research-structure-creator), architecture QC (architecture-qc), decision-to-prose writing (decision-to-prose-writer), merged review and fix (chapter-prose-reviewer + prose-compliance-qc), cross-section integration check, merged formatting + H3 titles (prose-formatter + h3-title-pass), formatting QC (formatting-qc), and editorial integration QC (document-integration-qc). The architecture phase runs once per document part and produces a unified document structure; subsequent calls for individual sections detect the existing architecture and skip to prose conversion.
+Convert a Part 2 (or Part 3) decision document into polished, formatted narrative prose. Chains up to nine skills across eleven phase steps: document architecture creation (research-structure-creator), architecture QC (architecture-qc), decision-to-prose writing (decision-to-prose-writer), merged review and fix (chapter-prose-reviewer + prose-compliance-qc), cross-section integration check, AI prose decontamination (ai-prose-decontamination), merged formatting + H3 titles (prose-formatter + h3-title-pass), formatting QC (formatting-qc), and editorial integration QC (document-integration-qc). The architecture phase runs once per document part and produces a unified document structure; subsequent calls for individual sections detect the existing architecture and skip to prose conversion.
 
 ---
 
@@ -160,8 +160,8 @@ Merged diagnostic review (chapter-prose-reviewer) and compliance gate (prose-com
    - Task: First, run the diagnostic review per chapter-prose-reviewer and produce a score (1-5) and flag report. Then run all four compliance scans per prose-compliance-qc (treating diagnostic findings as pending fixes per the sequencing note). Then apply the 9 prose quality checks — including Standard 6 at paragraph-to-paragraph granularity (not only at section boundaries). Produce a unified findings list combining all passes, with severity ratings (HIGH/MEDIUM/LOW) and per-spec verdicts.
 
 7. Route on score and findings:
-   - **Score 4-5 with only LOW findings:** Note findings. Proceed to Phase 6. No fix agent needed.
-   - **Score 4-5 with MEDIUM+ findings:** Launch a general-purpose sub-agent with: the prose file content, the unified findings list, the style reference, the source document, and the anti-scaffolding instruction from the review pass above. Task: apply all non-bright-line fixes and write the corrected file. For bright-line items (multi-paragraph changes, analytical claim alterations, sourced statement modifications): log them and present to the operator. After fixes, proceed to Phase 6.
+   - **Score 4-5 with only LOW findings:** Note findings. Proceed to Phase 5b. No fix agent needed.
+   - **Score 4-5 with MEDIUM+ findings:** Launch a general-purpose sub-agent with: the prose file content, the unified findings list, the style reference, the source document, and the anti-scaffolding instruction from the review pass above. Task: apply all non-bright-line fixes and write the corrected file. For bright-line items (multi-paragraph changes, analytical claim alterations, sourced statement modifications): log them and present to the operator. After fixes, proceed to Phase 5b.
    - **Score 3 with fewer than 3 HIGH findings:** Same as above — launch fix sub-agent. Present bright-line items and any HIGH findings to the operator before proceeding.
    - **Score 3 with 3+ HIGH findings:** PAUSE — present findings to the operator. Options: re-run Phase 4 with editorial annotations addressing the failures, or proceed with fix sub-agent.
    - **Score 1-2:** PAUSE — present findings to the operator. The prose conversion has failed. Options: re-run Phase 4 with editorial annotations addressing the failures, or override and proceed.
@@ -174,12 +174,12 @@ Merged diagnostic review (chapter-prose-reviewer) and compliance gate (prose-com
 
 ## Phase 5b — Integration Check [delegate] (conditional)
 
-> **Condition:** Only runs if other completed prose sections exist in `{prose_output_dir}` (i.e., this is not the first section being converted). If this is the first section, skip to Phase 6.
+> **Condition:** Only runs if other completed prose sections exist in `{prose_output_dir}` (i.e., this is not the first section being converted). If this is the first section, skip to Phase 5c.
 
 This phase catches cross-section issues that single-section review cannot detect: transition quality at section boundaries and redundancy/contradiction between independently written sections.
 
-1. Glob `{prose_output_dir}/*.md` to find all completed prose sections. Exclude non-prose files by name: `architecture.md`, `architecture-qc.md`, `style-reference.md`. The remaining files are prose sections.
-2. If no other prose sections exist: skip this phase entirely, proceed to Phase 6
+1. Glob `{prose_output_dir}/*.md` to find all completed prose sections. Exclude non-prose files by name: `architecture.md`, `architecture-qc.md`, `style-reference.md`, `decontamination-log.md`. The remaining files are prose sections.
+2. If no other prose sections exist: skip this phase entirely, proceed to Phase 5c
 3. Read the current section's prose file (post-Phase 5 fixes)
 4. Read the architecture at `{prose_output_dir}/architecture.md` (if exists) — specifically the cross-reference map and processing order, to identify which sections are adjacent to and dependent on the current section
 5. Read adjacent sections' prose files — "adjacent" means the sections immediately before and after this section in the architecture's processing order. If no architecture exists, use section numbering order.
@@ -207,12 +207,42 @@ This phase catches cross-section issues that single-section review cannot detect
      Return: transition drafts (if any), redundancy/contradiction findings (if any), and a clean-pass note if no issues found.
 
 8. Route on findings:
-   - **No findings:** Note clean pass. Proceed to Phase 6.
-   - **Transition drafts only:** Present drafts to the operator. the operator decides which to incorporate. Apply approved transitions to the prose file. (Transition passages of 1–3 sentences are not bright-line items. If a transition draft exceeds one paragraph, apply the bright-line rule check before inserting.) Proceed to Phase 6.
-   - **Redundancy/contradiction findings:** Present all findings to the operator. SUBSTANTIVE findings require a decision before proceeding — the operator chooses which section to adjust, or accepts the repetition. NON-SUBSTANTIVE findings are noted for future reference. Proceed to Phase 6 after the operator reviews.
+   - **No findings:** Note clean pass. Proceed to Phase 5c.
+   - **Transition drafts only:** Present drafts to the operator. the operator decides which to incorporate. Apply approved transitions to the prose file. (Transition passages of 1–3 sentences are not bright-line items. If a transition draft exceeds one paragraph, apply the bright-line rule check before inserting.) Proceed to Phase 5c.
+   - **Redundancy/contradiction findings:** Present all findings to the operator. SUBSTANTIVE findings require a decision before proceeding — the operator chooses which section to adjust, or accepts the repetition. NON-SUBSTANTIVE findings are noted for future reference. Proceed to Phase 5c after the operator reviews.
    - **Note:** Redundancy/contradiction fixes that require changes to *other* sections (not the current one) are logged to `logs/decisions.md` as cross-section revision notes, not applied directly. Only the current section's prose is modified in this phase.
 
 9. ▸ /compact — adjacent section content no longer needed.
+
+---
+
+## Phase 5c — AI Prose Decontamination [delegate]
+
+Removes AI writing patterns (ornamental language, repetition, over-argumentation, flat rhythm) from substantively correct prose. Runs four sequential passes that progressively clean the voice without changing analytical content.
+
+> **Condition:** Always runs. Skip only if the operator explicitly opts out during Phase 1 planning or Phase 5 review.
+
+1. Read the prose file (post-Phase 5 fixes, or post-Phase 5b if 5b ran)
+2. Read the style reference at `{prose_output_dir}/style-reference.md`
+3. Read `context/prose-quality-standards.md`
+4. Read the source document identified in Phase 1 (if available after compaction — if not, proceed without and note in the handoff)
+5. Read `/ai-resources/skills/ai-prose-decontamination/SKILL.md`
+6. Launch a general-purpose sub-agent. Pass it:
+   - The skill content
+   - The prose file content
+   - The style reference content
+   - The prose quality standards content
+   - The source document content (if available)
+   - Output path: same file (overwrite)
+   - Change log output path: `{prose_output_dir}/decontamination-log.md`
+   - Task: Execute all four decontamination passes per the skill logic. Write the corrected prose file. Write the change log to the log output path. Return: change counts per pass, any bright-line flags, and any passages where decontamination was constrained by style reference or evidence calibration preservation.
+   - **Bright-line rule override for Phase 5c:** The decontamination pass is exempt from the multi-paragraph scope check (bright-line check 1) because it operates across the entire document by design. Checks 2 and 3 still apply: if any change alters an analytical claim or modifies a sourced statement, the sub-agent must flag it in the bright-line-flags section of the change log and must NOT apply that change. If bright-line flags are populated, the main agent PAUSEs for operator approval before proceeding.
+7. Route on result:
+   - **Zero bright-line flags:** Proceed to Phase 6 automatically.
+   - **Bright-line flags present:** PAUSE — present flags to the operator. Apply or discard per operator decision, then proceed to Phase 6.
+   - **Zero changes across all passes:** Note "Prose already clean — no decontamination needed." Proceed to Phase 6.
+8. Write Phase 5c handoff note: total changes, per-pass breakdown, any bright-line flags and their disposition, any constrained passages. Include the source document path from Phase 1 so downstream phases can access it if needed.
+9. ▸ /compact — skill content and source document no longer needed.
 
 ---
 
@@ -220,7 +250,7 @@ This phase catches cross-section issues that single-section review cannot detect
 
 ### Phase 6a — Formatting and H3 Placement
 
-1. Read the prose file (post-review — the version after Phase 5 fixes, if any were applied)
+1. Read the prose file (post-Phase 5c decontamination — the version after review, integration check, and decontamination)
 2. Read `/ai-resources/skills/prose-formatter/SKILL.md`
 3. Read `/ai-resources/skills/h3-title-pass/SKILL.md`
 4. Read the style reference at `{prose_output_dir}/style-reference.md`
@@ -286,7 +316,7 @@ Second-pass evaluation of the formatted module using the document-integration-qc
    - Module identifier: "{section ID} — {section title}" and position in the document (e.g., "Section 2.4 of 9 in Part 2"). Derive position from the architecture's processing order if available, otherwise from section numbering.
    - The architecture content (if exists) — as optional document architecture input for completeness checks
    - Adaptation notes:
-     - "This module has already passed prose quality review (Phase 5), formatting (Phase 6a-b), and formatting QC (Phase 6c). Focus on editorial-level issues that those passes do not cover: narrative arc, internal consistency, redundancy/contradiction, and completeness."
+     - "This module has already passed prose quality review (Phase 5), AI prose decontamination (Phase 5c), formatting (Phase 6a-b), and formatting QC (Phase 6c). Focus on editorial-level issues that those passes do not cover: narrative arc, internal consistency, redundancy/contradiction, and completeness. Phase 5c removed AI-pattern prose (ornamental language, repetition, over-argumentation, flat rhythm) without changing analytical content. If you find an abrupt section ending or a transition that feels missing, check whether it may be a decontamination artifact rather than a pre-existing issue."
      - "Do not re-flag items from the formatting change log's deferred list or from Phase 6c's findings. Phase 5b (Integration Check) has already run against other completed prose sections — do not re-flag redundancy or contradiction issues that were identified and addressed in Phase 5b. Focus redundancy/contradiction checks on issues internal to this module only."
      - "The `RELEASE ARTIFACT` protocol in the skill is overridden — produce the full QC report directly."
    - Task: Run all four check categories per the skill (Narrative Structure, Consistency, Redundancy & Contradiction, Completeness). Draft transition passages where transitions are weak. Produce the QC report with findings and transition drafts.
@@ -310,6 +340,7 @@ Second-pass evaluation of the formatted module using the document-integration-qc
    - Formatting changes summary (from Phase 6a), formatting QC results (from Phase 6c), and editorial integration QC results (from Phase 6d)
    - Architecture compliance notes (if architecture was used: whether depth allocation was honored, must-land content implemented)
    - Integration check results (from Phase 5b): transitions added, redundancy/contradiction findings and their disposition
+   - Decontamination results (from Phase 5c): changes per pass, any constrained passages, bright-line flag disposition. Full decontamination change log available on request at `{prose_output_dir}/decontamination-log.md`.
    - Any flagged items still unresolved
 3. Offer next steps:
    - **Review** — the operator reads and gives feedback for a targeted revision

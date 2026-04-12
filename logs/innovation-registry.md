@@ -33,3 +33,4 @@
 | 2026-04-07 | agent | .claude/agents/workflow-analysis-agent.md | triaged:project-specific | — |
 | 2026-04-07 | agent | .claude/agents/workflow-critique-agent.md | triaged:project-specific | — |
 | 2026-04-07 | command | .claude/commands/analyze-workflow.md | graduated | ai-resources/.claude/commands/analyze-workflow.md (already in place) |
+| 2026-04-11 | command | workflows/research-workflow/.claude/commands/produce-prose.md | detected | — |

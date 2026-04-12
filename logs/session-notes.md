@@ -363,3 +363,29 @@ None
 
 ### Open Questions
 None
+
+## 2026-04-11 — Created ai-prose-decontamination skill and Phase 5c integration
+
+### Summary
+Created a new skill (`ai-prose-decontamination`) that implements a 4-pass sequential decontamination of AI writing patterns from prose: ornamental language, repetition, over-argumentation, and flat rhythm. Integrated it into the `produce-prose` pipeline as Phase 5c between the integration check (5b) and formatting (6). Ran two QC passes — the first on the plan (GO with minor fixes), the second on the implementation (REVISE with routing fixes).
+
+### Files Created
+- `skills/ai-prose-decontamination/SKILL.md` — 4-pass decontamination skill with inputs, constraints, change log format, worked example
+
+### Files Modified
+- `workflows/research-workflow/.claude/commands/produce-prose.md` — inserted Phase 5c, updated Phase 5/5b routing to flow through 5c, updated Phase 6a/6d/7 references, updated header (8→9 skills, 10→11 steps), added `decontamination-log.md` to Phase 5b glob exclusions
+
+### Decisions Made
+- **Bright-line check 1 exemption:** Exempted Phase 5c from multi-paragraph scope check since decontamination operates across the entire document by design. Checks 2 and 3 (analytical claims, sourced statements) remain active.
+- **Decontamination takes precedence over Phase 4/5:** When decontamination and earlier phases conflict on rhythm or voice decisions, decontamination is the final voice-level authority before formatting.
+- **Change log persisted to file:** Written to `{prose_output_dir}/decontamination-log.md` to survive compaction, available on request in Phase 7.
+- **QC fixes (plan):** Flagged bright-line exemption as decision point, added source document path to handoff note, persisted change log to file, acknowledged Phase 4/5 overlap with precedence rule.
+- **QC fixes (implementation):** Updated Phase 5 routing (→5b), Phase 5b routing (→5c), Phase 6a parenthetical (→post-5c), added decontamination-log.md to glob exclusions.
+
+### Next Steps
+- Push ai-resources repo
+- Test the skill standalone on an existing prose file with a style reference
+- Next `produce-prose` invocation will exercise Phase 5c in context
+
+### Open Questions
+None

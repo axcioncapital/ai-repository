@@ -36,3 +36,10 @@
 - **Decisions logged:** 0
 - **QC cycles:** 1 (REVISE — 3 findings, all fixed)
 - **Gates:** 2 (0 changed) — content-review:confirmed, qc-disposition:confirmed
+
+### 2026-04-11 — Created ai-prose-decontamination skill and Phase 5c integration
+- **Commands used:** /qc-pass (x2), /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1
+- **QC cycles:** 2 (plan: GO with 4 minor fixes applied; implementation: REVISE with 2 critical + 1 major, all fixed)
+- **Gates:** 3 (1 changed) — plan-approval:confirmed, qc-disposition:confirmed, qc-disposition:confirmed

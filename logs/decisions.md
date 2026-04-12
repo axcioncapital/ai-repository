@@ -46,3 +46,9 @@
 - **Decision:** Add a lightweight drift check step to `/wrap-session` rather than building a dedicated `/sync-command` skill.
 - **Rationale:** Piggybacks on an existing routine (session wrap) so it costs zero extra process. Only asks the question — doesn't force action. If this proves insufficient, a dedicated command can be built later.
 - **Alternatives considered:** (a) Manual habit — rejected, relies on memory. (b) Dedicated `/sync-command` — deferred, over-engineering for a problem that may be fully solved by a prompt. (c) Automated diffing — rejected, too complex for the current volume of shared commands.
+
+### 2026-04-11 — Bright-line check 1 exemption for AI prose decontamination
+- **Context:** The produce-prose pipeline's bright-line rule requires operator approval for multi-paragraph changes. The new Phase 5c (AI prose decontamination) operates across the entire document by design — every invocation makes multi-paragraph changes. Requiring approval on check 1 would make every invocation a manual gate, defeating the automatic flow design.
+- **Decision:** Exempt Phase 5c from bright-line check 1 (multi-paragraph scope). Checks 2 (analytical claim alteration) and 3 (sourced statement modification) remain active and trigger a PAUSE if violated.
+- **Rationale:** The bright-line rule protects analytical content from unreviewed changes. Decontamination explicitly does not change analytical content — it changes surface-level voice patterns. The exemption preserves the rule's intent while allowing the pass to function. This is the first exemption to the bright-line rule in the workflow.
+- **Alternatives considered:** (a) Full bright-line compliance — rejected, creates a mandatory gate on every invocation. (b) Raising the threshold (e.g., exempt only if <50 changes) — rejected, arbitrary threshold that still gates most invocations.
