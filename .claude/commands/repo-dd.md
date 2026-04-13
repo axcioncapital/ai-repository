@@ -7,31 +7,60 @@ Input: $ARGUMENTS (optional) — depth control:
 
 ---
 
-### Step 1: Preparation
+### Step 1: Scope Selection [Operator Gate]
 
 1. Set WORKSPACE to the Axcion AI workspace root (parent of `ai-resources/`).
-2. Set AUDIT_DIR to `ai-resources/audits/`.
-3. Check for the most recent previous audit in `{AUDIT_DIR}/` by looking for files matching `repo-due-diligence-*.md` (exclude `*-partial.md`). Set PREVIOUS_AUDIT to that file path, or "None" if no previous audit exists.
-4. Set REPORT_PATH to `{AUDIT_DIR}/repo-due-diligence-YYYY-MM-DD.md` using today's date.
+2. Enumerate the contents of `{WORKSPACE}/projects/` so you can list real project names.
+3. Ask the operator which scope to audit. Present a numbered list:
+   - **1. Workspace** (default) — full Axcion AI workspace: ai-resources, workflows, all projects
+   - **2. ai-resources** — only the ai-resources repo
+   - **3. workflows** — only the workflows repo
+   - **4. A specific project** — followed by the enumerated list from `projects/`, each as its own numbered sub-option (e.g., `4a. projects/obsidian-pe-kb`, `4b. projects/buy-side-service-plan`, etc.)
+
+4. Wait for the operator's answer. Accept numeric, letter, or name-based responses.
+
+5. Based on the response, set three variables:
+   - **AUDIT_ROOT** — the filesystem subtree to audit:
+     - Workspace: `{WORKSPACE}`
+     - ai-resources: `{WORKSPACE}/ai-resources`
+     - workflows: `{WORKSPACE}/workflows`
+     - projects/X: `{WORKSPACE}/projects/X`
+   - **SCOPE_SLUG** — used in report filenames (empty string for workspace; otherwise a kebab-case identifier like `ai-resources`, `workflows`, or `project-obsidian-pe-kb`)
+   - **SCOPE_LABEL** — human-readable for the report header (e.g., "Axcion AI Workspace (multi-repo)", "ai-resources repo", "workflows repo", "projects/obsidian-pe-kb")
 
 ---
 
-### Step 2: Delegate Factual Audit to Subagent
+### Step 2: Preparation
 
-5. **Launch the `repo-dd-auditor` subagent.** Pass it:
-   - WORKSPACE path
+6. Set AUDIT_DIR to `{WORKSPACE}/ai-resources/audits/` (audit reports always land in the central audits directory regardless of scope).
+7. Set REPORT_PATH:
+   - If SCOPE_SLUG is empty: `{AUDIT_DIR}/repo-due-diligence-YYYY-MM-DD.md`
+   - Otherwise: `{AUDIT_DIR}/repo-due-diligence-YYYY-MM-DD-{SCOPE_SLUG}.md`
+8. Find PREVIOUS_AUDIT — the most recent prior audit **with the same scope**:
+   - If SCOPE_SLUG is empty: match `repo-due-diligence-YYYY-MM-DD.md` (no trailing slug, no `-partial`). Regex: `^repo-due-diligence-\d{4}-\d{2}-\d{2}\.md$`.
+   - Otherwise: match `repo-due-diligence-YYYY-MM-DD-{SCOPE_SLUG}.md`. Regex: `^repo-due-diligence-\d{4}-\d{2}-\d{2}-{SCOPE_SLUG}\.md$`.
+   - Set PREVIOUS_AUDIT to the newest matching file, or "None" if no prior scoped audit exists.
+
+---
+
+### Step 3: Delegate Factual Audit to Subagent
+
+9. **Launch the `repo-dd-auditor` subagent.** Pass it:
+   - WORKSPACE path (full workspace, for cross-reference context)
+   - AUDIT_ROOT path (the subtree to actually walk)
+   - SCOPE_LABEL (for the report header)
    - AUDIT_DIR path
    - PREVIOUS_AUDIT path (or "None")
    - REPORT_PATH
    - DEPTH: "standard", "deep", or "full" based on $ARGUMENTS
 
-   The subagent reads the questionnaire, executes it against the workspace, and saves the report. This ensures the factual audit runs with fresh context and no bias from recent session work.
+   The subagent reads the questionnaire, executes it against AUDIT_ROOT, and saves the report. This ensures the factual audit runs with fresh context and no bias from recent session work.
 
-6. When the subagent returns, read the saved report at REPORT_PATH to verify it was written.
+10. When the subagent returns, read the saved report at REPORT_PATH to verify it was written.
 
 ---
 
-### Step 3: Triage Findings
+### Step 4: Triage Findings
 
 14. Read the completed audit report.
 15. Extract every finding that describes a discrepancy, missing item, violation, contradiction, or deviation.
@@ -45,7 +74,7 @@ Input: $ARGUMENTS (optional) — depth control:
 
 ---
 
-### Step 4: Present Findings [Operator Gate]
+### Step 5: Present Findings [Operator Gate]
 
 17. Display a summary table:
 
@@ -63,7 +92,7 @@ INFO:      Z items
     - What the finding is (one line)
     - What decision is needed (one line)
 
-20. If there are no AUTO-FIX or OPERATOR items (all findings are INFO): state "Clean audit — no actionable findings" and skip to Step 6.
+20. If there are no AUTO-FIX or OPERATOR items (all findings are INFO): state "Clean audit — no actionable findings" and skip to Step 7.
 
 21. **Wait for operator approval before proceeding.** The operator may:
     - Approve all auto-fixes and select which operator items to fix
@@ -73,7 +102,7 @@ INFO:      Z items
 
 ---
 
-### Step 5: Apply Fixes
+### Step 6: Apply Fixes
 
 22. Apply each approved fix.
 23. After each fix, verify the change by reading the modified file.
@@ -82,13 +111,15 @@ INFO:      Z items
 
 ---
 
-### Step 6: Commit
+### Step 7: Commit
 
 26. Stage the audit report file (always — even if no fixes were applied, a clean audit is baseline data).
-27. If fixes were applied in Step 5, stage those files too.
-28. Commit with message format: `audit: repo-dd — YYYY-MM-DD [brief scope note]`
-    - Example: `audit: repo-dd — 2026-04-06 full workspace, 3 fixes applied`
-    - Example: `audit: repo-dd — 2026-04-06 full workspace, clean`
+27. If fixes were applied in Step 6, stage those files too.
+28. Commit with message format: `audit: repo-dd — YYYY-MM-DD [SCOPE_LABEL, brief scope note]`
+    - Example (workspace): `audit: repo-dd — 2026-04-06 full workspace, 3 fixes applied`
+    - Example (workspace, clean): `audit: repo-dd — 2026-04-06 full workspace, clean`
+    - Example (scoped): `audit: repo-dd — 2026-04-06 projects/obsidian-pe-kb, 2 fixes applied`
+    - Note: when AUDIT_ROOT and the fixed files span multiple git repos, commit per repo with a scope note identifying that repo's portion.
 29. Do NOT push.
 30. If $ARGUMENTS does not contain "deep" or "full", stop here. Present the audit summary to the operator.
 
@@ -96,16 +127,18 @@ INFO:      Z items
 
 ## Deep Operational Assessment
 
-Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a separate report file that references the factual audit. Evidence and interpretation stay in separate files.
+Steps 8-14 run only when $ARGUMENTS contains "deep" or "full". They produce a separate report file that references the factual audit. Evidence and interpretation stay in separate files. When SCOPE_SLUG is non-empty, the deep assessment is narrowed to AUDIT_ROOT — chain analysis, context load assessment, and friction synthesis all operate on the scoped subtree only.
 
 ---
 
-### Step 7: Deep Assessment Preparation
+### Step 8: Deep Assessment Preparation
 
 31. Set DD_REPORT to the audit report just saved at REPORT_PATH.
-32. Set DEEP_REPORT_PATH to `{AUDIT_DIR}/repo-dd-deep-YYYY-MM-DD.md` using today's date.
+32. Set DEEP_REPORT_PATH:
+    - If SCOPE_SLUG is empty: `{AUDIT_DIR}/repo-dd-deep-YYYY-MM-DD.md`
+    - Otherwise: `{AUDIT_DIR}/repo-dd-deep-YYYY-MM-DD-{SCOPE_SLUG}.md`
 33. Read DD_REPORT fully. Extract Section 3.4 (downstream reference ranking), Section 5 (context load), Section 1.2 (hooks), and Section 2 (CLAUDE.md health) into working memory.
-34. Discover log files across the workspace. For each repo under WORKSPACE (ai-resources, each project under projects/, workflows/), check for:
+34. Discover log files within AUDIT_ROOT. For each repo under AUDIT_ROOT (or, when AUDIT_ROOT is the workspace root, each repo under it — ai-resources, workflows, projects/*), check for:
     - `logs/friction-log.md`
     - `logs/improvement-log.md`
     - `logs/session-notes.md`
@@ -115,7 +148,7 @@ Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ---
 
-### Step 8: Feature Criticality Assessment
+### Step 9: Feature Criticality Assessment
 
 35. Extract the top-10 downstream reference ranking from DD_REPORT Section 3.4.
 36. For each item in the ranking, classify as:
@@ -135,7 +168,7 @@ Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ---
 
-### Step 9: Context Management Assessment
+### Step 10: Context Management Assessment
 
 41. Extract Section 5.1 (context load per entry point) and Section 5.2 (unreferenced CLAUDE.md sections) from DD_REPORT.
 42. For each entry point, assess context efficiency:
@@ -161,9 +194,9 @@ Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ---
 
-### Step 10: Friction and Improvement Synthesis
+### Step 11: Friction and Improvement Synthesis
 
-48. Read all discovered friction logs from Step 7 sub-step 34. For repos with no friction log, record: "{repo} — no friction log. Friction logging not active."
+48. Read all discovered friction logs from Step 8 sub-step 34. For repos with no friction log, record: "{repo} — no friction log. Friction logging not active."
 49. Read all discovered improvement logs. For repos with no improvement log, record: "{repo} — no improvement log."
 50. Read all discovered session notes. Extract:
     - Recurring themes in "Open Questions" sections
@@ -185,17 +218,17 @@ Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ---
 
-### Step 11: Deep Report Generation
+### Step 12: Deep Report Generation
 
-55. If context usage is high after completing Step 10, inform the operator — they can choose to save the report with sections completed so far and finish in a fresh session.
+55. If context usage is high after completing Step 11, inform the operator — they can choose to save the report with sections completed so far and finish in a fresh session.
 
 56. Write the deep report to DEEP_REPORT_PATH with this structure:
 
     ```
     # Repo Deep Review — YYYY-MM-DD
     Workspace: Axcion AI
-    Based on: repo-dd audit YYYY-MM-DD
-    Scope: {repos assessed}
+    Scope: {SCOPE_LABEL}
+    Based on: repo-dd audit YYYY-MM-DD (same scope)
     ```
 
     **Section 1: Feature Criticality**
@@ -234,9 +267,9 @@ Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ---
 
-### Step 12: Pipeline Testing [Operator Gate]
+### Step 13: Pipeline Testing [Operator Gate]
 
-61. If $ARGUMENTS does not contain "full", skip to Step 13.
+61. If $ARGUMENTS does not contain "full", skip to Step 14.
 62. **Test 1: Symlink resolution.** Check every symlink recorded in DD_REPORT Section 1.7. For each: does the target exist? Is it readable? Is the content non-empty? Record pass/fail per symlink.
 63. **Test 2: Template sync.** For each file that exists as both a canonical version (in ai-resources/skills/ or ai-resources/workflows/) and a deployed copy (in projects/), compare content. Record: identical, diverged (with line diff count), or missing copy.
 64. **Test 3: /deploy-workflow preconditions.** Verify without executing:
@@ -257,11 +290,12 @@ Steps 7-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ---
 
-### Step 13: Commit Deep Report
+### Step 14: Commit Deep Report
 
 68. Stage the deep report file at DEEP_REPORT_PATH.
-69. Commit with message format: `audit: repo-dd-deep — YYYY-MM-DD [brief scope note]`
-    - Example: `audit: repo-dd-deep — 2026-04-06 full workspace, 12 findings`
-    - Example: `audit: repo-dd-deep — 2026-04-06 full workspace + pipeline tests, 8 findings`
+69. Commit with message format: `audit: repo-dd-deep — YYYY-MM-DD [SCOPE_LABEL, brief scope note]`
+    - Example (workspace): `audit: repo-dd-deep — 2026-04-06 full workspace, 12 findings`
+    - Example (workspace, full): `audit: repo-dd-deep — 2026-04-06 full workspace + pipeline tests, 8 findings`
+    - Example (scoped): `audit: repo-dd-deep — 2026-04-06 projects/obsidian-pe-kb, 5 findings`
 70. Do NOT push.
 71. Present the Summary section of the deep report to the operator as final output.

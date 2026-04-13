@@ -389,3 +389,41 @@ Created a new skill (`ai-prose-decontamination`) that implements a 4-pass sequen
 
 ### Open Questions
 None
+
+## 2026-04-12 — /repo-dd workspace audit, 3 fixes applied + scope-prompt added to /repo-dd
+
+### Summary
+Ran workspace-wide `/repo-dd` (standard depth). Audit catalogued 347 items and flagged 18 health findings with 43 deltas vs the 2026-04-11 audit. Triaged findings into 1 auto-fix + 4 operator decisions + 8 info items. Applied 3 fixes, committed one previously-untracked command, and left 3 pre-2026-01-06 template files untouched as verified-stable. Two commits landed (ai-resources `9919853`, buy-side `1c92730`), neither pushed. A third change to project-planning is on disk only (not a git repo). Mid-session, operator flagged that `/repo-dd` should ask for scope rather than always running workspace-wide — added a Step 1 "Scope Selection" operator gate to the command, renumbered subsequent steps, and updated the `repo-dd-auditor` subagent to walk only the chosen AUDIT_ROOT.
+
+### Files Changed
+Modified:
+- `ai-resources/CLAUDE.md` — documented `style-references/` directory in the "Other directories" list
+- `projects/buy-side-service-plan/.claude/settings.json` — wired `detect-innovation.sh` into PostToolUse Write + Edit (was orphaned — script on disk, not referenced)
+- `projects/project-planning/.claude/settings.json` — added PostToolUse block with `detect-innovation.sh` for Write + Edit (no prior PostToolUse wiring)
+- `ai-resources/.claude/commands/repo-dd.md` — added Step 1 Scope Selection operator gate (workspace / ai-resources / workflows / specific project), introduced AUDIT_ROOT / SCOPE_SLUG / SCOPE_LABEL variables, renumbered all subsequent steps (1-7 factual, 8-14 deep), updated REPORT_PATH and PREVIOUS_AUDIT lookup to be scope-aware, updated commit message format examples to include scope label
+- `ai-resources/.claude/agents/repo-dd-auditor.md` — added AUDIT_ROOT / SCOPE_LABEL inputs, instructed the auditor to walk only AUDIT_ROOT (not the full workspace), added rule for handling external-target symlinks in scoped audits, added "out of scope" mark for irrelevant questionnaire items, instructed report header to use SCOPE_LABEL
+
+Created:
+- `ai-resources/audits/repo-due-diligence-2026-04-12.md` — factual audit report (824 lines; overwrote the earlier same-day file from a prior run)
+
+Committed-but-previously-untracked:
+- `ai-resources/.claude/commands/project-consultant.md` — already referenced via symlink from 4 projects (buy-side, project-planning, obsidian-pe-kb, global-macro-analysis) and root; was a ticking time bomb if pulled elsewhere
+
+### Decisions Made
+- **Scope: continue as workspace-wide audit** rather than revert and re-scope to obsidian-pe-kb. `/repo-dd` was designed workspace-wide; the applied fixes are correct regardless of scope. Operator then asked for the command to be fixed so future runs prompt for scope (see below).
+- **Wire rather than delete orphaned `detect-innovation.sh` hooks** in buy-side and project-planning. Initial recommendation was deletion; operator corrected — the resource is intentional and will be used. Wired to match the canonical research-workflow pattern (PostToolUse on Write + Edit).
+- **Skip action on 3 pre-2026-01-06 template files** in answer-spec-generator, execution-manifest-creator, research-extract-creator. These are structured-output format templates, not content that decays. Staleness-by-age is a false positive here; marked verified/stable in the audit commentary.
+- **Add scope prompt to `/repo-dd`** rather than build a parallel `/repo-dd-project` command. One command with a Step 1 operator gate is simpler than maintaining two variants and avoids confusion about which to use.
+
+### Cross-Environment Drift
+- **CLAUDE.md changes** (ai-resources/CLAUDE.md): Flag — check alignment with other project CLAUDE.md files. The change is additive (documenting an existing directory), so low risk of contradiction.
+- **Command and agent changes** (`/repo-dd` + `repo-dd-auditor`, plus `project-consultant.md` committed for the first time): Flag — `/repo-dd` is symlinked from 5 locations (root, buy-side, global-macro, project-planning, obsidian-pe-kb), and `repo-dd-auditor` is symlinked from buy-side, global-macro, project-planning, and obsidian-pe-kb. The new scope prompt will surface on every project that runs `/repo-dd` after these commits. No project-specific overrides exist.
+- No skill changes, no workflow-template changes, no memory entries this session.
+
+### Next Steps
+1. **Push both repos** — `ai-resources` (9919853 + the new commit covering the /repo-dd fix and session note) and `buy-side-service-plan` (1c92730). Project-planning is not a git repo; its settings.json change is local-only.
+2. **Test the new scope prompt** — next time `/repo-dd` is invoked, verify the operator gate works and that a scoped audit (e.g., `projects/obsidian-pe-kb`) produces a sensible scoped report.
+3. **Consider an obsidian-pe-kb-scoped audit** as the first real test of the scope feature.
+
+### Open Questions
+None
