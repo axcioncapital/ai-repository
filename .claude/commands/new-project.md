@@ -6,9 +6,11 @@ You are the orchestrator for Axcíon's project pipeline. This pipeline takes a u
 
 This pipeline is for **any Axcíon project that requires Claude Code** — whether that's building AI resources (skills, workflows, agents), setting up a research project, configuring a new workspace, or any other project where Claude Code is the execution environment. Before doing anything else, check whether the user's input describes work that will be built or run through Claude Code. If not, stop and explain that this pipeline is for Claude Code-based projects.
 
-**CWD guard:** Check if the current working directory is the `ai-resources` repo (look for `skills/` directory and the ai-resources `CLAUDE.md` with "Axcion AI Resource Repository"). If so, stop and tell the user:
+**CWD guard:** Check if the current working directory is the `ai-resources` repo itself (i.e., the CWD contains a `skills/` directory and a `CLAUDE.md` with "Axcion AI Resource Repository" at the root level). If so, stop and tell the user:
 
-> "This command should be run from a project repo, not from ai-resources. Open your target project repo and connect ai-resources via `--add-dir`, then run `/new-project` from there."
+> "This command should be run from a project repo or the Axcíon AI workspace root, not from ai-resources directly. Open your target repo and run `/new-project` from there."
+
+**Note:** Running from the Axcíon AI workspace root (the parent directory that contains `ai-resources/`, `projects/`, etc.) is valid — the guard only blocks running from inside `ai-resources/` itself.
 
 ## Pre-Flight Validation
 
@@ -105,6 +107,10 @@ After Stage 5 completes successfully, announce:
 
 If the user says NEXT, spawn the `session-guide-generator` agent. If SKIP, mark Stage 6 as `skipped` and announce the pipeline is complete. After Stage 6 completes (or is skipped), announce: "Pipeline complete. All artifacts saved to projects/{project-name}/."
 
+Then remind the operator:
+
+> **Next steps:** Run `/repo-dd` and `/analyze-workflow` against the new project to establish a baseline audit and infrastructure inventory.
+
 ## Error Handling
 
 If a stage subagent reports failure:
@@ -114,25 +120,46 @@ If a stage subagent reports failure:
 
 ## Post-Pipeline Enrichment
 
-After the pipeline completes (all stages done or final stage skipped), enrich the project with shared ai-resources features using the same logic as `/deploy-workflow` Step 4.
+After the pipeline completes (all stages done or final stage skipped), set the project up for **ongoing** sync with ai-resources. The mechanism is the SessionStart hook `ai-resources/.claude/hooks/auto-sync-shared.sh`, which symlinks every command/agent in `ai-resources/.claude/{commands,agents}/` into the project on session start, except files declared as project-local in the manifest and a small baked-in meta exclusion list. New commands added to ai-resources after this point flow into the project automatically — no re-enrichment needed.
 
-### Shared manifest
+### What to install
 
-If a `.claude/shared-manifest.json` exists in the project (created by a workflow template or manually), use it to determine which commands and agents are **symlinked** to ai-resources vs kept as **local copies**. The manifest lists `shared` entries (symlinked) and `local` entries (project-owned). See `/deploy-workflow` Step 4 for the manifest format and enrichment logic.
+If a `.claude/shared-manifest.json` already exists in the project (created by a workflow template via `/deploy-workflow`), do nothing — the workflow template already wired everything up. Skip to the "Report" step.
 
-If no manifest exists, fall back to the exclusion-list approach:
+Otherwise, install the three pieces:
 
-**Excluded commands (ai-resources-specific):** `deploy-workflow`, `new-project`, `graduate-resource`, `sync-workflow`, `session-guide`
+1. **`projects/{name}/.claude/shared-manifest.json`** — declares project-owned files. Identify which commands and agents this project created locally during the pipeline (pipeline-specific commands, project-specific evaluator agents, etc.) and list them under `commands.local` / `agents.local`. Anything not listed will be auto-synced from ai-resources. Template:
 
-**Excluded agents:** any file matching `pipeline-stage-*`, `session-guide-generator`
+   ```json
+   {
+     "_doc": "Lists project-owned files under .local. The auto-sync hook symlinks every other file from ai-resources/.claude/{commands,agents}/ on session start.",
+     "commands": { "local": [ ... ] },
+     "agents": { "local": [ ... ] }
+   }
+   ```
 
-**Excluded hooks:** `pre-commit`, `check-template-drift.sh`, `auto-sync-shared.sh`
+2. **`projects/{name}/.claude/settings.json`** — wire the SessionStart hook. If `settings.json` already exists, merge the hook into the existing `hooks.SessionStart` array; do not overwrite. Hook entry:
 
-Without a manifest: symlink all non-excluded commands and agents that don't already exist in the project. Hooks are always **copied** (not symlinked).
+   ```json
+   {
+     "type": "command",
+     "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '/' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\" ] && { \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\"; exit; }; done",
+     "timeout": 10,
+     "statusMessage": "Syncing shared commands from ai-resources..."
+   }
+   ```
 
-**Symlink path rule (critical):** Always use **relative** symlinks, as defined in `/deploy-workflow` Step 4. Compute the correct relative path from the symlink location to the ai-resources source — do not hardcode a depth. For the standard layout (`projects/{name}/.claude/commands/`), the relative path is `../../../../ai-resources/.claude/commands/{file}` (4 levels up). If the project is nested differently, adjust accordingly.
+   The hook is invoked **directly from ai-resources** — do not copy `auto-sync-shared.sh` into the project's hooks directory.
 
-Report what was added (note which are symlinks vs copies). If a copied hook has no `settings.json` entry, warn the operator. Do not auto-modify `settings.json`. Do not commit — the operator reviews the enrichment alongside the pipeline output.
+3. **Initial sync** — run the hook once now so the project starts with all shared commands/agents already linked, instead of waiting for the next session start:
+
+   ```bash
+   CLAUDE_PROJECT_DIR="projects/{name}" bash ai-resources/.claude/hooks/auto-sync-shared.sh
+   ```
+
+### Report
+
+Report what was created: manifest path, settings.json modification, and the list of files the initial sync symlinked. Do not commit — the operator reviews the enrichment alongside the pipeline output. From this point on, any new command added to `ai-resources/.claude/commands/` will be available in this project on the next session start automatically.
 
 ## Key Rules
 
