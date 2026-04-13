@@ -26,7 +26,7 @@ Keep this phase lightweight. Do NOT read source files yet.
    - **If exists:** read first 50 lines, verify the target section ($ARGUMENTS) appears in the section hierarchy
      - If target section is covered → note "Architecture found — skipping Phases 2–3"
      - If target section is NOT covered → PAUSE: architecture exists but doesn't cover this section. Options: regenerate architecture with updated inputs, or proceed without architecture for this section.
-   - **If does not exist:** note "No architecture found — Phases 2–3 will run. Prose conversion requires a separate `/produce-prose` call after architecture is complete."
+   - **If does not exist:** note "No architecture found — Phases 2–3 will run first, then auto-continue to Phase 4 for the target section on QC PASS. No separate call needed."
    - **Staleness check:** If architecture exists, compare its section list against currently available drafts and approved files in `{part_dir}`. If new sections exist that aren't in the architecture, flag: "Architecture may be stale — new sections found: [list]. Options: regenerate architecture or proceed with current." To regenerate: delete `{prose_output_dir}/architecture.md` and `{prose_output_dir}/architecture-qc.md`, then re-run `/produce-prose {section}`.
 5. If architecture is needed, inventory all available drafts:
    - Glob `{part_dir}/drafts/*` and `{part_dir}/approved/*`
@@ -39,7 +39,7 @@ Keep this phase lightweight. Do NOT read source files yet.
 7. Check for existing prose versions in `{prose_output_dir}/` to understand iteration state
 8. If a previous prose version exists, note it — the new version will be a fresh production, not an edit
 
-Present the plan: which source document will be converted (and whether it comes from drafts/ or approved/), architecture status (exists / will be created / skipped), draft inventory if architecture is needed, which style reference applies (existing or to-be-generated), output file path. If architecture is needed, note that this session will produce the architecture and stop — prose conversion will happen in a subsequent `/produce-prose` call. Wait for the operator's approval before proceeding.
+Present the plan: which source document will be converted (and whether it comes from drafts/ or approved/), architecture status (exists / will be created / skipped), draft inventory if architecture is needed, which style reference applies (existing or to-be-generated), output file path. If architecture is needed, note that Phases 2–3 will run first and then auto-continue to Phase 4 for the target section on QC PASS (single invocation, no mid-pipeline stop). Wait for the operator's approval before proceeding.
 
 ---
 
@@ -86,7 +86,7 @@ Present the plan: which source document will be converted (and whether it comes 
    - Output path: `{prose_output_dir}/architecture-qc.md`
    - Task: Evaluate the architecture against all 14 criteria per the skill logic. For criteria with absent inputs, apply the adaptation notes above (N/A where specified). Produce the QC report with PASS/FAIL per criterion and overall verdict.
 5. Route on verdict:
-   - **PASS:** Present architecture summary + QC result to the operator. **Session ends here.** Note: "Architecture complete and QC passed. Re-run `/produce-prose {section}` to begin prose conversion."
+   - **PASS:** Note architecture summary + QC result for the Phase 7 operator review. **Auto-continue to Phase 4** to produce prose for the section in `$ARGUMENTS`. The operator sees both architecture and first-section prose together at Phase 7, which is more efficient than a mid-pipeline stop. Architecture and QC files remain on disk for review/regeneration if needed.
    - **FAIL with critical findings:** PAUSE — present failures to the operator. Architecture must be fixed before prose conversion can begin. Options: fix specific items in the architecture and re-run QC, or override and proceed. To re-run QC after fixing: delete `{prose_output_dir}/architecture-qc.md` and re-run `/produce-prose {section}`. Phase 1 will detect the architecture exists and skip Phase 2, but Phase 3 will re-run because the QC file is absent.
 6. ▸ /compact — skill content and draft content no longer needed.
 
