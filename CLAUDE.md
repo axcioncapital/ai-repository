@@ -11,6 +11,7 @@ Other directories:
 - `audits/` — Due diligence and audit artifacts
 - `docs/` — Process documentation (session rituals, etc.)
 - `scripts/` — Utility scripts for repo maintenance
+- `style-references/` — Style reference materials consumed by formatting and prose-compliance skills
 
 These resources operate across a multi-tool ecosystem — not just Claude. Skills may reference or interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Do not design resources that assume a single-tool environment.
 
@@ -91,4 +92,5 @@ research-plan-creator → answer-spec-generator → [external: GPT-5 execution]
 - Multi-file changes: `batch: description`
 - Never force-push
 - Never push without my explicit approval
+- After committing, remind Patrik to push and to wrap the session (`/wrap-session`) if the work is complete
 - Default branch: main
