@@ -421,9 +421,29 @@ Committed-but-previously-untracked:
 - No skill changes, no workflow-template changes, no memory entries this session.
 
 ### Next Steps
-1. **Push both repos** — `ai-resources` (9919853 + the new commit covering the /repo-dd fix and session note) and `buy-side-service-plan` (1c92730). Project-planning is not a git repo; its settings.json change is local-only.
+1. ~~Push both repos~~ — done 2026-04-13 (see closeout below). Project-planning is not a git repo; its settings.json change is local-only.
 2. **Test the new scope prompt** — next time `/repo-dd` is invoked, verify the operator gate works and that a scoped audit (e.g., `projects/obsidian-pe-kb`) produces a sensible scoped report.
 3. **Consider an obsidian-pe-kb-scoped audit** as the first real test of the scope feature.
+
+### Open Questions
+None
+
+## 2026-04-13 — Session closeout (pushes only)
+
+### Summary
+Closed out the 2026-04-12 working session that ran past midnight. No new file work — only pushed the two pending commits to remote. Wrap-session was invoked twice in this session (once mid-stream, then redirected to fix `/repo-dd`); the substantive session note for the day's work lives under the 2026-04-12 entry above.
+
+### Files Changed
+None.
+
+### Decisions Made
+None.
+
+### Cross-Environment Drift
+No cross-environment propagation needed. Pushes only.
+
+### Next Steps
+- Test the new `/repo-dd` scope prompt in the next session (e.g., scoped audit on `projects/obsidian-pe-kb`).
 
 ### Open Questions
 None
