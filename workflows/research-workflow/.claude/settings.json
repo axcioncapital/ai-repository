@@ -5,11 +5,20 @@
       "Read",
       "Edit",
       "Write",
-      "MultiEdit"
+      "MultiEdit",
+      "Agent",
+      "Skill",
+      "TodoWrite",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "NotebookEdit",
+      "ToolSearch"
     ],
     "deny": [
-      "Bash(git push *)",
-      "Bash(rm *)",
+      "Bash(git push*)",
+      "Bash(rm -rf *)",
       "Bash(sudo *)"
     ]
   },

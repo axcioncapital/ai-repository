@@ -188,6 +188,8 @@ Otherwise, install the three pieces:
    **Merge procedure:**
 
    ```bash
+   command -v jq >/dev/null || { echo "ERROR: jq required for permissions merge"; exit 1; }
+
    SETTINGS="projects/{name}/.claude/settings.json"
    mkdir -p "$(dirname "$SETTINGS")"
    [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"

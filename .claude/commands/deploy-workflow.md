@@ -119,6 +119,100 @@ Hooks require corresponding entries in `.claude/settings.json` to be active. The
 
 Do NOT auto-modify `settings.json` — hook registration requires knowing the matcher, event type, and timeout, which varies per hook.
 
+### Ensure permissions baseline in deployed settings.json
+
+**Scope note.** This sub-step only touches `.permissions` in the deployed `{PROJECT_DIR}/.claude/settings.json`. Hook registration remains a manual operator step per the paragraph above.
+
+**When it runs.** After Step 3's `cp -r` brings the template over, and **before** Step 7's placeholder replacement (and Step 5's placeholder discovery), so no `{{...}}` tokens can be introduced into the JSON by this sub-step and the merged `permissions` block cannot be invalidated by a later `sed` pass.
+
+**Why it exists.** Without a `permissions` block in the deployed settings, Claude Code prompts the operator to approve every Edit/Write/Grep/Bash call in the new project. This sub-step guarantees a tool-permissions baseline even if the template itself ships without one.
+
+**Requires `jq` on PATH.** If `jq` is not available, stop and report the missing dependency. Do not splice JSON at the string level.
+
+**Predicate — "already has a permissions allowlist":** parsed JSON has `.permissions.allow` *and* that array is non-empty. If true, leave `permissions` alone. Otherwise merge the canonical block below.
+
+**Canonical permissions block** (mirrors `allow` / `deny` from the operator's user-level `~/.claude/settings.json`; `additionalDirectories` is intentionally omitted as a user-level absolute-path concern):
+
+```json
+{
+  "allow": [
+    "Bash(*)",
+    "Read",
+    "Edit",
+    "Write",
+    "MultiEdit",
+    "Agent",
+    "Skill",
+    "TodoWrite",
+    "Glob",
+    "Grep",
+    "WebFetch",
+    "WebSearch",
+    "NotebookEdit",
+    "ToolSearch"
+  ],
+  "deny": [
+    "Bash(git push*)",
+    "Bash(rm -rf *)",
+    "Bash(sudo *)"
+  ]
+}
+```
+
+**Merge procedure:**
+
+```bash
+command -v jq >/dev/null || { echo "ERROR: jq required for permissions merge"; exit 1; }
+
+SETTINGS="{PROJECT_DIR}/.claude/settings.json"
+mkdir -p "$(dirname "$SETTINGS")"
+[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+
+CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)"]}'
+
+jq --argjson perms "$CANONICAL_PERMS" '
+  if (.permissions.allow // []) | length > 0
+  then .
+  else .permissions = $perms
+  end
+' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+```
+
+Report in the enrichment output whether `permissions` was added or already present.
+
+**Interaction with the research-workflow template.** The template's own `settings.json` already carries a `permissions` block (added alongside this change), so on a fresh deploy the predicate returns true and this sub-step is a no-op. The sub-step remains load-bearing for (a) any future template that ships without a `permissions` block and (b) running `/sync-workflow` on older projects that were deployed before the template fix landed.
+
+### Grant ai-resources filesystem visibility
+
+**Scope note.** This sub-step only touches `.permissions.additionalDirectories` in `{PROJECT_DIR}/.claude/settings.json`. It runs **unconditionally** — not gated by the allowlist predicate — so projects whose templates ship a narrower `permissions.allow` still receive the workspace-root grant they need to read from `ai-resources/` siblings at runtime.
+
+**Why this is separate from the permissions merge above.** `additionalDirectories` grants *read access to paths outside the current project*, which is a different concern from tool permissions inside the project. Every deployed project needs to read from `ai-resources/` regardless of how narrow its tool allowlist is, so this grant is universal.
+
+**Compute the workspace root** by walking upward from `{PROJECT_DIR}` until an ancestor contains `ai-resources/` (mirrors the idiom in `auto-sync-shared.sh`). Use an absolute path — Claude Code resolves `additionalDirectories` relative to session CWD, which varies by how the project is opened.
+
+```bash
+command -v jq >/dev/null || { echo "ERROR: jq required for additionalDirectories merge"; exit 1; }
+
+SETTINGS="{PROJECT_DIR}/.claude/settings.json"
+[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+
+d="$(cd {PROJECT_DIR} && pwd)"
+WORKSPACE=""
+while [ "$d" != "/" ]; do
+  d=$(dirname "$d")
+  [ -d "$d/ai-resources" ] && WORKSPACE="$d" && break
+done
+[ -n "$WORKSPACE" ] || { echo "WARN: ai-resources not found in any ancestor — skipping additionalDirectories grant"; }
+
+if [ -n "$WORKSPACE" ]; then
+  jq --arg dir "$WORKSPACE" \
+    '.permissions.additionalDirectories = ((.permissions.additionalDirectories // []) + [$dir] | unique)' \
+    "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+fi
+```
+
+`unique` makes this idempotent. Report whether the workspace root was added or already present.
+
 ## Step 5: Discover placeholders
 
 Scan all files in `{PROJECT_DIR}/` for `{{...}}` patterns. Collect the unique placeholder names.
