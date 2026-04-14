@@ -75,6 +75,10 @@ Previous audit: [date of most recent previous audit, or "None"]
 
 3.4. List all files ranked by number of downstream references (count of slash commands, hooks, scripts, and other files that reference them). Show the top 10.
 
+3.5. For each symlink in `.claude/commands/` or `.claude/agents/` whose target lies outside this repo, verify that the target directory (or an ancestor of it) is listed in `permissions.additionalDirectories` of the project's `.claude/settings.json`. List any symlinks whose targets are not covered.
+
+3.6. List any projects or top-level repos that reference `ai-resources/` (via CLAUDE.md, command/agent symlinks, or a SessionStart auto-sync hook) but do not list the workspace root or `ai-resources/` under `permissions.additionalDirectories` in their `.claude/settings.json`. State what references ai-resources and what entry is missing.
+
 ## Section 4: Consistency Checks
 
 *Purpose: Detect pattern drift between what the repo says should happen and what actually exists.*

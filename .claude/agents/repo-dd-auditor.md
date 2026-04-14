@@ -52,6 +52,8 @@ For questions that reference "the current repo" — interpret this as AUDIT_ROOT
 
 If Q4.3 is not applicable (no skill creation templates exist), mark it as: `N/A — No skill creation template file exists. Skills are created via /create-skill which references ai-resource-builder/SKILL.md for format standards.`
 
+For Q3.5 and Q3.6, cross-check symlink targets and ai-resources references against `permissions.additionalDirectories` entries in both `.claude/settings.json` and `.claude/settings.local.json` under AUDIT_ROOT. A target is "covered" if any listed directory is an ancestor of the target path (string-prefix match on absolute paths, after resolving any symlinks via `readlink -f`). These checks are readonly — do not modify settings files.
+
 ### Step 3: Save the Report
 
 Save the completed audit to REPORT_PATH. The audit report must contain facts only — no recommendations, no suggested fixes, no commentary.

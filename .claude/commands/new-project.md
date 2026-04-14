@@ -138,7 +138,39 @@ Otherwise, install the three pieces:
    }
    ```
 
-2. **`projects/{name}/.claude/settings.json`** — wire the SessionStart hook. If `settings.json` already exists, merge the hook into the existing `hooks.SessionStart` array; do not overwrite. Hook entry:
+2. **`projects/{name}/.claude/settings.json`** — wire the SessionStart hook **and** ensure the project inherits a tool-permissions baseline so the operator does not get approval prompts on routine Edit/Write/Grep calls.
+
+   **Requires `jq` on PATH.** If `jq` is not available, stop and report the missing dependency — do not attempt string-level JSON manipulation.
+
+   **Canonical permissions block** (mirrors the `allow` / `deny` arrays from the operator's user-level `~/.claude/settings.json`). Note: `additionalDirectories` is **not** included in this canonical block because each project's entry is computed dynamically at enrichment time — see step 3 below, which adds the ai-resources workspace root via a separate jq merge so projects with existing `permissions.allow` arrays (which skip this canonical merge) still receive the grant.
+
+   ```json
+   {
+     "allow": [
+       "Bash(*)",
+       "Read",
+       "Edit",
+       "Write",
+       "MultiEdit",
+       "Agent",
+       "Skill",
+       "TodoWrite",
+       "Glob",
+       "Grep",
+       "WebFetch",
+       "WebSearch",
+       "NotebookEdit",
+       "ToolSearch"
+     ],
+     "deny": [
+       "Bash(git push*)",
+       "Bash(rm -rf *)",
+       "Bash(sudo *)"
+     ]
+   }
+   ```
+
+   **Auto-sync SessionStart hook entry** (added to `hooks.SessionStart`):
 
    ```json
    {
@@ -151,7 +183,66 @@ Otherwise, install the three pieces:
 
    The hook is invoked **directly from ai-resources** — do not copy `auto-sync-shared.sh` into the project's hooks directory.
 
-3. **Initial sync** — run the hook once now so the project starts with all shared commands/agents already linked, instead of waiting for the next session start:
+   **Predicate for "already has a permissions allowlist":** parsed JSON has `.permissions.allow` *and* that array is non-empty. If true, leave `permissions` alone (protects projects that intentionally have a narrower block). Otherwise, merge the canonical block in.
+
+   **Merge procedure:**
+
+   ```bash
+   SETTINGS="projects/{name}/.claude/settings.json"
+   mkdir -p "$(dirname "$SETTINGS")"
+   [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+
+   CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)"]}'
+
+   AUTO_SYNC_HOOK='{"type":"command","command":"d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '"'"'/'"'"' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\" ] && { \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\"; exit; }; done","timeout":10,"statusMessage":"Syncing shared commands from ai-resources..."}'
+
+   jq --argjson perms "$CANONICAL_PERMS" --argjson hook "$AUTO_SYNC_HOOK" '
+     (if (.permissions.allow // []) | length > 0 then . else .permissions = $perms end)
+     | .hooks = (.hooks // {})
+     | .hooks.SessionStart = (.hooks.SessionStart // [])
+     | if (.hooks.SessionStart | any(.hooks? // [.] | .[]? | .command == $hook.command))
+       then .
+       else .hooks.SessionStart += [{"hooks":[$hook]}]
+       end
+   ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+   ```
+
+   Report in the step output:
+   - whether `permissions` was added, already present, or skipped
+   - whether the SessionStart hook was added or already present
+
+3. **Grant ai-resources filesystem visibility** — Claude Code sandboxes each project to its own directory by default. Shared skills under `ai-resources/skills/` and symlinks into `ai-resources/.claude/{commands,agents}/` are unreachable until the workspace root is added to `permissions.additionalDirectories` in the project's `.claude/settings.json`. This step performs that grant.
+
+   The walk to locate the workspace root mirrors the idiom in `ai-resources/.claude/hooks/auto-sync-shared.sh` (walk upward until an ancestor contains `ai-resources/`). Use an absolute path, not a relative one — Claude Code resolves `additionalDirectories` relative to session CWD, which varies by how the project is opened.
+
+   **Load-bearing jq semantics:** for projects where step 2 skipped the permissions merge (because `.permissions.allow` was already non-empty) OR for projects where step 2 added the canonical block without `additionalDirectories`, jq's `=` operator on the leaf path `.permissions.additionalDirectories` synthesizes any missing parent objects automatically. This is the only reason a single idempotent jq call is sufficient here — if jq is ever replaced with another tool (Python, Node, yq), that tool must do the same parent-object auto-creation.
+
+   ```bash
+   command -v jq >/dev/null || { echo "ERROR: jq required for additionalDirectories merge"; exit 1; }
+
+   SETTINGS="projects/{name}/.claude/settings.json"
+   [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+
+   d="$(cd projects/{name} && pwd)"
+   WORKSPACE=""
+   while [ "$d" != "/" ]; do
+     d=$(dirname "$d")
+     [ -d "$d/ai-resources" ] && WORKSPACE="$d" && break
+   done
+   [ -n "$WORKSPACE" ] || { echo "WARN: ai-resources not found in any ancestor — skipping additionalDirectories grant"; }
+
+   if [ -n "$WORKSPACE" ]; then
+     jq --arg dir "$WORKSPACE" \
+       '.permissions.additionalDirectories = ((.permissions.additionalDirectories // []) + [$dir] | unique)' \
+       "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+   fi
+   ```
+
+   Report in the step output:
+   - whether `additionalDirectories` was added, already present, or skipped (walk failed)
+   - the absolute workspace path that was added
+
+4. **Initial sync** — run the hook once now so the project starts with all shared commands/agents already linked, instead of waiting for the next session start:
 
    ```bash
    CLAUDE_PROJECT_DIR="projects/{name}" bash ai-resources/.claude/hooks/auto-sync-shared.sh
@@ -159,7 +250,7 @@ Otherwise, install the three pieces:
 
 ### Report
 
-Report what was created: manifest path, settings.json modification, and the list of files the initial sync symlinked. Do not commit — the operator reviews the enrichment alongside the pipeline output. From this point on, any new command added to `ai-resources/.claude/commands/` will be available in this project on the next session start automatically.
+Report what was created: manifest path, settings.json modifications (permissions block, SessionStart hook, `additionalDirectories` grant), and the list of files the initial sync symlinked. Do not commit — the operator reviews the enrichment alongside the pipeline output. From this point on, any new command added to `ai-resources/.claude/commands/` will be available in this project on the next session start automatically, and skills under `ai-resources/skills/` are reachable via the filesystem grant.
 
 ## Key Rules
 
