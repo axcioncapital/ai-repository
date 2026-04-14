@@ -447,3 +447,192 @@ No cross-environment propagation needed. Pushes only.
 
 ### Open Questions
 None
+
+## 2026-04-13 — Added Stop/Notification sound hooks to user settings
+
+### Summary
+Added a subtle "pop" audio notification that plays when Claude Code finishes a turn (Stop event) or requests permission/input (Notification event). Implemented as two hook blocks in `~/.claude/settings.json` (user-level, outside the repo), each invoking `afplay /System/Library/Sounds/Pop.aiff` with a 2s timeout. The existing `PostToolUse`/`detect-innovation.sh` hooks were preserved untouched. Session ran through plan mode → QC review (GO, no fixes) → execution via `/update-config` skill → schema validation.
+
+### Files Changed
+No files in this repo. User-level artifacts only:
+- `~/.claude/plans/lexical-crunching-metcalfe.md` — approved plan file (outside repo, not committed).
+- `~/.claude/settings.json` — added `Stop` and `Notification` hook arrays alongside the existing `PostToolUse` block (outside repo, not committed).
+
+### Decisions Made
+- **Scope: user-level (`~/.claude/settings.json`)** rather than project-level or local. Applies to every Claude Code session on this machine so the feedback follows Patrik across all projects rather than being re-deployed per project.
+- **Events: Stop + Notification only.** `SubagentStop` explicitly excluded — would fire many times per session and become noise.
+- **Sound: built-in `/System/Library/Sounds/Pop.aiff`** — no assets to ship, no dependencies.
+- **One sound for both events** — operator directive.
+
+### Cross-Environment Drift
+No cross-environment propagation. User-level settings live in `$HOME/.claude/` and are per-machine only.
+
+### Next Steps
+- Listen for the pop on subsequent Stop and Notification events. If nothing fires, open `/hooks` once to force a settings reload, or restart Claude Code.
+- No follow-up work required for this feature.
+
+### Open Questions
+None
+
+## 2026-04-13 — Codex second-opinion auditor viability investigation + inbox brief
+
+### Summary
+Investigated whether OpenAI's Codex CLI can serve as an independent second-opinion auditor for repo/workflow evaluations — a different-model cross-check to surface blind spots that Claude Opus systematically misses because two Claude instances share training data and failure modes. Verdict: viable. `codex exec` is a fresh-context agentic loop structurally equivalent to a Claude subagent, with stronger process-level isolation. The pattern that works is Codex executing the *framework files* (`audits/questionnaire.md`, `evaluation-framework.md`) natively via a mechanical wrapper prompt — not running Claude's subagent-dependent command wrappers. Parked as a standalone build brief in `inbox/` for a future pilot session; no code was written this session.
+
+### Files Created
+- `ai-resources/inbox/codex-second-opinion-brief.md` — standalone build brief for a future Codex second-opinion auditor pilot. Includes problem statement, viability verdict, working pattern, concrete `codex exec` invocation template, model-choice guidance, risks, recommended `/codex-dd` single-command pilot, and a kickoff checklist. Self-sufficient for a cold future session.
+- `/Users/patrik.lindeberg/.claude/plans/sunny-skipping-wozniak.md` — plan file from the ExitPlanMode step. Not checked in, not load-bearing for future work.
+
+### Files Modified
+None (the inbox brief was tightened 5 times post-initial-write — same file, same session; listed only as Created).
+
+### Decisions Made
+- **Codex runs commands natively, not reviews Claude's output.** The investigation was reframed mid-session from "Codex reviews Claude's reports" to "Codex independently executes the same framework files against the repo." Codex is an executor, not a second-reviewer.
+- **Strict ordering rule: Claude first, Codex second, never reverse.** Preserves each model's independence; if Codex runs first and Claude sees the output, Claude's view is contaminated.
+- **Wrapper prompt must be mechanical.** Framework path + repo path + output path + output schema. No editorial framing, no "focus on X," no summary of prior findings. Prevents Claude from leaking biases into Codex's framing.
+- **Park in inbox/, no pilot built this session.** Operator chose conversational viability investigation over a prototype. Preserves future optionality; the brief is the only artifact.
+- **Start narrow: one command (`/codex-dd`), one real run, then decide.** Pilot reuses existing `audits/questionnaire.md`, writes to `reports/codex-dd-YYYY-MM-DD.md`, manual diff against Claude's most recent `/repo-dd` output. Expand only if divergence is actionable.
+
+### Next Steps
+- When picking this up in a future session, follow the kickoff checklist at the bottom of `inbox/codex-second-opinion-brief.md`:
+  1. Verify `codex login` status.
+  2. Throwaway `codex exec` probe on a trivial task to measure per-turn cost and latency.
+  3. Decide whether `audits/questionnaire.md` output format is prescriptive enough or needs tightening for cross-model consistency.
+  4. Draft `/codex-dd` command file (minimal, no scope args, no depth levels).
+  5. Run the pilot (scope down to `ai-resources` only if the probe suggests full-workspace is expensive).
+  6. Operator compares both reports manually; decide whether to expand the pattern.
+- Push the session commit when ready; the brief is self-sufficient so the push is not time-sensitive.
+
+### Open Questions
+None — all uncertainties are captured in the brief's Risks section.
+
+## 2026-04-13 — Grant ai-resources filesystem visibility across all projects + /repo-dd detection
+
+### Summary
+Fixed the recurring problem where `/new-project` pipeline output couldn't see ai-resources skills or symlinked commands because Claude Code's per-project sandbox doesn't follow symlinks into `ai-resources/` without an explicit filesystem grant. Reversed an earlier decision that had kept `additionalDirectories` out of the canonical permissions block; added a new numbered step 3 to `/new-project` post-pipeline enrichment that walks upward from the project directory, locates the workspace root, and merges `permissions.additionalDirectories` idempotently via `jq`. Retrofitted all 5 existing projects (4 via per-project commits, 1 disk-only for project-planning which is not a git repo). Added Q3.5 (symlink-target coverage) and Q3.6 (ai-resources-referenced-but-not-granted) to `audits/questionnaire.md` plus a clarification in `repo-dd-auditor.md` so `/repo-dd` detects any future regression. Session flow: `/prime` → `/clarify` → plan mode → `/qc-pass` (REVISE, 5 fixes applied before ExitPlanMode) → execution → `/qc-pass` (REVISE, 1 critical adjudicated as false positive, 1 major fixed) → 7 commits across 5 git repos → pushed.
+
+### Files Created
+- `/Users/patrik.lindeberg/.claude/plans/shimmying-petting-tulip.md` — approved plan file (outside repo, not committed)
+- `projects/obsidian-pe-kb/.claude/shared-manifest.json` — declares no project-local command/agent overrides so the existing SessionStart auto-sync hook stops being a silent no-op (QC-flagged fix)
+- `projects/obsidian-pe-kb/.claude/commands/*.md` — 26 new symlinks from initial sync, pointing at `ai-resources/.claude/commands/`
+- `projects/obsidian-pe-kb/.claude/agents/*.md` — 9 new symlinks from initial sync, pointing at `ai-resources/.claude/agents/`
+
+### Files Modified
+- `ai-resources/.claude/commands/new-project.md` — reversed the prior "additionalDirectories intentionally omitted" comment at line 145; inserted new numbered step 3 "Grant ai-resources filesystem visibility" (upward-walk + jq merge, with `command -v jq` guard); renumbered existing "Initial sync" to step 4; updated Report bullet to mention the grant. A linter/hook later added a matching `jq` guard to step 2's permissions merge (noted, left intact as consistent improvement).
+- `ai-resources/audits/questionnaire.md` — appended Q3.5 and Q3.6 after Q3.4, as single-sentence imperatives matching Section 3 house style
+- `ai-resources/.claude/agents/repo-dd-auditor.md` — added clarification paragraph adjacent to the existing Q4.3 carve-out, covering dual-file scan (`settings.json` + `settings.local.json`), ancestor-check via `readlink -f`, and readonly directive
+- `projects/buy-side-service-plan/.claude/settings.json` — retrofit: added `permissions.additionalDirectories` with absolute workspace root (preserved hooks + structure)
+- `projects/global-macro-analysis/.claude/settings.json` — retrofit (preserved existing `permissions.allow/deny` arrays)
+- `projects/nordic-pe-landscape-mapping-4-26/.claude/settings.json` — retrofit (preserved existing `permissions.allow/deny` arrays)
+- `projects/obsidian-pe-kb/.claude/settings.json` — retrofit (file was on disk but never git-tracked; committed as `create mode 100644` with pre-existing canonical permissions block + SessionStart hook, plus new `additionalDirectories` grant)
+- `projects/project-planning/.claude/settings.json` — retrofit (disk-only; project is not a git repo, same pattern as 2026-04-12)
+
+### Decisions Made
+- **Reversed the earlier "additionalDirectories intentionally omitted" decision in new-project.md.** The grant now gets added dynamically at enrichment time via a separate jq merge, independently from the canonical-permissions merge. See decision journal.
+- **Fix location: per-project `.claude/settings.json`, not launch-time `--add-dir`.** Operator-selected via clarification question. Version-controlled, travels with the project.
+- **Retrofit scope: verify all 5, fix only if broken.** Plan agent verified all 5 were broken, so all 5 were retrofitted.
+- **Absolute path, not relative.** Claude Code resolves `additionalDirectories` relative to session CWD which varies by launch method; absolute matches the operator's own `~/.claude/settings.json` format.
+- **Q3.5 + Q3.6 as two separate single-sentence imperatives.** QC #1 finding — initial draft was two paragraphs with an "Additionally" clause that didn't match Q3.1–Q3.4 style. Split and collapsed.
+- **CLAUDE.md conflict adjudication: root "commit directly" rule wins over ai-resources "show diff first" rule.** The two CLAUDE.md files directly contradict on commit behavior. Chose root as the newer, explicitly cited rule for this session. Surfaced the conflict for operator visibility before executing.
+- **obsidian-pe-kb silent no-op fix: option A — create shared-manifest.json + run initial sync + commit 35 new symlinks.** QC #2 flagged the SessionStart auto-sync hook would silently no-op because the manifest was missing. Fix made obsidian-pe-kb functionally symmetric with the other 4 projects.
+
+### QC Fixes
+- **QC pass #1 (plan, REVISE → 5 fixes applied before ExitPlanMode):** (1) Piece A insertion point restated to "immediately before line 154" (initial draft spanned a disclaimer line); (2) Piece A snippet gained `command -v jq` guard; (3) Piece A documents jq parent-object auto-creation for projects with no `permissions` key; (4) Piece B obsidian-pe-kb scoped narrower (no hook registration) with the follow-up documented; (5) Piece C Q3.5 rewritten from two-paragraph draft into single-sentence imperative, Q3.6 split out.
+- **QC pass #2 (implementation, REVISE → resolved):** Critical finding (obsidian-pe-kb scope contradiction) was a false positive — the canonical permissions block + SessionStart hook were pre-existing on disk when retrofit ran; git saw the file for the first time in the commit because it was untracked, which misled the reviewer. Major finding (silent no-op due to missing shared-manifest) was genuine; fixed via the option-A flow above.
+
+### Cross-Environment Drift
+- **new-project.md** is in the baked-in EXCLUDE list of `auto-sync-shared.sh`, so no project has a symlinked copy — it's canonical and lives only in ai-resources. No sync action needed.
+- **questionnaire.md** and **repo-dd-auditor.md** are reached by `/repo-dd` symlinks in every connected project. The new Q3.5/Q3.6 and auditor clarification take effect automatically on next `/repo-dd` run — no propagation needed.
+- **5 project settings.json files** each modified within their own git repos. No cross-project propagation required.
+
+### Commits (7 total across 5 git repos, all pushed)
+1. `ai-resources@65c6355` — batch: pipeline fix + questionnaire Q3.5/Q3.6 + auditor clarification
+2. `buy-side-service-plan@60820a7` — settings.json retrofit
+3. `global-macro-analysis@8d9a01c` — settings.json retrofit
+4. `nordic-pe-landscape-mapping-4-26@0db0d9d` — settings.json retrofit
+5. `obsidian-pe-kb@95a88c6` — settings.json retrofit
+6. `obsidian-pe-kb@0dea0e4` — new shared-manifest.json
+7. `obsidian-pe-kb@d7d9d8c` — initial sync of 35 shared command/agent symlinks
+
+### Next Steps
+- Exercise the new pipeline step 3 on the next real `/new-project` run — verify the upward-walk finds the workspace root correctly and the jq merge produces valid settings.json.
+- Run `/repo-dd` scoped to one retrofitted project (e.g., `projects/obsidian-pe-kb`) to exercise Q3.5/Q3.6 on real data; all 5 projects should report the grant as present. (Also resolves the pending next-step from 2026-04-12 about testing the `/repo-dd` scope prompt.)
+- project-planning's retrofit is disk-only — if that project is ever git-initialized, re-commit the settings.json there.
+
+### Open Questions
+None.
+
+## 2026-04-13 — Commit Rules propagation + /deploy-workflow parity + /new-project CLAUDE.md enrichment
+
+### Summary
+Continuation of the earlier 2026-04-13 "Grant ai-resources filesystem visibility" session. That earlier session had done the core permissions + `additionalDirectories` fix across new-project.md and all five existing projects. This session closed the remaining gaps: gave `/deploy-workflow` parity with `/new-project` (both pipelines now merge the canonical permissions block and grant the workspace root), baked the canonical permissions block into the research-workflow template so fresh deploys inherit it, added a Post-Pipeline Enrichment step 4 to `/new-project` that ensures every project has a `CLAUDE.md` with a `## Commit Rules` section, and propagated that same section into every existing project CLAUDE.md. Created a project-root `obsidian-pe-kb/CLAUDE.md` since the pre-existing `vault/CLAUDE.md` is gitignored. Expanded the `feedback_commit_directly` memory entry after the operator loudly corrected me for re-gating on commit permission mid-session.
+
+### Files Created
+- `projects/obsidian-pe-kb/CLAUDE.md` — project-root CLAUDE.md documenting the root-vs-vault entry points, pointing to `vault/CLAUDE.md` for vault-specific rules, and carrying the canonical `## Commit Rules` section (vault/ is gitignored in this repo, so the rule needs a tracked surface at the project root)
+- `~/.claude/plans/glistening-drifting-crayon.md` — approved plan file (local, not committed) covering the permissions-baseline intent plus the scope expansion for `additionalDirectories`
+- `~/.claude/projects/.../memory/feedback_commit_directly.md` — user-level memory entry expanded to cover four anti-patterns around re-asking permission for approved work
+
+### Files Modified
+
+**ai-resources repo (3 commits — 43cc5d7, 7a93b74, 3926601):**
+- `.claude/commands/new-project.md` — Post-Pipeline Enrichment step 2 extended with explicit `command -v jq` guard and tightened wording; new step 4 "CLAUDE.md Commit Rules enrichment" added with three-branch policy (create if missing, append if missing section, skip if present); former "Initial sync" renumbered from 4 → 5; Report section updated to include CLAUDE.md state
+- `.claude/commands/deploy-workflow.md` — new sub-step "Ensure permissions baseline in deployed settings.json" added inside Step 4 (jq-based merge, predicate-gated, scoped to `.permissions` only); new sub-step "Grant ai-resources filesystem visibility" added mirroring `/new-project` Step 3 (unconditional `additionalDirectories` grant); jq guard added to the permissions merge; incorrect "Step 5's placeholder replacement" reference corrected to "Step 7's placeholder replacement (and Step 5's placeholder discovery)"
+- `workflows/research-workflow/.claude/settings.json` — canonical `permissions` block (allow: Bash(*) + Read/Edit/Write/etc; deny: git push, rm -rf, sudo) added as top-level sibling of `hooks` so fresh deploys inherit the baseline immediately
+- `CLAUDE.md` — `## Commit Rules` section appended
+- `workflows/research-workflow/CLAUDE.md` — `## Commit Rules` section appended (also picked up a bright-line rule reference edit by the operator)
+- `memory/MEMORY.md` — added index entry for the expanded feedback_commit_directly memory
+
+**workflows/ standalone repo (commit f2f711b):**
+- `CLAUDE.md` — `## Commit Rules` section appended
+
+**projects/buy-side-service-plan repo (commit c2917c6):**
+- `CLAUDE.md` — `## Commit Rules` section appended
+
+**projects/global-macro-analysis repo (commit 9de4cec):**
+- `CLAUDE.md` — `## Commit Rules` section appended
+
+**projects/nordic-pe-landscape-mapping-4-26 repo (commit b2440e8):**
+- `CLAUDE.md` — `## Commit Rules` section appended
+- `step-1-long-list/CLAUDE.md` — `## Commit Rules` section appended
+
+**projects/obsidian-pe-kb repo (commit 0b427ae):**
+- `CLAUDE.md` — **new** project-root file (described under Files Created)
+- `vault/CLAUDE.md` — `## Commit Rules` section appended but **disk-only** because `vault/` is in this repo's `.gitignore`; the root CLAUDE.md is the durable tracked surface for this rule in this project
+
+**projects/project-planning (NOT a git repo — disk-only):**
+- `CLAUDE.md` — `## Commit Rules` section appended (on disk only; this project is not yet version-controlled)
+
+### Decisions Made
+- **Commit Rules get copied into every project CLAUDE.md rather than relying on inheritance.** Operator directive after frustration with the AI still asking commit permission despite the rule being in the workspace-level CLAUDE.md. Rationale: inheritance is silent and depends on parent workspace being loaded; an explicit short form in each project CLAUDE.md guarantees visibility regardless of how the project is opened. See decision journal.
+- **Mirror user-level permissions block verbatim, not via a separate template file.** Operator chose option A of A/B/C during plan mode. Rationale: single source of truth in the command-file prose; trivial duplication across three call sites (`/new-project`, `/deploy-workflow`, research-workflow template); no drift risk at current scale of one baseline.
+- **`additionalDirectories` grant is in-scope for every project, including predicate-protected ones.** Operator-selected option A of A/B/C when asked whether to also apply the grant to `global-macro-analysis` and `nordic-pe-landscape-mapping-4-26`. Rationale: the grant is read-only, idempotent, and aligned with the earlier session's "every project self-declares its workspace visibility" intent. `step-1-long-list` was deliberately left alone as a nested sub-scope, not a top-level project.
+- **Obsidian-pe-kb: create a project-root `CLAUDE.md`, do not force-add the gitignored `vault/CLAUDE.md`.** Rationale: vault/ is intentionally gitignored as ephemeral knowledge-base content; the root is the durable tracked surface for project-wide rules; both entry points (root and vault) now have the Commit Rules loaded.
+- **`/new-project` gets a Post-Pipeline Enrichment step, not a Stage 4 spec modification.** Rationale: the enrichment step runs after the pipeline and can be deterministic (three-branch policy: create/append/skip); embedding the rule into Stage 4 would tie it to the implementation spec, which is project-specific and not the right surface.
+
+### QC Fixes
+- **Plan QC (REVISE, 4 Major + 5 Minor):** revisions before ExitPlanMode: (1) corrected the "mirrors lines 7-32 exactly" claim by documenting the `additionalDirectories` omission and rationale; (2) added explicit nested `step-1-long-list` handling (4d, leave untouched); (3) added `jq` merge-mechanism spec with tool, predicate, and representative idiom; (4) resolved obsidian-pe-kb decision now rather than deferring to execution; (5) specified `/deploy-workflow` sub-step order (after Step 3 cp, before placeholder replacement); (6) defined "already has permissions" predicate precisely; (7) expanded verification to cover `buy-side-service-plan`; (8) added merge-semantics rationale.
+- **Implementation QC (GO with 3 minor follow-ups, all applied):** (1) plan-document drift — the plan still listed `additionalDirectories` as out-of-scope while the implementation added it; added "Scope expansion during implementation" paragraph to the Out of Scope section; (2) inconsistent jq missing-dependency guard — Step 3 had the guard, Step 2 did not; added matching guard to Step 2 in both `/new-project` and `/deploy-workflow`; (3) incorrect Step 5 reference in `/deploy-workflow` — fixed to Step 7 (placeholder replacement) with Step 5 noted as discovery.
+
+### Cross-Environment Drift
+- **`.claude/commands/new-project.md`** and **`.claude/commands/deploy-workflow.md`** — both in the baked-in EXCLUDE list of `auto-sync-shared.sh`, so no project has a symlinked copy; both are canonical in ai-resources and take effect on next pipeline invocation. No sync action needed.
+- **`workflows/research-workflow/.claude/settings.json`** — template file; deploys inherit via `/deploy-workflow` Step 3 (`cp -r`) on fresh project creations.
+- **CLAUDE.md Commit Rules propagation** — applied across 9 project/workspace files this session. Propagation is idempotent (grep for `## Commit Rules` before appending) so re-running is safe.
+
+### Commits (8 total across 6 git repos)
+1. `ai-resources@43cc5d7` — batch: permissions baseline + visibility grant for /new-project, /deploy-workflow, research-workflow template
+2. `ai-resources@7a93b74` — update: CLAUDE.md — add explicit Commit Rules section (ai-resources/CLAUDE.md + research-workflow/CLAUDE.md)
+3. `ai-resources@3926601` — update: /new-project — add CLAUDE.md Commit Rules enrichment step
+4. `workflows@f2f711b` — update: CLAUDE.md — add explicit Commit Rules section
+5. `buy-side-service-plan@c2917c6` — update: CLAUDE.md — add explicit Commit Rules section
+6. `global-macro-analysis@9de4cec` — update: CLAUDE.md — add explicit Commit Rules section
+7. `nordic-pe-landscape-mapping-4-26@b2440e8` — update: CLAUDE.md — add explicit Commit Rules section (root + step-1-long-list)
+8. `obsidian-pe-kb@0b427ae` — new: CLAUDE.md — project-root CLAUDE.md with Commit Rules
+
+### Next Steps
+- Push all 6 repos that have unpushed commits this session: `ai-resources` (3 commits), `workflows`, `buy-side-service-plan`, `global-macro-analysis`, `nordic-pe-landscape-mapping-4-26`, `obsidian-pe-kb`.
+- Live regression check: open `projects/project-planning` (simplest backfilled), `projects/buy-side-service-plan` (highest-risk — five hook arrays), and `projects/obsidian-pe-kb` (now has root CLAUDE.md) in fresh sessions and confirm no approval prompts on routine Edit/Write/Grep and no hook misfire. Only the operator can run these.
+- Decide whether to convert `projects/project-planning` into a git repo. It currently has real infrastructure (hooks, settings, innovation wiring) but the Commit Rules and settings.json backfills are disk-only there.
+- Next `/new-project` or `/deploy-workflow` invocation exercises the new CLAUDE.md enrichment step and the research-workflow template's pre-baked permissions block. Verify the new project starts with a `## Commit Rules` section and no approval prompts.
+
+### Open Questions
+None. (The earlier "mystery auto-commits" flagged mid-session — `60820a7`, `8d9a01c`, `0db0d9d`, `95a88c6` — turned out to be commits from the earlier 2026-04-13 session already documented above, not mysterious at all.)
