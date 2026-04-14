@@ -244,7 +244,56 @@ Otherwise, install the three pieces:
    - whether `additionalDirectories` was added, already present, or skipped (walk failed)
    - the absolute workspace path that was added
 
-4. **Initial sync** — run the hook once now so the project starts with all shared commands/agents already linked, instead of waiting for the next session start:
+4. **`projects/{name}/CLAUDE.md`** — ensure the project CLAUDE.md contains the canonical `## Commit Rules` section. This guarantees that projects opened without the parent workspace CLAUDE.md loaded still see the "commit directly, do not ask for permission" rule.
+
+   **Policy:**
+   - If `projects/{name}/CLAUDE.md` does not exist → create a minimal one with a project title (use the project name), a one-line description pulled from the pipeline's context pack if available (otherwise a generic placeholder), and the canonical `## Commit Rules` block below.
+   - If `projects/{name}/CLAUDE.md` exists and already contains a `## Commit Rules` heading → leave it alone. Report "Commit Rules already present, skipping."
+   - If `projects/{name}/CLAUDE.md` exists but has no `## Commit Rules` heading → append the canonical block to the end of the file (preserving the existing content verbatim, preceded by a blank line).
+
+   **Canonical Commit Rules block** (copy verbatim):
+
+   ```markdown
+   ## Commit Rules
+
+   **Commit directly. Do not ask for permission.** After completing approved work, stage the relevant files and commit in a single step using a heredoc commit message. Do not run `git status`, `git diff`, or `git status --short` as pre-commit checks or post-commit verification — the filesystem is the source of truth for what you just changed.
+
+   Do not push. Pushing is a manual operator step. After committing, remind the operator to push and to run `/wrap-session` if the work is complete. Never commit files that may contain secrets (`.env`, credentials, tokens).
+
+   This rule mirrors the canonical `Commit behavior` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.
+   ```
+
+   **Procedure:**
+
+   ```bash
+   CLAUDE_MD="projects/{name}/CLAUDE.md"
+
+   if [ ! -f "$CLAUDE_MD" ]; then
+     cat > "$CLAUDE_MD" <<'EOF'
+   # {project-title}
+
+   {one-line description from context pack, or a placeholder}
+
+   ## Commit Rules
+
+   **Commit directly. Do not ask for permission.** After completing approved work, stage the relevant files and commit in a single step using a heredoc commit message. Do not run `git status`, `git diff`, or `git status --short` as pre-commit checks or post-commit verification — the filesystem is the source of truth for what you just changed.
+
+   Do not push. Pushing is a manual operator step. After committing, remind the operator to push and to run `/wrap-session` if the work is complete. Never commit files that may contain secrets (`.env`, credentials, tokens).
+
+   This rule mirrors the canonical `Commit behavior` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.
+   EOF
+     # Substitute {project-title} and description with real values
+   elif grep -q '^## Commit Rules' "$CLAUDE_MD"; then
+     echo "Commit Rules already present in $CLAUDE_MD — skipping"
+   else
+     printf '\n## Commit Rules\n\n**Commit directly. Do not ask for permission.** After completing approved work, stage the relevant files and commit in a single step using a heredoc commit message. Do not run `git status`, `git diff`, or `git status --short` as pre-commit checks or post-commit verification — the filesystem is the source of truth for what you just changed.\n\nDo not push. Pushing is a manual operator step. After committing, remind the operator to push and to run `/wrap-session` if the work is complete. Never commit files that may contain secrets (`.env`, credentials, tokens).\n\nThis rule mirrors the canonical `Commit behavior` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.\n' >> "$CLAUDE_MD"
+   fi
+   ```
+
+   Report in the step output:
+   - created new CLAUDE.md / appended section / already present
+
+5. **Initial sync** — run the hook once now so the project starts with all shared commands/agents already linked, instead of waiting for the next session start:
 
    ```bash
    CLAUDE_PROJECT_DIR="projects/{name}" bash ai-resources/.claude/hooks/auto-sync-shared.sh
@@ -252,7 +301,7 @@ Otherwise, install the three pieces:
 
 ### Report
 
-Report what was created: manifest path, settings.json modifications (permissions block, SessionStart hook, `additionalDirectories` grant), and the list of files the initial sync symlinked. Do not commit — the operator reviews the enrichment alongside the pipeline output. From this point on, any new command added to `ai-resources/.claude/commands/` will be available in this project on the next session start automatically, and skills under `ai-resources/skills/` are reachable via the filesystem grant.
+Report what was created: manifest path, settings.json modifications (permissions block, SessionStart hook, `additionalDirectories` grant), CLAUDE.md state (created / appended / already present), and the list of files the initial sync symlinked. Do not commit — the operator reviews the enrichment alongside the pipeline output. From this point on, any new command added to `ai-resources/.claude/commands/` will be available in this project on the next session start automatically, and skills under `ai-resources/skills/` are reachable via the filesystem grant.
 
 ## Key Rules
 
