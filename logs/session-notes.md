@@ -1,5 +1,13 @@
 # Session Notes
 
+## 2026-04-17 — /improve-skill ai-prose-decontamination (four new AI-tell categories + Flagged-Word Registry)
+
+### Exit Condition
+**Option A** — Full run. Invoke `/improve-skill ai-prose-decontamination` now; draft + QC + integrate four new pattern categories (contrast-template overuse, abstract-noun stacking, pseudo-maxim repetition, pivot closings) plus Flagged-Word Registry awareness; fix; commit. Skips the "test first on Doc 2 §2.6" dependency stated in the improvement-log entry — operator accepted that drift risk. High autonomy: proceed through `/improve-skill` pipeline without mid-gate operator approvals unless the pipeline itself gates (plan QC, post-edit QC).
+
+### Input Brief
+`projects/buy-side-service-plan/logs/improvement-log.md` — entry dated 2026-04-17 — `/improve-skill ai-prose-decontamination`. Also references: `projects/buy-side-service-plan/context/prose-quality-standards.md` v3 (Standards 10–13), `projects/buy-side-service-plan/output/part-2-prose/style-reference.md` v2.3 (Plain-Language Register), and the inline Phase 5 stop-gap in `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md`.
+
 ## 2026-04-06 — Built /repo-dd-deep command, then merged into /repo-dd
 
 ### Summary

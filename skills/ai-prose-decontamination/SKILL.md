@@ -2,13 +2,17 @@
 name: ai-prose-decontamination
 description: >
   Four-pass sequential decontamination of AI writing patterns from prose.
-  Removes ornamental language, repetition, over-argumentation, and uniform
-  rhythm. Use when prose has passed substantive review and needs voice
-  decontamination before formatting, or on requests like "decontaminate this,"
-  "remove AI patterns," "clean up the AI voice," "decontamination pass."
-  Do NOT use for: prose quality review (chapter-prose-reviewer), compliance
-  checking (prose-compliance-qc), formatting (prose-formatter), or rewriting
-  content (decision-to-prose-writer / evidence-to-report-writer).
+  Removes ornamental language (including contrast-template overuse and
+  abstract-noun stacking), repetition (including pivot-closings),
+  over-argumentation, and uniform rhythm (including pseudo-maxim habit).
+  Applies the document's Plain-Language / Flagged-Word Registry when the
+  style reference includes one. Use when prose has passed substantive
+  review and needs voice decontamination before formatting, or on
+  requests like "decontaminate this," "remove AI patterns," "clean up the
+  AI voice," "decontamination pass." Do NOT use for: prose quality review
+  (chapter-prose-reviewer), compliance checking (prose-compliance-qc),
+  formatting (prose-formatter), or rewriting content
+  (decision-to-prose-writer / evidence-to-report-writer).
 ---
 
 ## Role + Scope
@@ -32,6 +36,8 @@ Four failure modes produce this effect. This skill corrects them in sequence.
 ### 1. Prose File (required — blocking)
 
 The document to decontaminate. This should be post-review prose — substantive correctness has already been verified. If the prose has not been through review, the decontamination pass will still run, but analytical errors in the source will pass through unchanged.
+
+**If missing, unreadable, or empty:** Do not proceed. Stop and report. If the file has no H2 section headings, fall back to line-number location labels (e.g., `line 42`) in the change log, but note the absence of section structure in the change-log header — several sub-patterns (pivot closings, maxim budget) use section boundaries as their counting unit and produce weaker results without them.
 
 ### 2. Style Reference (required — blocking)
 
@@ -61,6 +67,8 @@ The original document that was converted to prose (decision document, evidence p
 
 **Style reference authority.** Before flagging any construction in Pass 1, check the style reference. If the style reference explicitly permits or requires a register level, that level is not ornamental — it is intentional. The style reference overrides Pass 1's default simplification impulse.
 
+**Flagged-Word Registry (when present).** If the style reference contains a Plain-Language Register or Flagged-Word Registry section — a table of elevated vocabulary with plain-English alternatives and a named carve-out list — that registry is authoritative for Pass 1's vocabulary decisions. Pass 1 applies it procedurally (see Sub-pattern 1c below). When absent, Pass 1 uses its own detection logic and notes the absence in the change log.
+
 ---
 
 ## Pass 1: Kill Ornamental Language
@@ -86,13 +94,80 @@ Examples of what to replace:
 
 **What to preserve:**
 
-- Technical PE terminology that has precise meaning (enterprise value, carried interest, LPAC). Domain-specific terms are not ornamental — they are accurate.
+- Technical domain terminology that has precise meaning in the document's field (e.g., for PE: enterprise value, carried interest, LPAC). Domain-specific terms are not ornamental — they are accurate. The examples in this table use PE vocabulary because the skill was developed on PE prose; apply the same test to whatever domain the current document belongs to.
 - Analytical distinctions that would be lost by simplification. If "directionally consistent with" distinguishes between full confirmation and partial alignment, and that distinction matters in context, keep it. If it's just a fancier way of saying "aligns with," replace it.
 - Constructions the style reference explicitly permits or requires.
 
 The target is McKinsey-internal, not simplified. Clear and direct, not dumbed down. Simplify language without reducing analytical specificity.
 
 **The test:** Read the sentence aloud. If it sounds like a person explaining something to a smart colleague, keep it. If it sounds like a document performing intelligence, simplify.
+
+### Sub-pattern 1a: Contrast-template overuse
+
+"Not X, but Y" / "X is Y, not Z" / "not a preference, but a constraint" is a legitimate move when it refuses a specific alternative the reader would plausibly assume or names a strategic trade-off. It becomes an AI tell when used as the default paragraph-to-paragraph rhythm — the reader is continuously reset by negations rather than carried forward, and the prose starts sounding like an argument with an invisible interlocutor.
+
+**Frequency test.** Count contrast constructions per 1,500 words of prose, scaling the threshold proportionally: "not [X]", "rather than", "X, not Y", "X is [Y], not [Z]", "not a [Y], but a [Z]", and structural variants. For documents or sections significantly shorter or longer than 1,500 words, apply the rate, not the raw count.
+
+- **Rate ≤ 2 per 1,000 words (≈ 0–3 per 1,500):** acceptable.
+- **Rate 3–4 per 1,000 words (≈ 4–6 per 1,500):** review each one. Rewrite lower-impact instances as direct statements; reserve contrast for the places where it sharpens a genuinely difficult choice.
+- **Rate ≥ 5 per 1,000 words (≈ 7+ per 1,500):** systemic. Rewrite the section to state points directly.
+
+For very short passages (under 500 words), flag any paragraph running two or more contrasts that do not compound, regardless of document-level rate.
+
+**Keep contrast when:** (a) it refuses a specific alternative the reader would plausibly assume; (b) it names a strategic trade-off with downstream consequences; (c) it corrects a misreading of a prior sentence.
+
+**Cut contrast when:** (a) both sides are generalities ("need and acceptability are not the same variable"); (b) it is rhetorical ornament on something the reader already accepts; (c) two or more contrasts in the same paragraph do not compound.
+
+*Before:*
+> Scope is defined by where the service can remove genuine cost or friction within the fund's existing chain. It is not defined by what Axcíon can build or by what the market appears to want.
+
+Two sentences of pure contrast. The second refuses general alternatives the reader wasn't going to assume — rhetorical crispness rather than sharpening.
+
+*After:*
+> Scope is defined by where the service can remove genuine cost or friction within the fund's existing chain. The chain — not Axcíon's capability set or market demand signals — determines what qualifies as scope.
+
+One contrast clause embedded in a single sentence, naming the refused alternatives in passing.
+
+**Note:** Contrast used specifically to defend against objections the reader has not raised is handled by Pass 3 (phantom objections), not here. This sub-pattern addresses contrast as cadence; Pass 3 addresses contrast as false opposition.
+
+### Sub-pattern 1b: Abstract-noun stacking
+
+AI prose reaches for nominalized compounds — three or more abstract nouns stacked before the main verb — where a verb-driven sentence naming the actor and the action would carry the same meaning. Nouns stack because they feel analytical; verbs get lost because verbs require naming who does what.
+
+**Compression test.** For any three-noun compound ("dominant cost nexus," "judgment-externalization tension," "sourcing-to-screening coupling point"), ask: can I name who does what? If yes, rewrite with an active verb and the actor. If the compound is load-bearing document vocabulary — a recurring object the document names and operates on — keep it and ensure first-use definition.
+
+**Shapes that flag:**
+- Noun-of-noun: "cost nexus," "coupling point"
+- Adjective-nominal-preposition-nominal: "dominant cost concentration," "pre-CIM processing burden"
+- Hyphenated prestige compounds: "deal-stage-calibrated acceptability," "sourcing-to-screening coupling point"
+
+None is automatically wrong. Each is a candidate for compression review.
+
+*Before:*
+> Shallow matching at the sourcing-to-screening coupling point is the smallest coherent intervention.
+
+Four abstract nouns before the main verb. The reader parses four compressions before reaching the claim.
+
+*After:*
+> Shallow matching is the document's term for flagging deals at the point where sourcing hands off to screening. It is the smallest intervention that still does useful work.
+
+"Shallow matching" stays (the document names and operates on it). "Sourcing-to-screening coupling point" unpacks into a verb-driven clause. "Smallest coherent intervention" becomes "smallest intervention that still does useful work."
+
+**Load-bearing carve-out.** If the style reference names specific compressed terms as part of the document's operating vocabulary (e.g., "Minimum Viable Service," "augmentation framing"), those terms are exempt. All other compressions are subject to the default.
+
+### Sub-pattern 1c: Flagged-Word Registry application
+
+When the style reference contains a Plain-Language Register or Flagged-Word Registry section, follow this procedure for every vocabulary decision in Pass 1:
+
+1. **Scan the full prose** for each flagged word or phrase listed in the registry.
+2. **Check each instance against the carve-out list.** Carve-outs are exhaustive — if the registry does not list the word as a load-bearing carve-out, it is not exempt, regardless of how "precise" or "domain-appropriate" it feels.
+3. **Swap non-carve-out instances** to one of the plain-English alternatives named in the registry. Choose the alternative that fits the sentence grammar and the claim being made.
+4. **Preserve carve-out instances** unchanged.
+5. **Log the result:** total instances scanned, swaps applied, carve-outs preserved, per-term if useful.
+
+The registry expresses the document's reader-specific voice calibration. A reader profile optimized for non-native professional readers (for example) requires plainer vocabulary than a generic internal document, and the registry is how that calibration reaches Pass 1. When the style reference has no registry section, skip this sub-pattern and note "Flagged-Word Registry: not provided" in the change log.
+
+**Grammar-break failure mode.** When a registry-listed plain alternative does not fit the sentence grammar (e.g., "coherence" → "fits together" cannot substitute directly in "the coherence of the design"), do not force the swap. Instead, recast the surrounding phrase to absorb the alternative ("the design fits together" instead of "the coherence of the design"), or, if recasting would distort the claim, choose a different plain alternative from the registry that grammatically fits. If none of the registry's alternatives work, flag the instance in the change log as "registry grammar-break: preserved original" and leave it unchanged. Do not invent a plain-English alternative that is not in the registry.
 
 ---
 
@@ -116,6 +191,28 @@ AI prose makes a point, restates it in different words, then summarises what was
 
 **Action:** For each repeated point, keep the strongest formulation. Delete the others. One formulation per idea. If two phrasings are equally strong, keep the shorter one.
 
+### Sub-pattern 2a: Pivot closings
+
+Sections often end on sentences that gesture toward the next section's subject ("The question this opens is operational: what form the service takes…") rather than landing the current section's conclusion. The closing sentence signals "I am writing a structured document" rather than "here is what this section established." These are deletable-without-loss sentences — which is why they belong in Pass 2.
+
+**Detection.** Read the last sentence of each section. Ask: does it describe what the next section will do, or what this section established? A sharper test: if the final sentence were removed, would the section still land? If yes, the sentence is scaffolding.
+
+**Rule.** Sections end on their own conclusion. Cross-references to adjacent sections belong in the body prose (inside the section, where a transition can carry real information), not as the final sentence. The final sentence should be the strongest delivery of the section's finding.
+
+*Before:*
+> The question this opens is operational: what form the service takes, and at which point in the chain it intervenes first.
+
+The final sentence tells the reader what the next section will address. The reader already knows — they are about to read it. The section's own conclusion is displaced by the pivot.
+
+*After:*
+> The economic case for augmentation rests on these three dimensions operating together. None of them individually would justify the service; their combination is what makes the structural position viable.
+
+The final sentence lands the section's conclusion. The next section still follows; the transition belongs in the next section's opening, not in this section's closing.
+
+**Distinction from summary-closings.** Pass 2's main list already flags "paragraph-closing sentence that summarises the paragraph's own argument." Pivot closings are different: they do not restate the section, they gesture past it. Both are cut, but the diagnostic is distinct — a summary restates; a pivot announces what comes next.
+
+**What to do with the cross-reference content.** If the pivot sentence carries information the reader would otherwise lack ("permanent exclusions are specified in the boundaries section"), move that sentence into the body of the section where the information is operationally relevant, not at the end where it displaces the landing.
+
 ---
 
 ## Pass 3: Deflate Over-Argumentation
@@ -132,7 +229,9 @@ AI prose builds elaborate logical scaffolds around claims that don't need them. 
 
 **Three specific sub-patterns to fix:**
 
-**Proving the obvious.** When a finding is well-evidenced and the reader has no reason to resist it, state it directly with its citation. Do not build the case from first principles.
+### Sub-pattern 3a: Proving the obvious
+
+When a finding is well-evidenced and the reader has no reason to resist it, state it directly with its citation. Do not build the case from first principles.
 
 *Before:*
 > The structural gap that justifies external buy-side support narrows as internal coverage approaches self-sufficiency. This is because larger funds increasingly internalize advisory functions through strategic finance teams, dedicated sector coverage, and in-house origination capability. The net result is that funds above EUR 2B are less likely to benefit from the service.
@@ -142,7 +241,9 @@ AI prose builds elaborate logical scaffolds around claims that don't need them. 
 
 Two sentences instead of three. Same information. The reader didn't need the middle sentence explaining *why* internalising advisory functions reduces the gap — that's self-evident.
 
-**Stacking qualifications.** When every claim gets a caveat, a boundary condition, and an evidence-quality note in the same sentence or paragraph. Spread these across the text. Not every claim needs all three simultaneously.
+### Sub-pattern 3b: Stacking qualifications
+
+When every claim gets a caveat, a boundary condition, and an evidence-quality note in the same sentence or paragraph. Spread these across the text. Not every claim needs all three simultaneously.
 
 *Before:*
 > These figures derive from a single-vendor benchmark (SPS) and should be treated as indicative rather than precise. The dual-channel coverage trap means this gap is not addressable through incremental effort: the intermediated channel excludes by sell-side process design, and the proprietary channel cannot compensate at scale.
@@ -152,7 +253,9 @@ Two sentences instead of three. Same information. The reader didn't need the mid
 
 The qualification is woven in rather than isolated as its own sentence. The finding lands without being pre-emptively weakened.
 
-**Defending against phantom objections.** Addressing counterarguments or alternative interpretations that the reader has not raised and would not raise.
+### Sub-pattern 3c: Defending against phantom objections
+
+Addressing counterarguments or alternative interpretations that the reader has not raised and would not raise.
 
 *Before:*
 > This is not deferral. It is scheduled resolution with empirical inputs on the positive path and a defined decision trigger on the negative path. Designing the conversion mechanism now, before any fund has experienced the service, would produce a theoretical construct that Year 1 data would require revising.
@@ -186,6 +289,31 @@ After passes 1–3, the prose should be leaner. This pass addresses the remainin
 
 **Prose quality standards alignment:** When prose quality standards are provided, apply Standard 3's frequency target and short-sentence definition. Standard 3 governs; Pass 4 implements.
 
+### Sub-pattern 4a: Pseudo-maxim budget
+
+AI prose generates short, hard-edged declarative sentences that sound like principles carved in stone: "Capability does not create entitlement." "Year 1 is the empirical test." "The judgment burden cannot." Each one, taken alone, can be effective. Taken together — several in a single section — they become a rhythm, and the prose starts sounding like it was optimized for quotability rather than argument.
+
+**What counts as a maxim.** A short (under 12 words), declarative, hard-edged sentence that functions as an aphorism — a generalization intended to land with independent authority rather than as one step in an argument. Diagnostic: the sentence could plausibly stand alone on a slide without its paragraph.
+
+**Budget: maximum one maxim per section,** reserved for the point the surrounding argument cannot carry on its own.
+
+**Counting.** Count maxim sentences per section (use heading boundaries, not paragraph boundaries — the budget is a section-level quota). If a section has two or more, flag. Choose the one that genuinely earns its place and rewrite the others as ordinary sentences inside their paragraphs.
+
+*Before (three maxims in a single section):*
+> (…argument…) Capability does not create entitlement. (…more argument…) Quality failure is terminal. Design accordingly. (…later in the same section…) Year 1 is the empirical test.
+
+Three maxims in one section. The first carries genuine analytical weight (a positioning refusal the rest of the document builds on). The second pair (*Quality failure is terminal. Design accordingly.*) restates in aphoristic form a point the surrounding paragraph already makes. *Year 1 is the empirical test.* could land as a pivot (normal Pass 4 rhythm) but becomes noise when two maxims have already fired in the same section.
+
+*After:*
+
+Keep *Capability does not create entitlement.* as the section's one earned maxim. Rewrite the others as ordinary sentences: "A quality failure is unrecoverable, so the service is designed to avoid any pathway that could produce one." "The Year 1 design treats each interaction as a test of whether the assumptions hold."
+
+**Distinction from normal short-sentence rhythm.** Pass 4's main guidance ("What short sentences are NOT") excludes labels, fragments, and fillers. The maxim budget adds one more constraint: short sentences that read as standalone aphorisms count against the budget even when they also serve rhythm. A short sentence that lands a finding, compresses a claim, or pivots a paragraph is normal rhythm and does not count. A short sentence that reads as a slide-ready generalization does count.
+
+**Why this is a frequency standard.** Individual maxims can be good prose. The failure is the rhythm. A reader who encounters three aphorisms in a 1,500-word section stops taking the fourth seriously. Budget discipline preserves the authority of the one maxim that actually carries a point.
+
+**Boundary case: the earned maxim is itself an analytical claim or a sourced statement.** The budget never touches the one maxim that earns its place. If the surviving maxim is itself an analytical claim or carries a sourced statement, preserve it intact — the bright-line rule already protects it. Rewriting the *other* maxims is what this sub-pattern does, and those rewrites are safe precisely because the excess maxims are rhetorical habit rather than analytical content. If a rewrite of a non-earned maxim would itself alter an analytical claim or a sourced statement, flag it in the bright-line-flags section of the change log instead of applying it.
+
 ---
 
 ## After All Four Passes
@@ -203,7 +331,9 @@ If the source document was not provided, note "Source fidelity spot-check: skipp
 
 ### Write Output
 
-Write the decontaminated prose to the output path (overwrite the input file). Then produce the change log.
+Write the decontaminated prose to the output path supplied by the calling agent. Then produce the change log.
+
+**Output path discipline.** The caller specifies the output path. When the caller passes the same path as the input, the decontaminated prose overwrites the input file — this is the common pattern inside the `produce-prose-draft` pipeline, where the calling command owns the file-versioning contract. When invoked standalone, default to a new versioned path (e.g., `{prose}-decontaminated.md` or `{prose}.v{n+1}.md`) rather than overwriting; preserving the pre-decontamination file lets the operator compare before/after without going to git. Do not silently overwrite a file the caller did not explicitly name as the output path.
 
 ---
 
@@ -211,12 +341,13 @@ Write the decontaminated prose to the output path (overwrite the input file). Th
 
 - Do not change the argument structure, the sequence of sections, or the analytical conclusions.
 - Do not remove evidence calibration (phrases noting evidence quality or source limitations). These are honest, not ornamental.
-- Do not remove technical PE terminology. Domain terms are precise, not fancy.
+- Do not remove technical domain terminology with precise meaning in the document's field, whether or not the style reference lists it explicitly (e.g., for PE: enterprise value, carried interest, LPAC). When the style reference does list domain terms as load-bearing, that listing is authoritative; absence of a listing does not mean the term is unprotected. Domain terms are precise, not fancy. (The examples throughout this skill use PE vocabulary because the skill was developed on PE prose; the rule is domain-agnostic — apply it using the terminology specific to the document under review.)
+- Do not remove terms listed as load-bearing carve-outs in the style reference (e.g., named operating vocabulary like "Minimum Viable Service," "augmentation framing"). These are the document's named objects, not prose habits.
 - Do not simplify a phrase if the simpler version loses a meaningful analytical distinction. Clarity means precision, not just brevity.
 - Do not add new content, new claims, or new analysis.
-- Do not remove cross-references to other sections or modules.
+- Do not remove cross-references to other sections or modules. Sub-pattern 2a (pivot closings) relocates cross-references into the section body rather than deleting them; the information stays, only the scaffolding sentence moves.
 - Preserve all footnotes and citations in their original positions.
-- Every change must be traceable to one of the four passes. No opportunistic improvements.
+- Every change must be traceable to one of the four passes (and, where applicable, to a named sub-pattern — 1a, 1b, 1c, 2a, 4a). No opportunistic improvements.
 - If a paragraph is already clean — direct, rhythmically varied, free of ornament — leave it unchanged.
 
 ---
@@ -231,12 +362,21 @@ Produce a structured change log as output. When invoked within a pipeline, the c
 Passes applied: 4
 Total changes: [N]
 Pass 1 (Ornamental Language): [N] changes
+  — contrast-template overuse (1a): [N]
+  — abstract-noun stacking (1b): [N]
+  — flagged-word registry (1c): [N swaps / N carve-outs preserved] or [not provided]
+  — other ornamental edits: [N]
 Pass 2 (Repetition): [N] changes
+  — pivot closings (2a): [N]
+  — other repetition edits: [N]
 Pass 3 (Over-Argumentation): [N] changes
 Pass 4 (Rhythm): [N] changes
+  — pseudo-maxim budget (4a): [N]
+  — other rhythm edits: [N]
 
 Style reference: [provided]
 Prose quality standards: [provided / not provided]
+Flagged-Word Registry: [provided / not provided]
 Source fidelity spot-check: [passed / skipped (no source provided)]
 
 ## Bright-Line Flags
@@ -248,6 +388,7 @@ Source fidelity spot-check: [passed / skipped (no source provided)]
 ### Pass 1 — Ornamental Language
 
 [P1-1] Location: [H2 section name], paragraph [N]
+Sub-pattern: [contrast-template (1a) | abstract-noun stacking (1b) | registry swap (1c) | other]
 Before: "[quoted original]"
 After: "[quoted replacement]"
 Rationale: [one sentence — what AI pattern was removed]
@@ -255,8 +396,9 @@ Rationale: [one sentence — what AI pattern was removed]
 ### Pass 2 — Repetition
 
 [P2-1] Location: [H2 section name], paragraph [N]
+Sub-pattern: [pivot closing (2a) | other]
 Removed: "[quoted deleted text]"
-Rationale: [one sentence — what it restated]
+Rationale: [one sentence — what it restated or what it gestured at]
 
 ### Pass 3 — Over-Argumentation
 
@@ -268,12 +410,25 @@ Rationale: [one sentence — what scaffolding was unnecessary]
 ### Pass 4 — Rhythm
 
 [P4-1] Location: [H2 section name], paragraph [N]
+Sub-pattern: [pseudo-maxim (4a) | other]
 Before: "[quoted original]"
 After: "[quoted restructured version]"
 Rationale: [one sentence — what rhythm problem was fixed]
 ```
 
 **Consolidation rule:** If more than 20 changes in a single pass, consolidate into grouped entries with representative examples. Example: "P1-1 through P1-8: Replaced elevated constructions across 6 paragraphs" with 2–3 representative before/after pairs. Summary counts remain exact.
+
+---
+
+## Runtime Recommendations
+
+- **Invocation:** Expected to be invoked explicitly (by an operator or a pipeline command such as `produce-prose-draft` Phase 5). Not auto-invoked on file writes. No `disable-model-invocation` setting needed because the skill is never a hook target.
+- **Tools:** Requires Read, Write (or Edit) against the prose file and the change-log path. No `allowed-tools` restriction applied — the skill is tool-agnostic beyond this. A calling command may pass the file contents rather than a path; the skill logic is identical either way.
+- **Paths:** No `paths` frontmatter restriction. The prose file path is supplied per invocation and varies by project.
+- **Model:** Prefer Claude Opus 4.6 (`claude-opus-4-6`) or later for the main analytical work. A faster model (e.g., Sonnet) is acceptable when the calling command explicitly directs — `produce-prose-draft` Phase 5 currently delegates this skill to Sonnet because the four passes are pattern-based and analytical judgment is already established by prior phases.
+- **Context budget:** Plan for the full prose file + style reference + prose-quality standards + source document (if provided) to be in context simultaneously, plus the skill body. For long prose files (15k+ words), consider running the four passes across separate turns to preserve rhythm judgment in Pass 4.
+- **Execution pattern:** Runs cleanly as a subagent delegated by a pipeline command. Also runs standalone in the main thread. Either pattern is supported; subagent invocation gives cleaner context isolation when the calling session has other work in flight.
+- **Sequencing within a pipeline:** This skill is the final voice-level authority before formatting. If the calling pipeline has earlier voice-adjustment phases (style sweep, chapter-prose-reviewer), decontamination takes precedence when its outputs conflict with earlier phases — formatting (which runs after) treats decontamination's output as the canonical prose.
 
 ---
 
