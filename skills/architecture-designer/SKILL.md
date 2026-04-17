@@ -96,7 +96,7 @@ Present this as a structured description or table. The goal is that someone read
 
 > `/run-analysis` (slash command) → spawns `analysis-runner` (agent, opus) → loads `data-validator` skill + `report-formatter` skill → writes `analysis-report.md` to project directory → consumed by `report-reviewer` agent in the next pipeline stage.
 >
-> Shared references: both `analysis-runner` and `report-reviewer` read `CLAUDE.md` for project-level conventions. `data-validator` reads `references/schema.json` for field definitions.
+> Shared references: both `analysis-runner` and `report-reviewer` read `CLAUDE.md` for project-level conventions. `data-validator` reads a bundled schema file in its own `references/` directory for field definitions.
 
 ### 5. Conflict Analysis
 

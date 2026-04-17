@@ -47,14 +47,21 @@ List all directories in `ai-resources/skills/`. Each folder name must be lowerca
 A skill directory that contains no `SKILL.md` file is orphaned. Check every directory in `ai-resources/skills/`. Orphaned directory = **Minor**.
 
 ### 5. CLAUDE.md placement
-Find all CLAUDE.md files. They should only appear at:
+Find all CLAUDE.md files. Expected locations:
 - Workspace root
 - `ai-resources/`
 - Each project directory root (e.g., `projects/{name}/`)
 - Each workflow directory root (e.g., `workflows/active/{name}/`)
 - Template directories
 
-A CLAUDE.md nested deeper than expected (e.g., inside a `src/` or `scripts/` subdirectory) = **Minor** (flag for review).
+For any CLAUDE.md found outside these expected locations (e.g., inside a `src/`, `scripts/`, `step-*/`, or other nested subdirectory), run the **intent check** before flagging:
+
+1. Find the nearest ancestor CLAUDE.md walking up the directory tree.
+2. Read that ancestor file and search for any of the following phrases (case-insensitive): `sub-workspace`, `sub workspace`, `nested CLAUDE.md`, `step-*`, `own CLAUDE.md`, `its own `CLAUDE.md``, `audit tooling should treat`, `intentional`, `expected to load`.
+3. If the ancestor CLAUDE.md explicitly mentions the nested directory (by name, pattern, or sub-workspace declaration), the nested CLAUDE.md is **intentional — do NOT flag**.
+4. Only flag as **Minor** when no ancestor CLAUDE.md documents the nesting.
+
+When you do flag, quote the ancestor CLAUDE.md text you searched (or note that no ancestor exists) in the finding's `detail` field so the reader can verify your decision.
 
 ### 6. .claude/ directory consistency
 For each project in `projects/` that has its own `.claude/` directory, check it contains at minimum `commands/` or `settings.json`. An empty `.claude/` directory = **Minor**.

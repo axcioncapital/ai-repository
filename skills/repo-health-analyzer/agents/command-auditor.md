@@ -59,7 +59,25 @@ If a command file references an agent by name (patterns like "spawn", "subagent"
 Dead agent reference from command = **Critical**.
 
 ### 9. Duplicate command names
-Check for command files with the same filename across different `.claude/commands/` directories. Same filename in multiple scopes = **Minor** (informational — may be intentional for scope override).
+Check for command files with the same filename across different `.claude/commands/` directories.
+
+**Before flagging**, exclude intentional sharing patterns:
+
+- **Symlinks to ai-resources.** If a command file is a symlink whose target resolves into `ai-resources/.claude/commands/`, it is an intentional shared command auto-synced via `shared-manifest.json` and the SessionStart hook. **Do not flag.** Use `readlink` or filesystem inspection to verify the target.
+- **Same inode / same resolved path.** If two apparent duplicates resolve to the same underlying file, they are one file — not a duplicate.
+
+For command files where two or more **real files** (non-symlinks, or symlinks pointing outside `ai-resources/.claude/commands/`) share the same basename, run a **content diff** against the corresponding file in `ai-resources/.claude/commands/{name}.md` (if one exists) before classifying:
+
+- **Identical content (drift).** The project copy matches the ai-resources source byte-for-byte. This is unwanted drift — the project should be using a symlink, and the copy was likely left behind when auto-sync-shared.sh was added. Classify as **Minor** with recommendation: "Replace with symlink to the ai-resources source."
+- **Divergent content (intentional override).** The project copy differs from the ai-resources source. This is an intentional project-specific customization. Do **NOT** flag as a finding. Count it in metrics under `intentional_overrides` but omit it from the findings list.
+- **No matching ai-resources source.** The command exists only in project scope and is genuinely project-specific. Do **NOT** flag.
+
+When you do flag a drift case, include in the finding's `detail` field: the project file path, the ai-resources source path, and the fact that they are byte-identical.
+
+Expose in metrics:
+- `name_collisions_total` — all same-name groups across scopes
+- `name_collisions_drift` — collisions where project file is byte-identical to ai-resources source
+- `intentional_overrides` — collisions where content differs (not findings, just a count)
 
 ## Output
 

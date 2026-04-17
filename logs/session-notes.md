@@ -1,12 +1,52 @@
 # Session Notes
 
-## 2026-04-17 — /improve-skill ai-prose-decontamination (four new AI-tell categories + Flagged-Word Registry)
+## 2026-04-17 — /improve-skill ai-prose-decontamination + downstream stop-gap cleanup + /improve-skill prose-compliance-qc post-split positioning fix
 
 ### Exit Condition
-**Option A** — Full run. Invoke `/improve-skill ai-prose-decontamination` now; draft + QC + integrate four new pattern categories (contrast-template overuse, abstract-noun stacking, pseudo-maxim repetition, pivot closings) plus Flagged-Word Registry awareness; fix; commit. Skips the "test first on Doc 2 §2.6" dependency stated in the improvement-log entry — operator accepted that drift risk. High autonomy: proceed through `/improve-skill` pipeline without mid-gate operator approvals unless the pipeline itself gates (plan QC, post-edit QC).
+**Option A** — Full run. Invoke `/improve-skill ai-prose-decontamination`; draft + QC + integrate four new pattern categories (contrast-template overuse, abstract-noun stacking, pseudo-maxim repetition, pivot closings) plus Flagged-Word Registry awareness; fix; commit. Skipped the "test first on Doc 2 §2.6" dependency stated in the improvement-log entry — operator accepted that drift risk. Scope extended mid-session to include the downstream cleanup of the produce-prose-draft Phase 5 stop-gap (originally flagged as separate-session work).
 
 ### Input Brief
-`projects/buy-side-service-plan/logs/improvement-log.md` — entry dated 2026-04-17 — `/improve-skill ai-prose-decontamination`. Also references: `projects/buy-side-service-plan/context/prose-quality-standards.md` v3 (Standards 10–13), `projects/buy-side-service-plan/output/part-2-prose/style-reference.md` v2.3 (Plain-Language Register), and the inline Phase 5 stop-gap in `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md`.
+`projects/buy-side-service-plan/logs/improvement-log.md` — entry dated 2026-04-17 — `/improve-skill ai-prose-decontamination`. Supporting context: `projects/buy-side-service-plan/context/prose-quality-standards.md` v3 (Standards 10–13), `projects/buy-side-service-plan/output/part-2-prose/style-reference.md` v2.3 (Plain-Language Register + Governing Voice Test), and the inline Phase 5 stop-gap in `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md`.
+
+### Summary
+Ran `/improve-skill` on `ai-prose-decontamination` through all 8 steps. Five new sub-patterns placed into the existing 4-pass structure (1a contrast-template, 1b abstract-noun stacking, 1c Flagged-Word Registry, 2a pivot closings, 4a pseudo-maxim budget), plus Pass 3 sub-patterns renumbered 3a/3b/3c for symmetry. Evaluator subagent returned 0 Critical / 0 Major / 9 Minor; triaged as six IMPORTANT-severity fixes (proportional frequency scaling, domain-agnostic generalization, missing-prose-file failure mode, output-path contract, new Runtime Recommendations section, post-fix constraint regression). File grew 329 → 484 lines (under the 500 budget). Cleaned the now-redundant inline stop-gap in `produce-prose-draft.md` Phase 5. Then — during `/wrap-session` — ran `/improve-skill prose-compliance-qc` to fix three staleness points from the 2026-04-17 three-way split of `/produce-prose`: line 18 Position reference, line 16 Role paragraph sequential-flow assumption, line 308 Failure Behavior sequential-flow assumption. Skill now explicitly describes Sequential vs Merged operating modes; YAML description updated to match.
+
+### Files Created
+None.
+
+### Files Modified
+- `skills/ai-prose-decontamination/SKILL.md` — added Sub-patterns 1a/1b/1c/2a/3a/3b/3c/4a; added Runtime Recommendations section; updated YAML description, input-failure behavior, output-path discipline, Constraints, and Change Log format; applied all evaluator fixes (commit `82c3b09`)
+- `workflows/research-workflow/.claude/commands/produce-prose-draft.md` — removed Phase 5 inline stop-gap (a)–(e); updated Task line to reference skill sub-patterns by ID; updated Output-path wording to reflect skill's new caller-owns-versioning contract (commit `cba0f8f`)
+- `skills/prose-compliance-qc/SKILL.md` — updated YAML description, Role paragraph (added Sequential vs Merged operating modes), Position reference, Failure Behavior entry for pre-refinement drafts, and Runtime Sequence. Closes the /improve-skill follow-up flagged in the 2026-04-17 decisions.md entry. Skill logic unchanged; only self-description corrected to match the post-split pipeline (commit `8002c79`)
+- `logs/session-notes.md`, `logs/decisions.md`, `logs/coaching-data.md` — session wrap entries
+
+### Decisions Made
+**Placement decisions (operator-confirmed during Step 1 pause):**
+- Integrate five new sub-patterns into the existing 4-pass structure rather than adding a Pass 5. Each new pattern has a functional home: 1a–1c under "ornamental language," 2a under "repetition," 4a under "rhythm."
+- Pass 3's existing three sub-patterns renumbered 3a/3b/3c during Step 3 for structural symmetry with the new numbered sub-patterns.
+
+**Fix decisions (applied from evaluator report):**
+- Output-path contract: removed the skill's default "overwrite the input file" directive. Caller now specifies output path. Standalone default shifts to versioned output; pipelines (like produce-prose-draft) can still pass input-as-output explicitly.
+- Constraint #3 generalized: domain terminology is protected whether or not the style reference lists it explicitly (the style reference is authoritative when it does; absence does not mean unprotected).
+- Frequency test for contrast-template expressed as a proportional rate (per 1,000 words) with explicit short-passage fallback, instead of a raw 1,500-word count that misbehaves on non-standard lengths.
+- Runtime Recommendations section added, consolidating C6/C7/C8/C9/C13 decisions (invocation, tools, paths, model, context budget, execution pattern, pipeline sequencing).
+
+**Scope decisions:**
+- Mid-session scope extension (produce-prose-draft stop-gap cleanup) accepted after the ai-prose-decontamination commit.
+- Mid-wrap-session scope extension (prose-compliance-qc fix) accepted. Operator initially asked to "fix" the skill; mid-fix, I flagged two additional staleness points (lines 16 and 308) extending beyond the known line-18 issue. Operator selected Option B: fix all three now rather than return in another session. Extended scope preserved the discipline of routing skill edits through `/improve-skill` (per the workspace rule and the operator's 2026-04-17 decision).
+
+### Cross-Environment Drift
+- **`produce-prose-draft.md`** is the canonical template file. Projects that use it (verified: `projects/buy-side-service-plan`) hold symlinks to this file, so the edit propagates automatically — no per-project sync action needed.
+- **`ai-prose-decontamination/SKILL.md`** is the canonical skill file. It is read at runtime by whichever command invokes it (produce-prose-draft Phase 5). No symlink propagation required.
+- No CLAUDE.md or settings.json changes this session.
+
+### Next Steps
+- **Push ai-resources** — three session commits pending: `82c3b09` (ai-prose-decontamination update), `cba0f8f` (produce-prose-draft stop-gap cleanup), `8002c79` (prose-compliance-qc positioning fix), plus the wrap commit once logs are staged.
+- **Test the upgraded ai-prose-decontamination skill on Doc 2 §2.6** — the improvement-log entry originally asked for this test *before* the skill update; operator chose Option A (update first, test later). A live run now is the natural validation.
+- **Other prose-pipeline skills checked, no further updates needed:** `chapter-prose-reviewer` and `decision-to-prose-writer` have no hardcoded Standard numbers or phase references; they operate on whatever `prose-quality-standards` content the caller passes at runtime, so v3 standards flow through automatically.
+
+### Open Questions
+None material. The `prose-compliance-qc` fix path is settled (route through `/improve-skill` per the operator's 2026-04-17 decision and the workspace rule).
 
 ## 2026-04-06 — Built /repo-dd-deep command, then merged into /repo-dd
 

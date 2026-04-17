@@ -33,4 +33,7 @@
 | 2026-04-07 | agent | .claude/agents/workflow-analysis-agent.md | triaged:project-specific | — |
 | 2026-04-07 | agent | .claude/agents/workflow-critique-agent.md | triaged:project-specific | — |
 | 2026-04-07 | command | .claude/commands/analyze-workflow.md | graduated | ai-resources/.claude/commands/analyze-workflow.md (already in place) |
-| 2026-04-11 | command | workflows/research-workflow/.claude/commands/produce-prose.md | detected | — |
+| 2026-04-11 | command | workflows/research-workflow/.claude/commands/produce-prose.md | superseded:2026-04-17 | split into produce-architecture / produce-prose-draft / produce-formatting; original deleted |
+| 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-architecture.md | created | replaces Phase 2-3 of deleted produce-prose.md |
+| 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-prose-draft.md | created | replaces Phase 4-5c of deleted produce-prose.md |
+| 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-formatting.md | created | replaces Phase 6 + 6-QC of deleted produce-prose.md |

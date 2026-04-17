@@ -75,6 +75,8 @@ Using the prior auditor findings, look for:
 
 Report compound problems as **Important** if they suggest systemic issues.
 
+**Do not invent compound problems from metrics you have not verified.** Before claiming "auto-sync drift" or similar systemic issues from duplicate command counts, check the command-auditor's `name_collisions_drift` metric. If that metric is zero, the duplication is intentional override — do NOT flag it as drift. In general, if a lower-level auditor has a metric that directly measures the systemic issue you are about to claim, trust that metric. Do not re-derive it from raw counts.
+
 ## Output
 
 Write your findings as JSON to: `{TARGET}/reports/.audit-temp/practices-findings.json`

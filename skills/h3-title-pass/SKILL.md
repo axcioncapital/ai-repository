@@ -34,7 +34,13 @@ A style spec governing tone, formatting, and voice for the document. When provid
 
 If missing: Use this skill's defaults.
 
-Progress: [ ] Step 1: H3 placement [ ] Step 2: Refinement pass [ ] Operator review [ ] Apply refinements
+### 3. Trigger #3 hit list (optional — from prose-formatter pre-scan)
+
+When this skill runs in the merged Phase 2 sub-agent of `/produce-formatting`, the prose-formatter's Mechanical Triggers pre-scan produces a list of subsections that fired trigger #3 (one subsection contains multiple internal blocks). Operation 1 may also add pseudo-heading bold labels to this list during its pass. The list contains: subsection location, block boundaries (line references), one-line description of each block.
+
+Consume this list in Step 1 as candidate SPLIT verdicts (see "Multi-block subsection detection" below). If the list is empty or not provided, proceed with the standard placement rules only.
+
+Progress: [ ] Step 1: H3 placement [ ] Step 1b: Multi-block subsection detection [ ] Step 2: Refinement pass [ ] Operator review [ ] Apply refinements
 
 ## Step 1: H3 Placement
 
@@ -90,13 +96,30 @@ One paragraph per H3 block, unless the topic is genuinely distinct from its neig
 [1+ paragraphs]
 ```
 
+### Multi-block subsection detection (Step 1b)
+
+An existing H3 subsection may carry multiple distinct content blocks (different topics, different formatting units, e.g., sourcing logic + sequencing + a quoted speech act). When this happens, a bold label inside the subsection is often doing heading work — acting as a mini-heading for a self-contained passage. Mechanically, this is an under-specified heading structure: the material needs an H3 at the block boundary, not a bold label.
+
+**When to propose a SPLIT:**
+- A trigger #3 hit appears in the input list from the prose-formatter pre-scan (or was added by Operation 1's pseudo-heading detection).
+- During your own placement pass, you observe an existing H3 subsection where a bold label introduces a visually separated block whose content differs materially from the surrounding prose (different topic, different formatting unit, different register — e.g., a client-facing quote).
+
+**How to propose a SPLIT:**
+- Identify the block boundary (the line immediately before the bold label or before the block's first paragraph).
+- Draft a proposed H3 title for the new subsection per the Formatting Standard and Naming Quality rules above.
+- Record the proposal for Step 2 as a SPLIT verdict (see Step 2 Output).
+
+**Do NOT auto-apply a SPLIT.** Proposing a SPLIT is not the same as inserting an H3. The actual insertion waits for operator approval at command Phase 4. In Step 1, leave the prose unchanged for SPLIT candidates — only the verdict table records the proposal.
+
+**Paired with pseudo-heading prohibition:** When a bold label in an H3 subsection is identified as a SPLIT candidate, the prose-formatter's Operation 1 should not bold the label (see prose-formatter's "No pseudo-heading bolding" rule). If the label is already bolded in the input prose, the SPLIT verdict's proposed H3 replaces the bold label rather than adding an H3 above a bold line. The rationale field in the verdict table records this.
+
 ### Step 1 Output
 
-Write the modified prose file with H3s inserted. Do not rename or remove existing H3s in this step — that happens in Step 2.
+Write the modified prose file with H3s inserted. Do not rename or remove existing H3s in this step — that happens in Step 2. **Do not apply SPLIT verdicts in Step 1** — record proposals only; insertion happens post-handoff after operator approval.
 
 ## Step 2: Refinement Pass
 
-Review every H3 in the file (both newly placed and pre-existing) against four checks. For each H3, produce a one-line verdict: KEEP, RENAME (with suggested replacement), or REMOVE (with reason).
+Review every H3 in the file (both newly placed and pre-existing) against four checks. For each H3, produce a one-line verdict: **KEEP**, **RENAME** (with suggested replacement), **REMOVE** (with reason), or **SPLIT** (propose additional H3 at a block boundary within an existing subsection — see Step 1b).
 
 ### Check 1 — Specificity Test
 
@@ -119,14 +142,22 @@ Read only the H2 and H3 titles in sequence. Does someone scanning these get an a
 Present a verdict table to the operator:
 
 ```
-| Current H3 | Verdict | Replacement / Reason |
+| Current H3 | Verdict | Replacement / Reason / Proposed Insertion |
 |---|---|---|
 | First Topic | KEEP | — |
 | Second Topic | RENAME | "Revised Title" — original too generic |
 | Third Topic | REMOVE | splits a single-point argument |
+| (Fourth Topic — existing) | SPLIT | Propose new H3 "Sourcing Logic" at line 142 (before the bold label "Sequencing"); existing subsection carries two distinct blocks |
 ```
 
-**Gate:** Do not apply refinements until the operator reviews the verdict table. The operator may override individual verdicts. Apply only approved changes.
+**SPLIT verdict handling (operator-gated, not auto-applied):** Unlike KEEP/RENAME/REMOVE, SPLIT verdicts propose *new structure* rather than editing existing structure. SPLIT verdicts invoke the project bright-line rule (changes more than one paragraph, adds structural content). They are NOT applied mid-pipeline. Instead:
+
+- Each SPLIT verdict records: (a) the H3 subsection to split, (b) the proposed insertion line reference, (c) the proposed new H3 title, (d) a one-line block-boundary rationale (why this location, what the two resulting blocks cover).
+- SPLIT verdicts are surfaced in the calling command's handoff phase for operator review and approval.
+- If the operator approves a SPLIT, the approved H3 is inserted as a post-handoff main-session edit, NOT a pipeline auto-apply. The operator's Phase 4 approval of the specific SPLIT satisfies the bright-line rule for the subsequent insertion — no additional bright-line pause is required.
+- If the operator declines a SPLIT, the subsection is left unchanged. Log the declined SPLIT in the verdict table's disposition column for traceability.
+
+**Gate:** Do not apply KEEP/RENAME/REMOVE refinements until the operator reviews the verdict table. The operator may override individual verdicts. Apply only approved changes. SPLIT verdicts are never applied in this step — they are always operator-gated per the handling rule above.
 
 ## Output Summary
 

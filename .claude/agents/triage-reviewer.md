@@ -35,12 +35,13 @@ State the concrete risk of implementing it:
 
 ## Context Gathering
 
-You may read files from the workspace to assess impact:
-- Read referenced files to verify claims about current state
-- Grep for downstream references to understand blast radius
-- Read CLAUDE.md to check for conflicts with existing rules
+**Default: work from what you were given.** Most suggestions include enough context to triage without reading any files. Do NOT explore the codebase by default.
 
-Do NOT read conversation history or session logs.
+Only read a file when a suggestion makes a specific, verifiable claim about a file's current state and that claim is central to your triage verdict. Examples:
+- "This hook currently parses commit messages with regex" → read the hook file to verify
+- "CLAUDE.md already has a rule about X" → read CLAUDE.md to check
+
+Do NOT: scan for downstream references, read session logs, or explore broadly. If you can't verify a claim from the suggestion text alone, note it as an assumption rather than launching a search.
 
 ## Output Format
 

@@ -85,6 +85,20 @@ Confirm the module works as a self-contained unit:
 
 If the module contains no footnotes, state "No footnotes present" and mark this check as N/A.
 
+### 5. Mechanical Trigger Compliance
+
+Verify that the prose-formatter's Mechanical Triggers produced the expected formatting outcomes. Each sub-check maps to a specific trigger and to a specific Doc 2 miss pattern that this check is designed to catch.
+
+- **Named framework → list check (Trigger #1 + Operation 2 non-exception):** Flag any "N items named in sequence" inline enumeration that remains in prose form. Look for phrases like "N tests," "N components," "N properties," "N constraints," "N criteria," "N principles" followed by an enumeration that was not converted to a list.
+- **Category comparison → table check (Trigger #2 + Operation 3 trigger a):** Flag any passage comparing N named categories across M reference criteria (e.g., provider types across mandate / conflict / fee / coverage) that is not tabulated, or where the comparison is carried entirely in prose without a reference table beneath.
+- **Classification triad / coded-category set → table check (Operation 3 triggers b and c):** Flag scope-classification triads (In scope / Out of scope / Conditionally in) and coded category sets with repeated field structure (CB1–CB4, E1–E4, R1–R5) that were left as bold labels rather than tabulated.
+- **Bold class-consistency check (Operation 1 class-consistency rule):** Flag uneven bolding of figures within the same semantic class (e.g., 54% bolded but 11% not, or €5–25M bolded but adjacent monetary ranges not). Either all figures of a class in a section are bolded, or none are — mixed is a finding.
+- **Named-framework anchor check (Trigger #4 + Operation 1 named-framework rule):** Flag named enumerated frameworks (Test 1–N, Principle 1–N, R1–RN, CB1–CBN) where some anchors are bolded and others are not, or where no anchors are bolded despite being named items.
+- **Multi-block subsection check (Trigger #3):** Flag any H3 subsection that carries multiple distinct formatting units (different topics, different formatting elements, bold labels doing heading work) without appropriate separation — no SPLIT verdict was proposed, no paragraph break separates the blocks, and the subsection visibly carries material that should have been split.
+- **Multi-job paragraph check (Trigger #5):** Flag any paragraph carrying a framework + its exceptions + its implications (or an analogous framework + scenarios + triggers + qualification cluster) that was not split in Operation 4. The threshold is job-count, not word-count — a 120-word paragraph with three distinct jobs is a finding.
+
+Each finding under this check is SUBSTANTIVE. The check is designed to catch the specific patterns the Mechanical Triggers were introduced to prevent; if a pattern is flagged here, the trigger did not fire or was overridden.
+
 ---
 
 ## Output Format
@@ -93,7 +107,7 @@ If the module contains no footnotes, state "No footnotes present" and mark this 
 # Formatting QC Report — [Module Title]
 
 ## Summary
-Checks passed: [N] / 4
+Checks passed: [N] / 5
 Total findings: [N] (SUBSTANTIVE: [N], NON-SUBSTANTIVE: [N])
 
 ## 1. Formatting Integrity
@@ -115,12 +129,17 @@ Total findings: [N] (SUBSTANTIVE: [N], NON-SUBSTANTIVE: [N])
 [Finding ID] | Location | Description | Severity
 ...
 [or: "No footnotes present — N/A." / "Footnote numbering sequential and complete."]
+
+## 5. Mechanical Trigger Compliance
+[Finding ID] | Location | Description | Severity
+...
+[or: "All Mechanical Triggers produced expected outcomes — no miss patterns detected."]
 ```
 
 ## Finding Format
 
 Each finding:
-- **ID:** `FI-[N]`, `VR-[N]`, `SC-[N]`, `FN-[N]` (by check category)
+- **ID:** `FI-[N]`, `VR-[N]`, `SC-[N]`, `FN-[N]`, `MTC-[N]` (by check category — Formatting Integrity, Visual Rhythm, Standalone Coherence, Footnote, Mechanical Trigger Compliance)
 - **Location:** Section name, heading, or approximate word position
 - **Description:** What the issue is. Be specific — name the element, quote the problematic text if short.
 - **Severity:**
@@ -131,7 +150,7 @@ Each finding:
 
 | Severity | Definition |
 |---|---|
-| SUBSTANTIVE | Broken prose flow, missing cross-references, walls of text that impede comprehension, sequential footnote errors. Must fix. |
+| SUBSTANTIVE | Broken prose flow, missing cross-references, walls of text that impede comprehension, sequential footnote errors, Mechanical Trigger miss patterns (named framework in prose, category comparison without table, bold class inconsistency, multi-block subsection, multi-job paragraph). Must fix. |
 | NON-SUBSTANTIVE | Minor inconsistencies in emphasis patterns, slightly long sections without H3, cosmetic spacing issues. Recommended. |
 
 ## Failure Behavior

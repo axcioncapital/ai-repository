@@ -1,5 +1,12 @@
 # Coaching Data
 
+### 2026-04-17 — /improve-skill ai-prose-decontamination + produce-prose-draft stop-gap cleanup + /improve-skill prose-compliance-qc
+- **Commands used:** /prime, /improve-skill (×2), /wrap-session
+- **Iterations:** 0 (no drafting — skill/command edits)
+- **Decisions logged:** 1 (combined structure + output-contract decision for ai-prose-decontamination)
+- **QC cycles:** 1 (Step 4 evaluator subagent on ai-prose-decontamination: 0 Critical / 0 Major / 9 Minor → six IMPORTANT fixes applied → post-fix regression check passed). Second /improve-skill run (prose-compliance-qc) skipped Step 3 iteration and Step 4 evaluator per operator — scope was too small to benefit from a formal evaluator gate; replaced by mechanical verification of the three known staleness points.
+- **Gates:** 5 (5 confirmed) — plan-approval:confirmed (ai-prose-decontamination Step 1 understanding gate), content-review:confirmed (ai-prose-decontamination Step 7 results review), plan-approval:confirmed (mid-session scope extension to produce-prose-draft cleanup), plan-approval:confirmed (prose-compliance-qc streamlined-pipeline proposal), content-review:confirmed (prose-compliance-qc Option B — expand scope to all three staleness points)
+
 ### 2026-04-06 — Synced wrap-session command across projects + added drift check
 - **Commands used:** /wrap-session
 - **Iterations:** 0

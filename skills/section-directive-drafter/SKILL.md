@@ -139,7 +139,7 @@ Verify:
 
 ## Directive Components
 
-Each section directive contains the following components. **Iteration note:** If this section exceeds ~15 components in future versions, extract to `references/directive-components.md` and keep only the component list with one-line descriptions here.
+Each section directive contains the following components. **Iteration note:** If this section exceeds ~15 components in future versions, extract the detailed definitions into a bundled reference file under this skill's `references/` directory and keep only the component list with one-line descriptions here.
 
 ### Section Objective
 1-2 sentences: what this section must accomplish for the reader. Written as a reader-outcome statement: "After reading this section, the reader understands X and can Y."

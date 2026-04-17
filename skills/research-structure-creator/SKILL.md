@@ -19,17 +19,20 @@ description: >
 
 # Research Structure Creator
 
-Act as a document architecture consultant. Analyze multiple independently-drafted prose chapters and design a unified document structure that reads as if it were planned from the start.
+Act as a controller of document function, not a collector of sections. The designer's primary job is to decide what the document is *for* and to protect that function against drift — from the first input to the final architecture spec. Sections serve the declared job; the job does not emerge from the accumulation of sections. Analyze multiple independently-drafted prose chapters and design a unified document structure that reads as if it were planned from the start around that single function.
 
 ## Scope
 
 **Will do:**
+- Declare the document's job and the 4–6 reader questions it must answer before analyzing section content
 - Decide section order and hierarchy across all inputs
 - Identify overlap and redundancy between chapters
 - Allocate depth per section (word count ranges + priority tiers)
+- Assign one primary owner section to each reader question and gate non-owning sections as Support or Future-State
 - Map cross-references and dependencies between chapters
 - Define front/back matter (executive summary scope, appendix strategy, drafter's notes disposition)
 - Produce a traceability table mapping all original content to the new structure
+- Run overlap, mode, and sequence self-audits before releasing the spec
 
 **Will not do:**
 - Rewrite or edit prose (downstream writing step)
@@ -51,6 +54,18 @@ Act as a document architecture consultant. Analyze multiple independently-drafte
 **Referenced but not provided drafts:** Ask whether they should be included. Note in the architecture spec which drafts were unavailable and which decisions may need revisiting when they arrive.
 
 ## Workflow
+
+### Document Function Declaration (pre-Phase 1)
+
+Before running Phase 1's content inventory, produce two required artifacts from the purpose/audience statement. These govern every downstream decision and are presented alongside the Phase 1–2 findings at the operator gate.
+
+**Artifact 1 — Job Sentence.** Write one sentence in the form: *"This document exists to do X, not Y."* The *"not Y"* clause is mandatory. Y is the most plausible competing job the document could drift into — typically the adjacent time horizon (current-state vs. future-state), the adjacent audience (internal operators vs. external stakeholders), or the adjacent decision type (specification vs. persuasion, blueprint vs. roadmap). If the purpose statement does not make Y derivable, ask one clarifying question before proceeding: *"What is the closest adjacent job this document might be asked to do, but should refuse?"*
+
+**Artifact 2 — Reader Question Inventory.** Derive 4–6 questions the document must answer, phrased in the reader's voice ("What is the service?", "Where does it stop?", "How will it evolve?"). Cap at 6. If more than 6 emerge, the document has more than one job — return to the Job Sentence and either split the document or sharpen the *"not Y"* clause before completing the inventory.
+
+**A compound question that conflates two distinct reader needs must be split, not compressed.** If splitting breaks the cap of 6, that is a signal the Job Sentence is too broad — sharpen the *"not Y"* clause and re-derive. Do not fold two reader needs into one synthetic question to stay under the cap; a false singleton hides the structural tension the cap is designed to surface.
+
+Both artifacts are load-bearing inputs to Phase 3's architecture specification (Reader-Question Ownership table and Section Function gate both derive from them).
 
 ### Phase 1: Content Inventory
 
@@ -90,22 +105,42 @@ Produce the architecture specification containing:
 - Full outline (H1/H2/H3) with proposed section titles
 - One-sentence thesis per section
 
-**2. Depth allocation**
+**2. Reader-Question Ownership table**
+
+Map each reader question from the Document Function Declaration to exactly one primary owner section. This table drives the Section Function gate in the depth allocation block (component 3) and is the core input to the Overlap check in the Structural Self-Audit (component 8).
+
+| Reader Question | Primary Owner Section | Supporting Sections | Rationale |
+|---|---|---|---|
+| [question text] | [section] | [section(s), if any, that reinforce but do not re-answer] | [why this owner — one line] |
+
+Rules:
+- Every reader question has **exactly one** primary owner. No distributed ownership. If two sections genuinely share primary-answer work, consolidate them or split the reader question (but respect the cap of 6 — if splitting would exceed it, sharpen the Job Sentence first).
+- A section may own **at most one** reader question.
+- Supporting sections reinforce or bound the answer; they do not independently answer the question.
+- A section that owns zero reader questions must be justified via the Section Function gate (component 3) as Support or Future-State, or it is cut.
+
+**3. Depth allocation**
 - Target word count range per section — start from existing word count of mapped content, adjust up for Critical-priority sections, adjust down for Reference-tier. Express as ±20% of adjusted count.
-- Priority tier per section: **Critical** (protect in any cut scenario) / **Supporting** (valuable but compressible) / **Reference** (can move to appendix if needed)
+- Priority tier per section: **Critical** (protect in any cut scenario) / **Supporting** (valuable but compressible) / **Reference** (can move to appendix if needed). Priority governs *cut-ability under compression*.
+- **Section Function gate** — apply asymmetrically, as a gate on non-owning sections, not a uniform descriptor. Function governs *admissibility*.
+  - Sections named as Primary Owner in the Reader-Question Ownership table are implicitly **Core**. No justification text required — ownership speaks for itself.
+  - Every section that owns zero reader questions must carry one of two labels with an explicit justification sentence:
+    - **Support** — *"Supports [Core section X] by [specific function: setup / justification / boundary / translation]."* Admissible only if the named Core section would be weaker without it.
+    - **Future-State** — admissible **only if** the Job Sentence's *"not Y"* clause explicitly names staged evolution as within scope. No count-based cap; the content gate is the enforcer. Future-State sections not covered by the *"not Y"* clause fail the Mode check in the Structural Self-Audit (component 8) and Criterion 17 in architecture-qc.
+  - A section that owns zero reader questions and cannot carry a valid Support or Future-State justification must be cut or merged before release.
 - **Must-Land Content** (required per H2 section): One sentence identifying the specific claim, data point, or argument the document's purpose demands the reader walk away with. Derived from the purpose/audience statement. H1 sections inherit the most critical must-land item from their subsections. Flag must-land items with weak/missing source evidence as content gaps. If must-land items compete for emphasis, flag the tension and present a recommended priority order with rationale.
 
-**3. Cross-reference map**
+**4. Cross-reference map**
 - Which sections depend on which others
 - Suggested reading order if non-linear
 
-**4. Front/back matter decisions**
+**5. Front/back matter decisions**
 - Executive summary: scope and coverage
 - Appendix strategy: what moves there and why
 - Drafter's notes: become footnotes, get cut, or move to appendix
 - Any other structural elements needed (glossary, methodology note, etc.)
 
-**5. Traceability table**
+**6. Traceability table**
 
 | Original Chapter | Original Section | Inventory # | New Location | Action | Seam Note |
 |---|---|---|---|---|---|
@@ -117,8 +152,18 @@ Produce the architecture specification containing:
 
 Every inventory item must appear. Flag items split across multiple sections.
 
-**6. Structural override log**
+**7. Structural override log**
 Where the architecture overrides original chapter structure (reordering, merging, splitting), state the override and its rationale.
+
+**8. Structural Self-Audit**
+
+Before declaring the spec complete, run three checks. Each produces a brief written finding that stays in the released spec (so downstream readers and the QC agent can distinguish "flagged and resolved" from "never flagged"). Any failing check forces revision before release — do not ship a spec with open self-audit failures.
+
+- **Overlap check.** Walk the Reader-Question Ownership table row by row. For each question, confirm that Supporting sections reinforce or bound the answer rather than re-answering it. Flag any section whose content does load-bearing answering for a reader question it does not own. Propose consolidation (merge into the owner, or re-scope the Supporting section).
+- **Mode check.** Walk the section sequence and name the dominant mode at each boundary (specification / comparison / narrative / prescription / projection). Flag every mode transition. For each flag, state whether the mode shift is essential to the Job Sentence or eliminable; eliminable shifts must be revised before release. **Future-State admissibility sub-check:** any section labeled Future-State must be covered by the Job Sentence's *"not Y"* clause; an uncovered Future-State section fails this check and must be cut, merged, or re-scoped.
+- **Sequence check.** Identify the document's "core object" from the Job Sentence (typically the noun in X). Measure how many sections the reader traverses before the core object is defined and bounded. If the core object is still being shaped after the document's midpoint, or if live questions about it are distributed across non-adjacent sections (classification in one place, exclusion in another, reactivation elsewhere), flag as linear-usability failure and propose a restructure that defines and bounds the core object earlier.
+
+Document each check's findings verbatim in this component. If a check is clean, state *"No drift detected"* for that check rather than omitting it — the presence of an explicit clean verdict is what lets the QC agent distinguish a passing audit from a skipped one.
 
 ## Output Protocol
 
@@ -137,6 +182,9 @@ A strong architecture specification:
 - Makes dependencies explicit so downstream writing can proceed in any order
 - Enables a writer to assemble the document from the spec without re-reading all original chapters
 - Makes the document's purpose visible in every section's depth allocation
+- Declares the document's job visibly (Job Sentence present, reader questions answered by named owner sections)
+- Contains no mode shifts the Job Sentence does not require
+- Defines and bounds the core object before the document's midpoint; does not re-shape it in later sections
 
 ## Guardrails
 
