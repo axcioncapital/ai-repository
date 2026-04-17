@@ -1,21 +1,30 @@
 ---
 name: prose-compliance-qc
 description: >
-  Final compliance gate for prose documents. Use when prose has completed the
-  refinement pass and needs compliance verification before H3 titles, or on
-  requests like "run compliance QC," "check this prose against specs." Runs
-  four scans: skill anti-patterns, style spec, architecture/source fidelity,
-  cross-spec tensions. Produces verdict with priority fixes.
-  Do NOT use for: Part 1 report compliance (report-compliance-qc), editorial
-  quality review (chapter-prose-reviewer), or cross-module integration
+  Compliance gate for prose documents. Use when prose has completed the
+  refinement pass and needs compliance verification before formatting, or
+  inside `/produce-prose-draft` Phase 3 where this skill runs merged with
+  chapter-prose-reviewer against unmodified prose. Also triggers on requests
+  like "run compliance QC," "check this prose against specs." Runs four scans:
+  skill anti-patterns, style spec, architecture/source fidelity, cross-spec
+  tensions. Produces verdict with priority fixes. Do NOT use for: Part 1
+  report compliance (report-compliance-qc), editorial quality review
+  (chapter-prose-reviewer) when run standalone, or cross-module integration
   (document-integration-qc).
 ---
 
 # Prose Compliance QC
 
-Compare prose output against three reference specs and surface gaps, violations, or cross-spec tensions. This is a final compliance gate, not a diagnostic review. Assume the prose has already been through chapter-prose-reviewer and any resulting fixes have been applied.
+Compare prose output against three reference specs and surface gaps, violations, or cross-spec tensions. This is a compliance gate, not a diagnostic review — the skill identifies problems, it does not rewrite prose.
 
-**Position:** Phase 4 of `/produce-prose`, after the refinement pass (Phase 3) and before H3 title generation (Phase 5).
+**Operating modes (named by the caller):**
+
+- **Sequential mode** (standalone invocation): the prose has already been through `chapter-prose-reviewer` and any resulting fixes have been applied. Compliance violations flagged here are on top of a reviewed-and-fixed draft.
+- **Merged mode** (inside `/produce-prose-draft` Phase 3): this skill and `chapter-prose-reviewer` run in the same subagent call against the *same unmodified prose*. When the caller names merged mode, treat the diagnostic review's findings as pending fixes — only flag as compliance violations items that would survive after those fixes are applied. Do not double-count issues the diagnostic review has already caught.
+
+If the caller does not name a mode, default to Sequential mode and state the assumption in the output header.
+
+**Position:** Phase 3 of `/produce-prose-draft`, where this skill and `chapter-prose-reviewer` are merged into a single review-and-fix subagent call. Formatting and H3 title generation run afterward in `/produce-formatting` (Phase 1 formatting, Phase 2 H3 titles). Historical note: this skill was originally positioned as Phase 4 of the monolithic `/produce-prose` command, which was split three ways on 2026-04-17 into `/produce-architecture`, `/produce-prose-draft`, and `/produce-formatting`.
 
 ## Inputs
 
@@ -305,14 +314,14 @@ The proposed fix direction in each finding and in the Priority Fixes list should
 - **Missing style spec (Input 3):** Halt. Do not evaluate — style compliance is a primary dimension and cannot be skipped.
 - **Both architecture spec and source document absent (Inputs 4 and 5):** Halt. Scan 3 requires at least one of these to run.
 - **Chapter-prose-reviewer skill not provided (Input 2):** Halt. Scan 1 depends on the reviewer's named checks as its reference list.
-- **Prose draft appears to be pre-refinement (raw output, not yet through chapter-prose-reviewer):** Flag this to the operator. Proceed if instructed, but note in the output that findings may include issues the refinement pass would have caught.
+- **Prose draft appears to be pre-refinement in Sequential mode:** Flag this to the operator. The Sequential-mode contract expects a reviewed-and-fixed draft; raw pre-refinement prose will produce findings the chapter-prose-reviewer pass would have caught. Proceed if instructed, but note in the output that findings may double-count issues a refinement pass would have resolved. (In Merged mode this is not a failure — pre-refinement prose is the expected input.)
 - **Cross-reference target not available for verification:** Flag the specific reference as unverifiable. Do not guess whether the target content exists — state what is missing and mark the finding as conditional.
 
 ## Runtime Recommendations
 
 - **Model:** No specific requirement — works with any Claude model.
 - **Context:** Requires all inputs in context simultaneously. For long prose documents, the full draft plus all reference specs must fit in the context window.
-- **Sequence:** Runs after decision-to-prose-writer (or evidence-to-report-writer) and chapter-prose-reviewer refinement. Runs before prose-formatter and h3-title-pass.
+- **Sequence:** Inside `/produce-prose-draft` Phase 3, runs in the same subagent call as `chapter-prose-reviewer` (diagnostic review and compliance scans operate against the same unmodified prose in a merged pass). Upstream of this phase: `decision-to-prose-writer` (Phase 2). Downstream: `ai-prose-decontamination` (Phase 5 of produce-prose-draft), then `prose-formatter` and `h3-title-pass` (Phases 1 and 2 of `/produce-formatting`).
 
 ## Calibration Notes
 
