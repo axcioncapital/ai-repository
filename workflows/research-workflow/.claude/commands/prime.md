@@ -16,4 +16,15 @@ Orient the session. Read state, brief the operator, wait for direction.
 **Next:** `/{command}` — {why}
 ```
 
-5. Do NOT execute any pipeline command. Wait for operator direction.
+5. After the status block, prompt for a session contract:
+
+   > **What are we working on?**
+   > And two quick declarations:
+   > 1. **Exit condition** — "This session is done when ___." (e.g., "done when 2.5 draft passes QC")
+   > 2. **Autonomy level** — What should I auto-proceed on vs. pause for? (e.g., "Auto-apply non-bright-line QC fixes. Pause on bright-line items.")
+
+   If the operator skips the declarations, proceed without them — don't nag. But if provided,
+   hold to the exit condition and autonomy level throughout the session. If scope shifts
+   mid-session, flag that the exit condition may need updating.
+
+6. Do NOT execute any pipeline command. Wait for operator direction.
