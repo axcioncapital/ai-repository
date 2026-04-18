@@ -103,3 +103,16 @@ If a commit fails with no staged changes, report it once and move on — the mos
 Do not push. Pushing is a manual operator step. After committing, remind the operator to push and to run `/wrap-session` if the work is complete. Never commit files that may contain secrets (`.env`, credentials, tokens).
 
 This rule mirrors the canonical `Commit behavior` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.
+
+## Compaction
+
+When `/compact` fires, preserve:
+- The current pipeline/stage identifier and active working directory (which section, which stage, which command is mid-run).
+- Paths to any subagent-output files the main session has not yet read.
+- Any pending operator gate the session is holding at.
+
+Auto-compact drops these by priority; name them explicitly so they survive. Before `/compact`, prefer writing a short session-state scratchpad (current step, decisions, partial findings, artifact paths) and `/clear` + restart from the scratchpad over lossy auto-summarization.
+
+## Session Boundaries
+
+When switching between unrelated tasks in the same terminal, prefer `/clear` over continuing in dirty context. Stale context from a prior task compounds and contaminates the next one.

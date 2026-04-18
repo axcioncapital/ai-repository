@@ -131,7 +131,7 @@ Do NOT auto-modify `settings.json` — hook registration requires knowing the ma
 
 **Predicate — "already has a permissions allowlist":** parsed JSON has `.permissions.allow` *and* that array is non-empty. If true, leave `permissions` alone. Otherwise merge the canonical block below.
 
-**Canonical permissions block** (mirrors `allow` / `deny` from the operator's user-level `~/.claude/settings.json`; `additionalDirectories` is intentionally omitted as a user-level absolute-path concern):
+**Canonical permissions block** (mirrors `allow` / `deny` from the operator's user-level `~/.claude/settings.json`, plus a narrow archival `Read(...)` deny set; `additionalDirectories` is intentionally omitted as a user-level absolute-path concern). The `Read(...)` denies target archival-only paths that no active command routinely reads. Per the workspace `## Applying Audit Recommendations` rule, these four entries are the safe universal set. Project-shape-specific denies (e.g., `Read(output/**)`, `Read(reports/**)`) are **not** included — add per-project after validating no active command reads from them.
 
 ```json
 {
@@ -154,10 +154,16 @@ Do NOT auto-modify `settings.json` — hook registration requires knowing the ma
   "deny": [
     "Bash(git push*)",
     "Bash(rm -rf *)",
-    "Bash(sudo *)"
+    "Bash(sudo *)",
+    "Read(archive/**)",
+    "Read(**/*.archive.*)",
+    "Read(**/deprecated/**)",
+    "Read(**/old/**)"
   ]
 }
 ```
+
+**Canonical model default.** The merge procedure below also sets `"model": "sonnet"` at the top level of `settings.json` if unset, establishing Sonnet as the per-turn default per the workspace `## Model Tier` rule.
 
 **Merge procedure:**
 
@@ -168,17 +174,15 @@ SETTINGS="{PROJECT_DIR}/.claude/settings.json"
 mkdir -p "$(dirname "$SETTINGS")"
 [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
 
-CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)"]}'
+CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)","Read(archive/**)","Read(**/*.archive.*)","Read(**/deprecated/**)","Read(**/old/**)"]}'
 
 jq --argjson perms "$CANONICAL_PERMS" '
-  if (.permissions.allow // []) | length > 0
-  then .
-  else .permissions = $perms
-  end
+  (if (.permissions.allow // []) | length > 0 then . else .permissions = $perms end)
+  | (if (.model // "") == "" then .model = "sonnet" else . end)
 ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
 ```
 
-Report in the enrichment output whether `permissions` was added or already present.
+Report in the enrichment output whether `permissions` was added or already present, and whether `model: sonnet` was added or already present.
 
 **Interaction with the research-workflow template.** The template's own `settings.json` already carries a `permissions` block (added alongside this change), so on a fresh deploy the predicate returns true and this sub-step is a no-op. The sub-step remains load-bearing for (a) any future template that ships without a `permissions` block and (b) running `/sync-workflow` on older projects that were deployed before the template fix landed.
 

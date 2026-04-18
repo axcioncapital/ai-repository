@@ -1,4 +1,5 @@
 {
+  "model": "sonnet",
   "permissions": {
     "allow": [
       "Bash(*)",
@@ -19,7 +20,11 @@
     "deny": [
       "Bash(git push*)",
       "Bash(rm -rf *)",
-      "Bash(sudo *)"
+      "Bash(sudo *)",
+      "Read(archive/**)",
+      "Read(**/*.archive.*)",
+      "Read(**/deprecated/**)",
+      "Read(**/old/**)"
     ]
   },
   "hooks": {

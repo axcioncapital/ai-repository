@@ -142,7 +142,9 @@ Otherwise, install the three pieces:
 
    **Requires `jq` on PATH.** If `jq` is not available, stop and report the missing dependency — do not attempt string-level JSON manipulation.
 
-   **Canonical permissions block** (mirrors the `allow` / `deny` arrays from the operator's user-level `~/.claude/settings.json`). Note: `additionalDirectories` is **not** included in this canonical block because each project's entry is computed dynamically at enrichment time — see step 3 below, which adds the ai-resources workspace root via a separate jq merge so projects with existing `permissions.allow` arrays (which skip this canonical merge) still receive the grant.
+   **Canonical permissions block** (mirrors the `allow` / `deny` arrays from the operator's user-level `~/.claude/settings.json`, plus a narrow archival `Read(...)` deny set). Note: `additionalDirectories` is **not** included in this canonical block because each project's entry is computed dynamically at enrichment time — see step 3 below, which adds the ai-resources workspace root via a separate jq merge so projects with existing `permissions.allow` arrays (which skip this canonical merge) still receive the grant.
+
+   The `Read(...)` denies target archival-only paths that no active command routinely reads. Per the workspace `## Applying Audit Recommendations` rule, these four entries are the safe universal set. Project-shape-specific denies (e.g., `Read(output/**)`, `Read(reports/**)`) are **not** included in the canonical block — they should be added per-project after confirming no active command reads from them.
 
    ```json
    {
@@ -165,10 +167,16 @@ Otherwise, install the three pieces:
      "deny": [
        "Bash(git push*)",
        "Bash(rm -rf *)",
-       "Bash(sudo *)"
+       "Bash(sudo *)",
+       "Read(archive/**)",
+       "Read(**/*.archive.*)",
+       "Read(**/deprecated/**)",
+       "Read(**/old/**)"
      ]
    }
    ```
+
+   **Canonical model default.** Every new project ships with `"model": "sonnet"` at the top level of `settings.json`. This makes Sonnet the per-turn default; analytical commands opt into Opus via `model: opus` frontmatter per the workspace `## Model Tier` rule. Without this default, a project inherits whatever `settings.local.json` or user-level setting happens to be active, which historically has locked projects to Opus and paid Opus pricing on mechanical turns.
 
    **Auto-sync SessionStart hook entry** (added to `hooks.SessionStart`):
 
@@ -194,12 +202,13 @@ Otherwise, install the three pieces:
    mkdir -p "$(dirname "$SETTINGS")"
    [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
 
-   CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)"]}'
+   CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)","Read(archive/**)","Read(**/*.archive.*)","Read(**/deprecated/**)","Read(**/old/**)"]}'
 
    AUTO_SYNC_HOOK='{"type":"command","command":"d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '"'"'/'"'"' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\" ] && { \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\"; exit; }; done","timeout":10,"statusMessage":"Syncing shared commands from ai-resources..."}'
 
    jq --argjson perms "$CANONICAL_PERMS" --argjson hook "$AUTO_SYNC_HOOK" '
      (if (.permissions.allow // []) | length > 0 then . else .permissions = $perms end)
+     | (if (.model // "") == "" then .model = "sonnet" else . end)
      | .hooks = (.hooks // {})
      | .hooks.SessionStart = (.hooks.SessionStart // [])
      | if (.hooks.SessionStart | any(.hooks? // [.] | .[]? | .command == $hook.command))
@@ -211,6 +220,7 @@ Otherwise, install the three pieces:
 
    Report in the step output:
    - whether `permissions` was added, already present, or skipped
+   - whether `model: sonnet` was added or already present
    - whether the SessionStart hook was added or already present
 
 3. **Grant ai-resources filesystem visibility** — Claude Code sandboxes each project to its own directory by default. Shared skills under `ai-resources/skills/` and symlinks into `ai-resources/.claude/{commands,agents}/` are unreachable until the workspace root is added to `permissions.additionalDirectories` in the project's `.claude/settings.json`. This step performs that grant.
@@ -244,12 +254,14 @@ Otherwise, install the three pieces:
    - whether `additionalDirectories` was added, already present, or skipped (walk failed)
    - the absolute workspace path that was added
 
-4. **`projects/{name}/CLAUDE.md`** — ensure the project CLAUDE.md contains the canonical `## Commit Rules` section. This guarantees that projects opened without the parent workspace CLAUDE.md loaded still see the "commit directly, do not ask for permission" rule.
+4. **`projects/{name}/CLAUDE.md`** — ensure the project CLAUDE.md contains four canonical sections: `## Input File Handling`, `## Commit Rules`, `## Compaction`, and `## Session Boundaries`. These guarantee that projects opened without the parent workspace CLAUDE.md loaded still see the load-bearing behavioral rules.
 
-   **Policy:**
-   - If `projects/{name}/CLAUDE.md` does not exist → create a minimal one with a project title (use the project name), a one-line description pulled from the pipeline's context pack if available (otherwise a generic placeholder), and the canonical `## Commit Rules` block below.
-   - If `projects/{name}/CLAUDE.md` exists and already contains a `## Commit Rules` heading → leave it alone. Report "Commit Rules already present, skipping."
-   - If `projects/{name}/CLAUDE.md` exists but has no `## Commit Rules` heading → append the canonical block to the end of the file (preserving the existing content verbatim, preceded by a blank line).
+   Each section is a short-form mirror — not a verbatim copy of the workspace-level text — so it satisfies the workspace `## CLAUDE.md Scoping` rule ("short pointer acceptable; verbatim duplication is not") while preserving the 2026-04-13 "Commit Rules propagate by explicit copy" decision (inheritance alone proved unreliable in practice, so the rule must appear in-context).
+
+   **Policy (per section, applied independently):**
+   - If `projects/{name}/CLAUDE.md` does not exist → create a minimal one with a project title (use the project name), a one-line description pulled from the pipeline's context pack if available (otherwise a generic placeholder), and all four canonical blocks below.
+   - If `projects/{name}/CLAUDE.md` exists and already contains a given heading → leave that section alone. Report "{section} already present, skipping."
+   - If `projects/{name}/CLAUDE.md` exists but has no given heading → append that canonical block to the end of the file (preserving the existing content verbatim, preceded by a blank line).
 
    **Canonical Commit Rules block** (copy verbatim):
 
@@ -277,6 +289,27 @@ Otherwise, install the three pieces:
    - **Exception: legitimate copying.** Copy an input only when (a) the operator explicitly asks for an archival snapshot or reproducibility freeze, or (b) a downstream tool requires the file at a specific path and no symlink or path argument will satisfy it. In both cases, record the absolute source path in the copy's frontmatter or in a sibling `SOURCE.md`, and state in your turn-summary that you copied rather than referenced.
 
    This rule mirrors the canonical `Input File Handling` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.
+   ```
+
+   **Canonical Compaction block** (copy verbatim):
+
+   ```markdown
+   ## Compaction
+
+   When `/compact` fires, preserve:
+   - The current pipeline/stage identifier and active working directory (which section, which stage, which command is mid-run).
+   - Paths to any subagent-output files the main session has not yet read.
+   - Any pending operator gate the session is holding at.
+
+   Auto-compact drops these by priority; name them explicitly so they survive. Before `/compact`, prefer writing a short session-state scratchpad (current step, decisions, partial findings, artifact paths) and `/clear` + restart from the scratchpad over lossy auto-summarization.
+   ```
+
+   **Canonical Session Boundaries block** (copy verbatim):
+
+   ```markdown
+   ## Session Boundaries
+
+   When switching between unrelated tasks in the same terminal, prefer `/clear` over continuing in dirty context. Stale context from a prior task compounds and contaminates the next one.
    ```
 
    **Procedure:**
@@ -309,6 +342,19 @@ This rule mirrors the canonical `Input File Handling` section in the workspace-l
 Do not push. Pushing is a manual operator step. After committing, remind the operator to push and to run `/wrap-session` if the work is complete. Never commit files that may contain secrets (`.env`, credentials, tokens).
 
 This rule mirrors the canonical `Commit behavior` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.
+
+## Compaction
+
+When `/compact` fires, preserve:
+- The current pipeline/stage identifier and active working directory (which section, which stage, which command is mid-run).
+- Paths to any subagent-output files the main session has not yet read.
+- Any pending operator gate the session is holding at.
+
+Auto-compact drops these by priority; name them explicitly so they survive. Before `/compact`, prefer writing a short session-state scratchpad (current step, decisions, partial findings, artifact paths) and `/clear` + restart from the scratchpad over lossy auto-summarization.
+
+## Session Boundaries
+
+When switching between unrelated tasks in the same terminal, prefer `/clear` over continuing in dirty context. Stale context from a prior task compounds and contaminates the next one.
 EOF
      # Substitute {project-title} and description with real values
    else
@@ -325,11 +371,25 @@ EOF
      else
        printf '\n## Commit Rules\n\n**Commit directly. Do not ask for permission.** After completing approved work, stage the relevant files and commit in a single step using a heredoc commit message. Do not run `git status`, `git diff`, or `git status --short` as pre-commit checks or post-commit verification — the filesystem is the source of truth for what you just changed.\n\nDo not push. Pushing is a manual operator step. After committing, remind the operator to push and to run `/wrap-session` if the work is complete. Never commit files that may contain secrets (`.env`, credentials, tokens).\n\nThis rule mirrors the canonical `Commit behavior` section in the workspace-level `CLAUDE.md`. It is repeated here because projects are sometimes opened without the parent workspace context loaded.\n' >> "$CLAUDE_MD"
      fi
+
+     # Ensure Compaction section (idempotent append)
+     if grep -q '^## Compaction' "$CLAUDE_MD"; then
+       echo "Compaction already present in $CLAUDE_MD — skipping"
+     else
+       printf '\n## Compaction\n\nWhen `/compact` fires, preserve:\n- The current pipeline/stage identifier and active working directory (which section, which stage, which command is mid-run).\n- Paths to any subagent-output files the main session has not yet read.\n- Any pending operator gate the session is holding at.\n\nAuto-compact drops these by priority; name them explicitly so they survive. Before `/compact`, prefer writing a short session-state scratchpad (current step, decisions, partial findings, artifact paths) and `/clear` + restart from the scratchpad over lossy auto-summarization.\n' >> "$CLAUDE_MD"
+     fi
+
+     # Ensure Session Boundaries section (idempotent append)
+     if grep -q '^## Session Boundaries' "$CLAUDE_MD"; then
+       echo "Session Boundaries already present in $CLAUDE_MD — skipping"
+     else
+       printf '\n## Session Boundaries\n\nWhen switching between unrelated tasks in the same terminal, prefer `/clear` over continuing in dirty context. Stale context from a prior task compounds and contaminates the next one.\n' >> "$CLAUDE_MD"
+     fi
    fi
    ```
 
    Report in the step output:
-   - created new CLAUDE.md / appended Input File Handling / appended Commit Rules / already present (per section)
+   - created new CLAUDE.md / appended Input File Handling / appended Commit Rules / appended Compaction / appended Session Boundaries / already present (per section)
 
 5. **Initial sync** — run the hook once now so the project starts with all shared commands/agents already linked, instead of waiting for the next session start:
 

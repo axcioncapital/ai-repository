@@ -1052,3 +1052,49 @@ None. Exit condition met; post-edit QC resolved; commits landed.
 
 After the main wrap commit (`50c24f8`), a concurrency-safety friction event was analyzed and logged to `logs/improvement-log.md`: the `/wrap-session` step-13 directory-wildcard `git add` swept parallel-session files into the wrap commit. The initial wrap commit (`532244d`) was unwound via `git reset --soft` + selective `git restore --staged` and re-committed as `50c24f8` with only this session's log files. Improvement entry proposes (a) structural fix to `/wrap-session` (enumerate explicit file paths from Files Created/Modified sections) and (b) durable workspace-CLAUDE.md rule prohibiting directory wildcards when a concurrent session is active.
 
+
+## 2026-04-18 (late night) — Prevention Session 2: canonical project settings template + canonical project CLAUDE.md template
+
+**Exit condition (Option A):** Full end-to-end — re-read 2026-04-13 "Commit Rules propagate by explicit copy" decision, draft both templates (settings + CLAUDE.md), wire into `/new-project` pipeline + research-workflow template, post-edit QC, commit. High autonomy; pause only for genuine conflicts (e.g., 2026-04-13 decision conflicts with the new CLAUDE.md Scoping rule).
+
+
+### Summary
+
+Implemented Prevention Session 2: canonical project settings template + canonical project CLAUDE.md template. Updated `/new-project` Post-Pipeline Enrichment step 2 (canonical permissions block extended with four archival `Read(...)` denies + `"model": "sonnet"` top-level default) and step 4 (added canonical Compaction + Session Boundaries blocks to the CLAUDE.md creation procedure). Mirrored the permissions + model changes in `/deploy-workflow`'s canonical block and the research-workflow template's `.claude/settings.json`. Appended Compaction + Session Boundaries to the research-workflow template's CLAUDE.md. Re-read the 2026-04-13 "Commit Rules propagate by explicit copy" decision and preserved its short-form mirror pattern (operator's empirical finding that inheritance alone failed). Post-edit QC verdict GO; two minor items flagged as pre-existing (not introduced by this session): heredoc `{project-title}` substitution is a comment not a real sed pass, and hooks.SessionStart dedup predicate fragility. Both deferred.
+
+### Files Modified
+
+- `ai-resources/.claude/commands/new-project.md` — step 2 canonical permissions block + jq merge (added 4 archival denies, added `model: sonnet` merge clause); step 4 added canonical Compaction + Session Boundaries blocks and idempotent-append procedure.
+- `ai-resources/.claude/commands/deploy-workflow.md` — "Ensure permissions baseline" canonical block and merge jq (added 4 archival denies + `model: sonnet` merge clause).
+- `ai-resources/workflows/research-workflow/.claude/settings.json` — added `"model": "sonnet"` at top level; added 4 archival `Read(...)` entries to `permissions.deny`.
+- `ai-resources/workflows/research-workflow/CLAUDE.md` — appended `## Compaction` and `## Session Boundaries` sections.
+- `ai-resources/logs/session-notes.md` — this entry.
+
+### Files Created
+
+None.
+
+### Decisions Made
+
+- **Four archival deny patterns as the safe universal set.** Chose `Read(archive/**)`, `Read(**/*.archive.*)`, `Read(**/deprecated/**)`, `Read(**/old/**)`. Project-shape-specific denies (`output/**`, `reports/**`, `parts/**/drafts/**`, etc.) explicitly excluded per the workspace "Applying Audit Recommendations" rule — those stay per-project and get validated against active commands at the per-project level.
+- **`"model": "sonnet"` at top level of settings.json, not in settings.local.json.** The committed settings.json travels with the project; settings.local.json is gitignored / user-local. Operator wants Sonnet as the team default across all projects.
+- **Commit Rules short-form mirror preserved per 2026-04-13 decision.** Empirical evidence from that session (operator escalation "A MILLION TIMES") still load-bearing. Short-form mirror (~3 paragraphs) satisfies both 2026-04-13 (explicit-copy requirement) and the new CLAUDE.md Scoping rule (no verbatim duplication). Compaction + Session Boundaries blocks use the same short-form standard.
+
+### QC Cycles
+
+1 (post-edit qc-reviewer): GO. Two minor items flagged as pre-existing (not introduced this session). No fixes applied.
+
+### Commits Landed (unpushed)
+
+TBD — to be staged.
+
+### Next Steps
+
+- Push unpushed commits across ai-resources, buy-side, workspace repos.
+- Prevention Session 3 (~45 min): three questionnaire items to `/repo-dd` + pre-commit skill-size warning hook. Depends on Prevention Sessions 1 + 2 (both complete).
+- Consider retrofitting the 5 existing projects under `projects/` with the new archival denies + Sonnet default (dedicated session, apply-audit-recs validation per project).
+- Address pre-existing minor in `/new-project` step 4 heredoc (literal `{project-title}` substitution comment instead of real sed pass) in a future cleanup session.
+
+### Open Questions
+
+None.
