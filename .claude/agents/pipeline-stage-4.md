@@ -1,7 +1,7 @@
 ---
 name: pipeline-stage-4
 description: "Pipeline Stage 4: Execute the approved implementation spec — create files, update configurations, wire components. Delegated by /new-project."
-model: inherit
+model: sonnet
 tools: Read, Write, Edit, Bash, Glob, Grep
 permissionMode: default
 isolation: worktree
