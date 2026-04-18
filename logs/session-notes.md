@@ -1048,3 +1048,7 @@ Total this session: 2 commits. Combined with prior unpushed work and the paralle
 
 None. Exit condition met; post-edit QC resolved; commits landed.
 
+### Post-wrap addendum
+
+After the main wrap commit (`50c24f8`), a concurrency-safety friction event was analyzed and logged to `logs/improvement-log.md`: the `/wrap-session` step-13 directory-wildcard `git add` swept parallel-session files into the wrap commit. The initial wrap commit (`532244d`) was unwound via `git reset --soft` + selective `git restore --staged` and re-committed as `50c24f8` with only this session's log files. Improvement entry proposes (a) structural fix to `/wrap-session` (enumerate explicit file paths from Files Created/Modified sections) and (b) durable workspace-CLAUDE.md rule prohibiting directory wildcards when a concurrent session is active.
+
