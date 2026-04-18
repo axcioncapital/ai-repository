@@ -1212,3 +1212,52 @@ Total: 6 commits across 5 repos.
 ### Open Questions
 
 None.
+
+
+## 2026-04-18 (post-prevention cleanup 2) — Fix next-steps 1–6 from post-prevention cleanup wrap
+
+**Exit condition:** Operator approved Option A — run items 1–6 end-to-end, one commit per logical unit. Repo-review brief fix deferred (partial-obsolescence discovery: `/audit-repo` covers parts of it). High autonomy; push remains manual per CLAUDE.md.
+
+### Summary
+
+Cleanup session executing the mechanical half of the prior session's next-steps list. Scope: (1) push remains pending — defer to operator; (2) updated 6 "logged (pending)" entries in `improvement-log.md` to reflect actual applied status across Prevention Sessions 1/2/3; (3) documented `inbox/archive/` convention in `ai-resources/CLAUDE.md`; (4) added "Concurrent-session staging discipline" subsection to workspace CLAUDE.md under Git Rules (making "don't step on toes" a checkable commit-time constraint); (5) triaged 5 `detected` innovations in `innovation-registry.md` to `triaged:project-specific` — the 4 pipeline agents + pre-commit hook already live in ai-resources shared lib, no graduation needed (per-agent opus/inherit tier fixes remain as migration candidates per workspace CLAUDE.md Agent Tier Table); (6) normalized nordic-pe-landscape-mapping-4-26's `Bash(git push *)` / `Bash(rm *)` to majority canonical form `Bash(git push*)` / `Bash(rm -rf *)` — other 3 projects already matched. Also logged two friction entries (new `logs/friction-log.md`) against Prime Step 2 innovation-registry grep bug (table format, wrong pattern) and Prime git-status staleness hazard.
+
+### Files Created
+
+- `ai-resources/logs/friction-log.md` — new friction-log file with this session's entries (did not previously exist)
+
+### Files Modified
+
+- `ai-resources/logs/innovation-registry.md` — 5 `detected` → `triaged:project-specific`
+- `ai-resources/logs/improvement-log.md` — 6 statuses `logged (pending)` → `applied 2026-04-18 (Prevention Session N)`
+- `ai-resources/CLAUDE.md` — `inbox/archive/` convention documented in "What This Repo Contains"
+- `CLAUDE.md` (workspace root) — added "Concurrent-session staging discipline" subsection under "File verification and git commits"
+- `projects/nordic-pe-landscape-mapping-4-26/.claude/settings.json` — normalized deny patterns to canonical form
+- `ai-resources/logs/session-notes.md` — this entry
+
+### Decisions Made
+
+- **Innovation triage for all 5 detected items → `triaged:project-specific`.** All 5 already live in ai-resources' own `.claude/` (shared-library's own tooling). The 4 pipeline agents (`pipeline-stage-2`, `-2-5`, `-3c`, `session-guide-generator`) are flagged as Agent Tier Table migration candidates — workspace CLAUDE.md explicitly says "Candidates marked above are migration targets for a future session — do not retrofit silently," so no tier changes this session. The `pre-commit` hook is ai-resources' own validation hook.
+- **Style-drift direction: majority-match, not tighten.** Nordic's denies (`Bash(rm *)`, `Bash(git push *)` with space) were broader. Normalizing to majority form (`Bash(rm -rf *)` + `Bash(git push*)`) widens what's allowed on nordic. Verified safe: nordic's `.claude/` tree contains no hook/command invoking bare `rm` without flags. The task came from QC as "style drift" (accidental inconsistency), not as a security-posture question — majority-match is the minimal-churn normalization.
+- **Repo-review brief fix deferred.** Mid-session discovery: `/audit-repo` (8 sub-auditors including context-health-auditor, claude-md-auditor, practices-auditor) postdates the brief and likely covers Q2 (context management) and parts of Q1 (feature criticality). Still genuinely uncovered: Q3 (friction/improvement-log synthesis) and Q4 (functional pipeline testing with temp projects). Operator deferred brief-rewrite to a focused session after verifying `/audit-repo` sub-auditor coverage.
+
+### QC Cycles
+
+0. Mechanical normalizations only; no artifact warranting independent QC. Friction entries document workflow-observation quality issues not artifact-quality issues.
+
+### Commits Landed (unpushed)
+
+TBD — to be staged in this flow.
+
+### Next Steps
+
+- **Push** all unpushed commits across ai-resources + workspace root + nordic-pe + 4 remaining project repos from prior session (some still unpushed from post-prevention cleanup).
+- **Investigate `/audit-repo` sub-auditor coverage** against repo-review-brief Q1–Q4 to decide whether brief should be narrowed (Q3 + Q4 only), archived as partially-fulfilled, or rewritten. Standalone session.
+- **Sonnet model retrofit session** (carried from prior wrap) — audit per-command opus frontmatter in 4 projects, then apply Sonnet default.
+- **Deferred inbox briefs:** `codex-second-opinion-brief.md`, `repo-review-brief.md` (now pending coverage investigation above).
+- **Agent tier retrofit** — the 4 pipeline agents + `session-guide-generator` need explicit `model:` declarations per workspace CLAUDE.md Agent Tier Table migration candidates. Future focused session.
+- **Fix `/prime` Step 2 grep pattern** — change `^- \*\*detected\*\*|status: detected|"status": "detected"` to `| detected |` or parse the innovation-registry's status column directly. Logged in friction-log.
+
+### Open Questions
+
+None.
