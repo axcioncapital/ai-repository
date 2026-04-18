@@ -308,3 +308,16 @@
   - **(pipeline-stage-4)** Keep in batch and document the top-3 check inline (rejected — top-3 trace requires reading project-implementer skill body and tracing /new-project Stage 4 invocation; non-trivial, would inflate the session). Defer with no follow-up plan (rejected — operator wants the closeout, just not at the cost of bright-line erosion).
   - **(Stop-hook substitution)** Keep separate UserPromptSubmit hook (rejected — adds hook-event surface for no measurable benefit). Hard-block /wrap-session via UserPromptSubmit exit-2 (rejected — trivial sessions legitimately skip telemetry; hard-block would force an override flag for every trivial wrap, friction-without-signal).
 - **Follow-up:** Run a dedicated `pipeline-stage-4` tier-flip session that traces /new-project Stage 4 → project-implementer skill, confirms Sonnet handles the work, then flips frontmatter and updates Agent Tier Table.
+
+## 2026-04-18 — Retrofit pipeline-stage-4 to sonnet (clear the deferral)
+- **Context:** Morning session (commit `feaf614`) retrofitted most agents but left `pipeline-stage-4` as `inherit` with note "Candidate: declare sonnet (deferred 2026-04-18 — gate behind end-to-end /new-project validation run)."
+- **Decision:** Flip to `model: sonnet` now, without waiting for a `/new-project` validation run.
+- **Rationale:**
+  - Tier rule is explicit: spec-following implementation → sonnet. Stage 4's job description ("Execute the approved implementation spec — create files, update configurations, wire components") is the canonical sonnet use case.
+  - Judgment is upstream: Stage 3b (opus) does architectural design; Stage 3c (opus) does line-level spec. By Stage 4 the decisions are made.
+  - `inherit` leaves model non-deterministic across sessions; every other agent in the table is declared. Stage 4 was the sole holdout.
+  - Cost of being wrong is low: one-line revert if a real run surfaces inadequacy.
+- **Alternatives considered:**
+  - Keep the deferral (rejected — thin gate, no plan for when the validation run would happen, leaves tier table permanently inconsistent).
+  - Flip to opus per operator's initial challenge (rejected — Stage 4 is spec-following, not judgment; escalating to opus would collapse the tiering logic across the pipeline; if Stage 4 needs opus, the fix is to tighten 3c's spec, not escalate 4).
+- **Follow-up:** First real `/new-project` run is the empirical validation. Revert to opus if sonnet underperforms.

@@ -1507,3 +1507,25 @@ None.
 
 ### Open Questions
 None.
+
+## 2026-04-18 — pipeline-stage-4 tier retrofit (inherit → sonnet)
+
+### Summary
+Cleared the last `inherit` holdout in the Agent Tier Table. Retrofitted `pipeline-stage-4` from `model: inherit` to `model: sonnet` and updated the tier-table row in workspace CLAUDE.md. Operator challenged the "sonnet" choice mid-session (argued for opus); held the line on the tier rule (Stage 4 is spec-following implementation, judgment happens upstream in 3b/3c). Operator then challenged the deferral itself and elected to flip now rather than wait for the `/new-project` validation run that was the original gate.
+
+### Files Created
+None.
+
+### Files Modified
+- `ai-resources/.claude/agents/pipeline-stage-4.md` — `model: inherit` → `model: sonnet`
+- `CLAUDE.md` (workspace root) — tier-table row updated from "Candidate: declare sonnet (deferred)" to "Retrofitted 2026-04-18 from inherit"
+
+### Decisions Made
+- **Flip pipeline-stage-4 to sonnet now, rather than wait for /new-project validation.** Deferral logic from 2026-04-18 morning session (commit `feaf614`) was over-cautious; the tier rule is unambiguous (spec-following implementation → sonnet), peers are all declared, and `inherit` leaves model selection non-deterministic. Cost of being wrong is low (one-line revert if a real `/new-project` run surfaces inadequacy).
+
+### Next Steps
+- No push needed for workspace root (no remote configured). `ai-resources` already pushed (`b9006b5`).
+- First real `/new-project` run is the empirical check — if Stage 4 underperforms at sonnet, revert to opus.
+
+### Open Questions
+None.

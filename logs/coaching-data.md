@@ -209,3 +209,10 @@
 - **Decisions logged:** 0
 - **QC cycles:** 1 (Explore-agent audit → main-agent triage → 4 gaps applied)
 - **Gates:** 2 (1 changed) — plan-approval:changed, bright-line-review:confirmed
+
+### 2026-04-18 — pipeline-stage-4 tier retrofit (inherit → sonnet)
+- **Commands used:** /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1
+- **QC cycles:** 0
+- **Gates:** 2 (2 changed) — bright-line-review:changed (operator challenged sonnet, I held line; operator accepted), plan-approval:changed (operator challenged deferral, I reversed; operator approved flip now)
