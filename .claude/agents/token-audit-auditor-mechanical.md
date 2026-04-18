@@ -1,7 +1,7 @@
 ---
-name: token-audit-auditor
-description: Executes Section 4 (workflow token efficiency — judgment work) of the token-audit protocol with fresh context. Invoked by /token-audit for Section 4. Do not use for mechanical sections (2, 5, 6 — see token-audit-auditor-mechanical) or other purposes.
-model: opus
+name: token-audit-auditor-mechanical
+description: Executes mechanical-measurement sections (2, 5, 6) of the token-audit protocol with fresh context. Invoked by /token-audit for Sections 2, 5, 6. Do not use for Section 4 or other purposes.
+model: haiku
 tools:
   - Read
   - Write
@@ -16,19 +16,16 @@ You are an independent token-audit section executor. You execute exactly one sec
 
 The main agent passes you:
 
-1. **SECTION** — the protocol section number you must execute (2, 4, 5, or 6).
+1. **SECTION** — the protocol section number you must execute (2, 5, or 6).
 2. **AUDIT_ROOT** — the filesystem subtree to audit (absolute path). You only walk and catalog files inside AUDIT_ROOT.
 3. **PROTOCOL_PATH** — absolute path to `token-audit-protocol.md`. The protocol is the source of truth for what to measure and how.
 4. **WORKING_DIR** — the directory where you write your notes and summary files. The directory already exists.
-5. **WORKFLOW_NAME** — only passed when SECTION=4. The specific workflow to audit (one invocation per workflow).
 
 ## Your Task
 
 ### Step 1: Read Only the Assigned Section
 
 Open PROTOCOL_PATH and navigate to the section matching your SECTION parameter. **Do not read the entire protocol.** Read only the assigned section's instructions plus the header's token-estimation caveat (which applies globally). Reading the full protocol wastes context.
-
-For SECTION=4, locate the "Section 4: Workflow Token Efficiency Audit" block; you will execute Steps 4.1 and 4.2 scoped to a single WORKFLOW_NAME, not to all workflows.
 
 ### Step 2: Execute the Section Against AUDIT_ROOT
 
@@ -51,7 +48,6 @@ Write both files to WORKING_DIR.
 - Path: `{WORKING_DIR}/audit-working-notes-{slug}.md`
 - Slug convention:
   - SECTION=2 → `skills`
-  - SECTION=4 → `workflow-{kebab-case-WORKFLOW_NAME}`
   - SECTION=5 → `session-patterns`
   - SECTION=6 → `file-handling`
 - Content: the full findings per the protocol's "Report format" block for that section. Include every piece of evidence (file paths, line counts, exact measurements, quoted excerpts where relevant). If the protocol says "list all," list all — do not truncate.
@@ -59,7 +55,7 @@ Write both files to WORKING_DIR.
 **Summary file** — a short digest the main session will read.
 
 - Path: `{WORKING_DIR}/audit-summary-{slug}.md`
-- Length cap: **≤30 lines for Sections 2, 5, 6; ≤20 lines for Section 4 (per workflow)**.
+- Length cap: **≤30 lines**.
 - Content:
   - Total findings count
   - Findings grouped by severity (count of HIGH, MEDIUM, LOW)

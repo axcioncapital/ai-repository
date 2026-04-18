@@ -39,7 +39,7 @@ Input: $ARGUMENTS (optional) — scope selector:
 
 9. Verify `PROTOCOL_PATH` exists. If missing, abort with: "token-audit-protocol.md not found at {PROTOCOL_PATH}. Cannot proceed without the protocol. Aborting."
 10. Verify `AUDIT_ROOT` is a directory. If not, abort with the message from Step 3 of Section 1.
-11. Verify the `token-audit-auditor` agent file exists at `{WORKSPACE}/ai-resources/.claude/agents/token-audit-auditor.md`. If missing, abort with: "token-audit-auditor agent missing. Aborting." The subagent is required for Sections 2, 4, and 6.
+11. Verify both token-audit subagent files exist: `{WORKSPACE}/ai-resources/.claude/agents/token-audit-auditor.md` (Section 4 — judgment, Opus) and `{WORKSPACE}/ai-resources/.claude/agents/token-audit-auditor-mechanical.md` (Sections 2, 5, 6 — mechanical measurement, Haiku). If either is missing, abort with: "token-audit subagent missing: {path}. Aborting." Both subagents are required.
 
 ---
 
@@ -80,7 +80,7 @@ Input: $ARGUMENTS (optional) — scope selector:
 
 ### Step 7: Delegate Section 2 (Skill Census) to Subagent
 
-20. Launch the `token-audit-auditor` subagent with inputs:
+20. Launch the `token-audit-auditor-mechanical` subagent with inputs:
     - `SECTION` = `2`
     - `AUDIT_ROOT` = (as resolved above)
     - `PROTOCOL_PATH` = (as resolved above)
@@ -117,14 +117,14 @@ Input: $ARGUMENTS (optional) — scope selector:
 
 30. Count `session-usage-analyzer` log files discovered in Step 0.2.
 31. If count ≤ 3 OR scope is narrower than workspace: execute Section 5 inline. Apply the protocol's structural-analysis steps and the configuration audit.
-32. If count > 3 AND scope is workspace: launch `token-audit-auditor` with `SECTION=5` and the usual inputs. Read only the summary after it returns.
+32. If count > 3 AND scope is workspace: launch `token-audit-auditor-mechanical` with `SECTION=5` and the usual inputs. Read only the summary after it returns.
 33. Append `## 5. Session Patterns & Configuration` to `REPORT_PATH`.
 
 ---
 
 ### Step 11: Delegate Section 6 (File Handling) to Subagent
 
-34. Launch `token-audit-auditor` with `SECTION=6` and the usual inputs.
+34. Launch `token-audit-auditor-mechanical` with `SECTION=6` and the usual inputs.
 35. Read only `audit-summary-file-handling.md` when the subagent returns.
 36. Append `## 6. File Handling Patterns` to `REPORT_PATH`.
 
