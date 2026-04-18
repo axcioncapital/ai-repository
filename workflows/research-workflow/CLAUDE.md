@@ -24,6 +24,15 @@ Artifact chain: Task Plan → Research Plan → Answer Specs → Deep Research R
 
 **IMPORTANT:** For detailed stage instructions, read @reference/stage-instructions.md. For file naming rules, read @reference/file-conventions.md. For QC standards and evidence handling, read @reference/quality-standards.md. For writing voice and style, read @reference/style-guide.md. Only load these when actively working on the relevant stage or task.
 
+## Skill Dependency Chain
+
+Research workflow skills form a pipeline. When modifying any skill in this chain, check downstream skills for impact:
+
+```
+research-plan-creator → answer-spec-generator → [external: GPT-5 execution]
+→ cluster-analysis-pass → evidence-to-report-writer
+```
+
 ## Workflow Status Command
 
 `/workflow-status` — Read-only command that displays a structured status view of every stage in the research workflow, then runs a QC health check via subagent using the `workflow-evaluator` skill. Both phases always run together. Source workflow: `reference/stage-instructions.md`. Skill reference integrity is checked against `ai-resources/skills/`.

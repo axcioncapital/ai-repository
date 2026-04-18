@@ -1,10 +1,12 @@
 # Session Notes
 
-## 2026-04-18 (evening) — Agent model tier retrofit (Option B: 4 safe candidates, defer stage-4)
+## 2026-04-18 (evening) — Agent model tier retrofit (Option B: 4 safe candidates, defer stage-4) + R13 skill-creation content migration
 
 **Exit condition:** Option B — Apply the three opus promotions (pipeline-stage-2, pipeline-stage-2-5, pipeline-stage-3c) and the one sonnet demotion (session-guide-generator). Defer pipeline-stage-4 demotion until a validation run. Update Agent Tier Table in workspace CLAUDE.md. Single commit. Post-edit QC subagent before commit.
 
-**Autonomy implied:** Proceed through all four frontmatter edits + Agent Tier Table update end-to-end. Pause only on QC findings that change scope.
+**Mid-session scope extension:** [SCOPE] flagged; operator picked Option C — add R13 (migrate skill-creation content from ai-resources/CLAUDE.md to ai-resource-builder/SKILL.md; leave 1-line pointer) to this session. R8 (compress ai-prose-decontamination + answer-spec-generator) deferred to dedicated follow-up sessions.
+
+**Autonomy implied:** Proceed through tier retrofit + R13 migration end-to-end. Pause only on QC findings that change scope.
 
 ## 2026-04-18 (deep night) — Prevention Session 3: detection + automation (questionnaire items + skill-size hook)
 
@@ -1261,3 +1263,8 @@ TBD — to be staged in this flow.
 ### Open Questions
 
 None.
+
+
+## 2026-04-18 (token-audit R3+R4+R5+R11 bundle) — `/cleanup-worktree` structural improvements
+
+**Exit condition:** Operator approved Option A — full bundle via `/improve-skill worktree-cleanup-investigator`: R3 (conditional-load refs), R4 (subagent path-passing), R5 (QC write-to-disk-with-summary), R11 (compact breakpoints + quick-tier QC-skip branch). End-to-end with pipeline QC, one commit per logical unit. High autonomy; push remains manual.

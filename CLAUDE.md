@@ -51,15 +51,6 @@ Run `/usage-analysis` at the end of every substantive session. Output goes to `l
 - Complete the requested task before proposing extensions or improvements.
 - Pull the latest from GitHub at the start of each session.
 
-## Cross-References
-
-Research workflow skills form a pipeline. When modifying any skill in this chain, check downstream skills for impact:
-
-```
-research-plan-creator → answer-spec-generator → [external: GPT-5 execution]
-→ cluster-analysis-pass → evidence-to-report-writer
-```
-
 ## Git Rules
 
 - Always show me the diff before committing
