@@ -6,6 +6,28 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 
 <!-- entries below -->
 
+### 2026-04-18 | Acceptable
+
+**Task:** Applied R3+R4+R5+R11 audit bundle to worktree-cleanup-investigator skill via /improve-skill pipeline; fixed usage-log pointer in ai-resources CLAUDE.md.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 13 |
+| Files read | 15 (re-reads: 0) |
+| Files written/edited | 9 |
+| Tool calls | ~57 total |
+| Subagents | 1 |
+| Rework cycles | 1 |
+
+**Findings:**
+- Self-caught regressions during Step 5c (3 regressions from Step 2 edits — duplicate ordinal, stale "two independent QC subagents" language at 2 sites) (Rework, Moderate) — fixed in-pass without second QC cycle
+- 1 Edit-before-Read tool failure on CLAUDE.md required 1 recovery turn (Tool overhead, Minor)
+- Single subagent at 65,605 tokens was largest cost item, but invocation was pipeline-mandated (Context bloat, Minor — unavoidable per contract)
+
+**Recommendation:** Add a pre-Step-5 mini-checklist in ai-resource-builder that enumerates "ordinal uniqueness + terminology consistency across co-edited files" to pre-empt the regression pattern, rather than catching it at Step 5c QC.
+
+**Trend:** Improvement vs. prior three 2026-04-18 entries (Wasteful → Acceptable → Acceptable → Acceptable) — no re-reads this session, rework contained to 1 self-caught cycle, stable at Acceptable.
+
 ### 2026-04-18 | Wasteful
 
 **Task:** Prevention Session 1 — three governance-only edits to workspace CLAUDE.md (Model Tier + Agent Tier Table), ai-resources CLAUDE.md (Subagent Contracts + Session Telemetry), and /wrap-session step 12. Post-edit QC caught 2 findings; first wrap commit accidentally swept parallel-session files and required unwind.

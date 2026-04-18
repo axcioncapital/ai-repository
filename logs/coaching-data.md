@@ -173,3 +173,11 @@
 - **Decisions logged:** 0 (operational tuning, not analytical/scoping)
 - **QC cycles:** 0 (diagnostic plan + single-line config edit)
 - **Gates:** 3 (0 changed, 3 confirmed) — plan-approval:confirmed (diagnostic plan approved as-is), qc-disposition:confirmed (recommendation "close C5 only" accepted without modification), bright-line-review:confirmed (operator accepted C5 bump from 10k→20k without pushback)
+
+
+### 2026-04-18 — /cleanup-worktree bundle (R3+R4+R5+R11) + /usage-analysis pointer fix
+- **Commands used:** /prime, /improve-skill, /wrap-session
+- **Iterations:** 0 (no draft cycles — direct edit-review-commit flow)
+- **Decisions logged:** 1 (3 judgment calls bundled: R11 calibration, R5 scope extension, pointer-vs-move)
+- **QC cycles:** 1 (fresh-context evaluation subagent — 0 Critical, 0 Major, 5 Minor; all swept; 3 self-caught regressions from Step 2 also fixed)
+- **Gates:** 4 (1 changed, 3 confirmed) — plan-approval:confirmed (exit condition Option A accepted without changes), qc-disposition:changed (operator approved "both recommendations + sweep 3 minors + bundled commit" after asking "what do you recommend"), bright-line-review:confirmed (R11 dual-condition calibration approved without changes), editorial-disagreement:confirmed (sweep-3-minors approach approved without changes)

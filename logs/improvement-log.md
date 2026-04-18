@@ -2,6 +2,7 @@
 
 ### 2026-04-18 — Canonical project settings template for /new-project and research-workflow
 - **Status:** applied 2026-04-18 (Prevention Session 2)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention
 - **Friction source:** 2026-04-18 token-audit R1 (both audits) and R4 (buy-side). Every new project ships without `Read(...)` denies and without a Sonnet default. The audit catches these findings on every project; preventing them at project-creation time would eliminate the recurrence.
 - **Proposal:**
@@ -16,6 +17,7 @@
 
 ### 2026-04-18 — Canonical project CLAUDE.md template (compaction + session-boundary defaults, no workspace-rule duplication)
 - **Status:** applied 2026-04-18 (Prevention Session 2)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention
 - **Friction source:** 2026-04-18 token-audit R10 (ai-resources) + R8 (buy-side). Every new project CLAUDE.md ships without `## Compaction` and `## Session Boundaries` sections, and every new project that was created via `/new-project` under the 2026-04-13 decision includes duplicated workspace rules (File Verification, Commit Rules) that pay per-turn token cost.
 - **Proposal:**
@@ -31,6 +33,7 @@
 ### 2026-04-18 — Extend Model Tier rule to cover agents; publish a tier table
 
 - **Status:** applied 2026-04-18 (Prevention Session 1)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention
 - **Friction source:** 2026-04-18 token-audit §7.6 + §8 practice 7 + R2 Phase 1 (same-day fix session). Workspace `CLAUDE.md` "Model Tier" section (lines 185–193) governs **commands only**. The current agent fleet ships as 10 Opus / 5 inherit (= Opus) / 3 Sonnet / 0 Haiku — no rule prevents a new agent from defaulting to Opus when the work is mechanical. R2 Phase 1 (splitting `token-audit-auditor` into mechanical/judgment variants) is the kind of retrofit a rule would prevent. R12 (`repo-dd-auditor` Opus→Sonnet) is another.
 - **Proposal:**
@@ -45,6 +48,7 @@
 ### 2026-04-18 — Codify subagent-summary cap + /usage-analysis discipline in ai-resources CLAUDE.md
 
 - **Status:** applied 2026-04-18 (Prevention Session 1)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention
 - **Friction source:** 2026-04-18 token-audit §9.3 safeguards #3 (subagent return-size cap) and #7 (mandatory `/usage-analysis` at wrap) + R14. Neither is written down as a rule. §7.3 confirms the two-file output-to-disk pattern is in place, but no convention enforces the **summary length cap** (30 lines for Sections 2/5/6, 20 for Section 4 in `token-audit-auditor` — lives in one agent's body, not as a shared convention). R14 (telemetry baseline) depends on a discipline the operator must sustain; without it, future audits can't measure the impact of R1–R13.
 - **Proposal:**
@@ -58,6 +62,7 @@
 ### 2026-04-18 — Add three questionnaire items to /repo-dd
 
 - **Status:** applied 2026-04-18 (Prevention Session 3)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention (detection)
 - **Friction source:** 2026-04-18 token-audit §9.3 safeguards #2 (agent-tier drift) and #6 (CLAUDE.md task-type-instruction bloat). The audit itself had to do this work ad hoc; `/repo-dd` should catch drift on every cycle so a future `/token-audit` is rarely the first to see it. Adding a new-project-parity check closes the loop on the pending canonical-template entries above — projects created before the template lands need detection until they're retrofitted.
 - **Proposal:** Add three items to `ai-resources/audits/questionnaire.md`:
@@ -72,6 +77,7 @@
 ### 2026-04-18 — Pre-commit skill-size warning hook (informational, non-blocking)
 
 - **Status:** applied 2026-04-18 (Prevention Session 3)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention (automation)
 - **Friction source:** 2026-04-18 token-audit §2.1 + §9.3 safeguard #4. Eight skills exceed 300 lines; two exceed 480. Nothing warns at commit time that a SKILL.md is growing past the recommended threshold — bloat is only caught at the next audit, by which point compressing is a bigger session.
 - **Proposal:**
@@ -94,6 +100,7 @@ Suggested three-session sequence:
 ### 2026-04-18 — /wrap-session directory-wildcard git add sweeps up concurrent-session files
 
 - **Status:** applied 2026-04-18 (structural fix only in `wrap-session.md` step 12–13 — durable workspace CLAUDE.md concurrent-session rule remains pending)
+- **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Concurrency safety / command discipline
 - **Friction source:** Prevention Session 1 (2026-04-18 night) wrap. `/wrap-session` step 13 specifies `git add logs/ skills/ prompts/ .claude/` — directory-level wildcards. A parallel `/improve-skill repo-dd-auditor` session was running in the same repo with uncommitted work under `.claude/agents/` and `.claude/commands/`. The wrap commit swept up 4 parallel-session files (`dd-extract-agent.md`, `dd-log-sweep-agent.md`, `.claude/commands/repo-dd.md`, `logs/innovation-registry.md`) under a commit message that described only the Prevention Session 1 work. Unwound via `git reset --soft HEAD~1` + selective `git restore --staged` + re-commit. Fix was clean (unpushed), but attribution slippage and toe-stepping both real. Operator had explicitly said at session start "don't step your toes here."
 - **Root cause:** `/wrap-session` was written assuming one session is the sole writer of the directories it stages. Assumption holds for Axcíon's typical single-session workflow; breaks the moment two sessions run concurrently. Directory wildcards are "narrower than `git add -A`" but still not narrow enough to respect concurrency.

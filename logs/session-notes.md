@@ -1346,3 +1346,53 @@ Operator pasted three prior token-cost post-mortems (`/cleanup-worktree` ~30%, `
 ### Open Questions
 
 None.
+
+
+## 2026-04-18 (token-audit R3+R4+R5+R11 bundle) — `/cleanup-worktree` structural improvements
+
+### Summary
+
+Applied the `/cleanup-worktree` bundle from the 2026-04-18 ai-resources token audit via `/improve-skill worktree-cleanup-investigator`. R3 (on-demand reference loading), R4 (subagent path-passing), R5 (subagent write-to-disk + 20-line summary), R11 (compact breakpoints + quick-tier 2nd-QC skip). Independent evaluation subagent (fresh context, 8-layer + 19-check convention gate) returned 0 Critical / 0 Major / 5 Minor; all 5 minors swept in the same commit. Also fixed a doc drift in `ai-resources/CLAUDE.md` where Session Telemetry pointed at `logs/usage-log.md` but the `/usage-analysis` command writes to `usage/usage-log.md` (chose update-pointer over move-file to preserve the existing log history).
+
+### Files Created
+
+None.
+
+### Files Modified
+
+- `ai-resources/skills/worktree-cleanup-investigator/SKILL.md` — R3 conditional-load triggers sharpened; R11 bias-counter language (Second QC pass) calibrated to dual-condition quick-tier skip; validation loop, failure behavior, and "revision-introduces-new-bugs trap" updated; workflow-ordinal vs. command/section-number cross-reference note added; example plan-filename aligned with command convention.
+- `ai-resources/skills/worktree-cleanup-investigator/references/execution-protocol.md` — § 3 (first QC) and § 4 (triage) rewritten for R4 path-passing + R5 write-to-disk/20-line summary; § 6 (second QC) rewritten for R11 quick-tier skip with explicit dual-condition gate (zero hard gates AND zero new file-content claims); Plan schema § 8 updated to require per-edit "new file-content claim" annotation (gates the quick-tier skip).
+- `ai-resources/.claude/commands/cleanup-worktree.md` — Step 3 drops bulk-load of references; Steps 6 / 7 / 9 use PLAN_PATH / QC_REPORT_PATH / FIRST_QC_REPORT_PATH and write-to-disk contract; pre-plan and post-triage `▸ /compact` markers added; Step 9 quick-tier branch added; intro paragraph + bias-counter bullet (3) re-calibrated; numbering regressions from edits fixed monotonically through Step 33.
+- `ai-resources/CLAUDE.md` — Session Telemetry `logs/usage-log.md` pointer updated to `usage/usage-log.md` to match command reality.
+- `ai-resources/logs/session-notes.md` — this entry.
+- `ai-resources/logs/coaching-data.md` — session profile entry.
+- `ai-resources/logs/decisions.md` — R11 quick-tier calibration and R5 scope extension logged.
+- `ai-resources/usage/usage-log.md` — telemetry entry for this session.
+
+### Decisions Made
+
+- **R11 quick-tier 2nd-QC skip calibrated, not removed.** Dual condition: zero hard gates in Section 4 AND zero new file-content claims in revision. Logged to decisions.md.
+- **R5 (QC write-to-disk) scope extended to triage subagent by symmetry.** Original audit brief named only QC passes; extended to all 3 subagents (QC1 + Triage + QC2) for uniform contract. Logged to decisions.md.
+- **Usage-log pointer drift resolved by updating CLAUDE.md, not moving the file.** Preserves existing log history. Logged to decisions.md.
+- **QC fixes (applied by main agent, not operator-directed):** 3 regressions from Step 2 edits caught by post-edit QC regression check — duplicate ordinal 27 in command renumbered monotonically through Step 33; intro "mandatory plan mode, two independent QC subagents" qualified with quick-tier; bias-counter bullet (3) qualified likewise. 3 Minor evaluation findings swept as polish (stale parenthetical, example filename, workflow-ordinal cross-reference note).
+
+### QC Cycles
+
+1 (independent evaluation subagent, fresh context, 8-layer + 19-check framework): 0 Critical / 0 Major / 5 Minor. Post-edit regression check (main-agent) caught 3 additional sites that needed quick-tier qualification. All resolved; all 5 Minors swept in the same commit.
+
+### Commits Landed
+
+- ai-resources `f2cfc28` — `update: worktree-cleanup-investigator — R3+R4+R5+R11 bundle from 2026-04-18 token audit`
+- ai-resources `b66e5ee` — `fix: CLAUDE.md — /usage-analysis writes to usage/, not logs/`
+
+Both **pushed** to origin/main at operator request.
+
+### Next Steps
+
+- Carried from prior sessions (none advanced this session): `/audit-repo` sub-auditor coverage vs repo-review-brief; Sonnet model retrofit on 4 existing projects; agent tier retrofit for pipeline stages; `/prime` Step 2 innovation-registry grep fix.
+- **Validate R3+R4+R5+R11 end-to-end via one real `/cleanup-worktree` invocation.** Current state is spec-only; the audit explicitly flagged R3 as medium risk pending test invocation.
+- **Remaining token-audit recommendations:** R6 (DD-report triage-extraction — already applied per innovation-registry), R7 (deep-tier log sweep — already applied), R8 (compress 2 largest skills — deferred), R9 (user-home effort/thinking cap), R10 (compaction + session-boundary rules in ai-resources CLAUDE.md — partially applied), R12 (repo-dd-auditor Opus → Sonnet — needs its own validation session).
+
+### Open Questions
+
+None.
