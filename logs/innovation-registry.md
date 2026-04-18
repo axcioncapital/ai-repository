@@ -47,5 +47,7 @@
 | 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-analysis.md | triaged:project-specific | — |
 | 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-cluster.md | triaged:project-specific | — |
 | 2026-04-18 | agent | .claude/agents/token-audit-auditor-mechanical.md | triaged:project-specific | — |
-| 2026-04-18 | agent | .claude/agents/dd-extract-agent.md | detected | — |
-| 2026-04-18 | agent | .claude/agents/dd-log-sweep-agent.md | detected | — |
+| 2026-04-18 | agent | .claude/agents/dd-extract-agent.md | triaged:project-specific | — |
+| 2026-04-18 | agent | .claude/agents/dd-log-sweep-agent.md | triaged:project-specific | — |
+| 2026-04-18 | hook | .claude/hooks/check-skill-size.sh | triaged:project-specific | — |
+| 2026-04-18 | hook | .claude/hooks/pre-commit | detected | — |

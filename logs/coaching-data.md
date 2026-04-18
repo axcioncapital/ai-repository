@@ -1,5 +1,12 @@
 # Coaching Data
 
+### 2026-04-18 (deep night) — Prevention Session 3: detection + automation (questionnaire items + skill-size hook)
+- **Commands used:** /prime, /fewer-permission-prompts, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1 (project allowlist scope: trust boundary for routine Edit/Write paths and Bash mutations)
+- **QC cycles:** 2 (post-edit qc-reviewer on questionnaire: PASS-WITH-NITS, 4 nits resolved before commit; post-edit qc-reviewer on hook: PASS-WITH-NITS, all nits cosmetic, no fixes applied)
+- **Gates:** 2 (1 changed, 1 confirmed) — plan-approval:confirmed (operator picked Option A without revision), bright-line-review:changed (operator caught /fewer-permission-prompts under-delivery — "I had to approve like 8 permissions" — and directed broader allowlist scope)
+
 ### 2026-04-18 (late evening) — Apply token-audit R12 + R2 Phase 1; log three new audit-recurrence prevention entries
 - **Commands used:** /prime, /qc-pass, /wrap-session; plan mode entered twice
 - **Iterations:** 0 (no drafting — config + agent-file + log-file edits)

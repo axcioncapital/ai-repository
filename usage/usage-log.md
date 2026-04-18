@@ -49,3 +49,24 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Rating stable vs. the prior entry (Prevention Session 1 was Wasteful; this session improves on that — QC discipline tighter, no subagent fan-out).
 
 **Recommendation:** On large shared command files, Grep for the target block before full-reading — partial reads keyed to Grep line numbers would have avoided ~600 lines of unused context this session.
+
+### 2026-04-18 | Acceptable
+
+**Task:** Prevention Session 3 — added 3 audit-recurrence-detection items to /repo-dd questionnaire, created standalone check-skill-size.sh informational pre-commit hook, and broadened ai-resources/.claude/settings.json permissions allowlist after operator caught /fewer-permission-prompts under-delivering.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 13 |
+| Files read | 13 (re-reads: 4 — session-notes 2x, innovation-registry 3x, decisions 2x, settings.json 2x, pre-commit 2x) |
+| Files written/edited | 8 |
+| Tool calls | ~51 total |
+| Subagents | 2 |
+| Rework cycles | 3 |
+
+**Findings:**
+- File innovation-registry.md read 3 times — pin content or extract needed sections on first read; one re-read was forced by an auto-detect hook racing the edit, but the third read was avoidable (Re-reads, Moderate)
+- Three rework cycles across distinct artifacts — /fewer-permission-prompts under-delivery required operator catch + recovery; clarify spec upfront or use outline-first approach for permission-scan output (Rework, Moderate)
+- Several files read 2x (session-notes, decisions, settings.json, pre-commit) — pin content on first read where edits are anticipated (Re-reads, Minor)
+- Trend vs prior 3 entries: stable — Acceptable matches Prevention Session 2 (Acceptable) and improves over Prevention Session 1 (Wasteful).
+
+**Recommendation:** Pin content of logs/innovation-registry.md and other multi-edit-target files on first read to eliminate avoidable re-reads when the auto-detect hook fires between edits.

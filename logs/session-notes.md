@@ -6,6 +6,48 @@
 
 **Autonomy implied:** Proceed through both items end-to-end with per-item post-edit QC pause only if QC surfaces a finding that changes scope.
 
+### Summary
+
+Closed out Prevention Session 3 (detection + automation) per the three-session prevention sequence from the 2026-04-18 token audit. Item 1: added three new questionnaire items to `audits/questionnaire.md` (2.6 CLAUDE.md task-type bloat, 4.8 agent model tier drift, 4.9 new-project settings parity). Item 2: created standalone `check-skill-size.sh` informational pre-commit hook at >300 line threshold; wired into existing `pre-commit` and removed the older >500 body-length warning. Each item went through post-edit qc-reviewer subagent; first QC found 4 nits on the questionnaire (prescriptive language, wrong settings file reference) all resolved before commit; second QC passed clean. Mid-session, operator pushed back when /fewer-permission-prompts wrongly reported "nothing to add" — broadened settings.json allowlist to cover all writable ai-resources paths plus routine Bash mutations (git add/commit/restore, chmod/mkdir/cp), excluding push and destructive ops. Six commits landed and pushed to `origin/main`.
+
+### Files Created
+
+- `.claude/hooks/check-skill-size.sh` — informational pre-commit hook, >300 line threshold, non-blocking, wc -l on staged SKILL.md files, stderr warnings.
+
+### Files Modified
+
+- `audits/questionnaire.md` — three new questions (2.6, 4.8, 4.9) addressing CLAUDE.md task-type bloat, agent tier drift, and project settings parity.
+- `.claude/hooks/pre-commit` — removed Check 6 body-length warning (superseded by check-skill-size.sh); added invocation of check-skill-size.sh after blocking checks.
+- `.claude/settings.json` — broadened permissions.allow with Edit/Write coverage for logs, audits, skills, workflows, prompts, docs, scripts, reports, inbox, CLAUDE.md (plus existing .claude/**); added Bash allows for git add/commit/restore + chmod/mkdir/cp.
+- `logs/innovation-registry.md` — three entries triaged from `detected` to `triaged:project-specific` (dd-extract-agent, dd-log-sweep-agent, check-skill-size.sh).
+- `.claude/commands/repo-dd.md` — wired in dd-extract-agent and dd-log-sweep-agent invocations (committed as part of the night session's R6+R7 bundle, 1e0668d).
+- `.claude/agents/dd-extract-agent.md`, `.claude/agents/dd-log-sweep-agent.md` — new haiku-tier subagents for repo-dd default-tier extraction and deep-tier log sweep (committed in 1e0668d).
+
+### Decisions Made
+
+**Operator-directed:**
+- Exit condition Option A (both items, separate commits per item, post-edit QC each) — confirmed at /prime.
+- Broaden permission allowlist after /fewer-permission-prompts under-delivered — see decisions.md entry "Project allowlist scope: trust boundary for routine Edit/Write paths and Bash mutations."
+- All three innovation-registry entries triaged as `project-specific` (dd-extract, dd-log-sweep, check-skill-size).
+
+**Routine / QC fixes:**
+- Questionnaire 2.6 recast from prescriptive ("should live in… proposed correct home") to factual ("section heading, line count, task-type addressed") per qc-reviewer nit.
+- Questionnaire 4.9 corrected — original draft referenced `.claude/settings.local.json` for the sonnet default; new-project.md actually puts `"model": "sonnet"` in `.claude/settings.json` top-level (line 179). QC nit caught the wrong-file reference.
+- Hook integration: separate `check-skill-size.sh` + invocation from pre-commit (vs. extending pre-commit's Check 6 inline) — followed spec literal wording; gives modular separation and standalone-runnability.
+
+### Next Steps
+
+1. **Triage check on next /repo-dd run** — exercise the three new questionnaire items (2.6, 4.8, 4.9) and the dd-extract-agent + dd-log-sweep-agent subagents. Validate against 2026-04-12 baseline; no findings should regress.
+2. **Skill-size hook validation** — next time a SKILL.md is staged, confirm >300 line warning fires informationally and doesn't block. The 8 known-large skills (token-audit §2.1) will trigger on their next edit; not a regression.
+3. **Validate broadened allowlist** — next session should see fewer permission prompts on Edit/Write to logs/, audits/, skills/, etc., and on routine git add/commit. If any prompt category persists despite the allowlist, the matcher may need a different syntax.
+4. **R2 Phase 1 + R12 validation deferred from earlier sessions** — still pending on next /token-audit and /repo-dd runs against 2026-04-18 / 2026-04-12 baselines.
+5. **Pre-existing minor in /new-project step 4 heredoc** (`{project-title}` substitution comment vs. real sed pass) — still deferred to a future cleanup session.
+6. **Improvement-log unverified entry** — `wrap-session.md` step 12-13 concurrent-session staging fix (applied 2026-04-18) is still unverified. Verify on next concurrent-session scenario or in a deliberate test.
+
+### Open Questions
+
+None.
+
 ## 2026-04-18 (night) — Token-audit fix: repo-dd bundle (R6 + R7) via /improve-skill repo-dd-auditor
 
 **Exit condition:** Option B — Run `/improve-skill repo-dd-auditor` to address R6 (triage-extraction subagent) and R7 (deep-tier log-sweep subagent) in a single session. Pipeline includes evaluation + post-edit QC. Validation deferred to next `/repo-dd` run vs. 2026-04-12 baseline.
