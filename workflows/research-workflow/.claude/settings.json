@@ -23,6 +23,7 @@
       "Bash(sudo *)",
       "Read(archive/**)",
       "Read(**/*.archive.*)",
+      "Read(logs/*-archive-*.md)",
       "Read(**/deprecated/**)",
       "Read(**/old/**)"
     ]
@@ -114,6 +115,12 @@
             "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '/' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\" ] && { \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\"; exit; }; done",
             "timeout": 10,
             "statusMessage": "Syncing shared commands..."
+          },
+          {
+            "type": "command",
+            "command": "out=$(\"$CLAUDE_PROJECT_DIR/logs/scripts/check-archive.sh\" 2>&1); [ -n \"$out\" ] && jq -Rn --arg m \"$out\" '{systemMessage:$m}'; exit 0",
+            "timeout": 10,
+            "statusMessage": "Checking log file sizes..."
           }
         ]
       }

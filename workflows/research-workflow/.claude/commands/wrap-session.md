@@ -2,7 +2,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 
 ## Instructions
 
-**Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context. Auto-commits track file changes separately.
+**Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context. Auto-commits track file changes separately. Maintenance scripts invoked by named steps below (e.g., step 7 log-archive check) are permitted.
 
 1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Session Notes` as the header. **Format guard:** If the file exists but has no `# Session Notes` header, prepend it. If the last non-empty line is a partial block (unclosed heading, unterminated list), append a blank line before the new entry.
 2. Read `/logs/decisions.md` (last 5 lines only — to find the append point).
@@ -24,3 +24,6 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
    - For items marked project-specific: update registry status to `triaged:project-specific`.
    - If no `detected` entries exist, skip silently.
    - Also surface any new CLAUDE.md rules added this session (from conversation context) and ask if they should graduate to root CLAUDE.md.
+7. **Log size check.** Run `bash "$CLAUDE_PROJECT_DIR/logs/scripts/check-archive.sh"`.
+   If it prints any lines, report each to the operator: "Auto-archived [file] → [archive path] (kept N entries)."
+   If output is empty, proceed silently.
