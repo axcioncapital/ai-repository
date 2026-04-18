@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "allow": [
+      "Edit(.claude/**)",
+      "Write(.claude/**)"
+    ],
     "deny": [
       "Read(archive/**)"
     ]
