@@ -1,5 +1,11 @@
 # Session Notes
 
+## 2026-04-18 (pm) — Execute /token-audit ai-resources
+
+**Exit condition:** Option B — Run Sections 1–8 (inventory + all findings), pause before Section 9 (optimization plan synthesis) for operator review of HIGH/MEDIUM shortlist, then continue to completion.
+
+**Autonomy implied:** Proceed through Sections 1–8 without per-section pauses, including the 4 subagent-delegated heavy-read passes (Sections 2, 4, 5-conditional, 6). Pause at the Section 9 checkpoint. Resume autonomously to Section 10 + final report after the shortlist is confirmed.
+
 ## 2026-04-17 — /improve-skill ai-prose-decontamination + downstream stop-gap cleanup + /improve-skill prose-compliance-qc post-split positioning fix
 
 ### Exit Condition
