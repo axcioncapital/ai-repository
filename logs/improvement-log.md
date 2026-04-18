@@ -93,7 +93,7 @@ Suggested three-session sequence:
 
 ### 2026-04-18 — /wrap-session directory-wildcard git add sweeps up concurrent-session files
 
-- **Status:** logged (pending)
+- **Status:** applied 2026-04-18 (structural fix only in `wrap-session.md` step 12–13 — durable workspace CLAUDE.md concurrent-session rule remains pending)
 - **Category:** Concurrency safety / command discipline
 - **Friction source:** Prevention Session 1 (2026-04-18 night) wrap. `/wrap-session` step 13 specifies `git add logs/ skills/ prompts/ .claude/` — directory-level wildcards. A parallel `/improve-skill repo-dd-auditor` session was running in the same repo with uncommitted work under `.claude/agents/` and `.claude/commands/`. The wrap commit swept up 4 parallel-session files (`dd-extract-agent.md`, `dd-log-sweep-agent.md`, `.claude/commands/repo-dd.md`, `logs/innovation-registry.md`) under a commit message that described only the Prevention Session 1 work. Unwound via `git reset --soft HEAD~1` + selective `git restore --staged` + re-commit. Fix was clean (unpushed), but attribution slippage and toe-stepping both real. Operator had explicitly said at session start "don't step your toes here."
 - **Root cause:** `/wrap-session` was written assuming one session is the sole writer of the directories it stages. Assumption holds for Axcíon's typical single-session workflow; breaks the moment two sessions run concurrently. Directory wildcards are "narrower than `git add -A`" but still not narrow enough to respect concurrency.
