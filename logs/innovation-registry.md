@@ -55,3 +55,10 @@
 | 2026-04-18 | agent | .claude/agents/pipeline-stage-2-5.md | triaged:project-specific | — |
 | 2026-04-18 | agent | .claude/agents/pipeline-stage-3c.md | triaged:project-specific | — |
 | 2026-04-18 | agent | .claude/agents/session-guide-generator.md | triaged:project-specific | — |
+| 2026-04-18 | command | .claude/commands/cleanup-worktree.md | triaged:project-specific | — |
+| 2026-04-18 | command | .claude/commands/audit-repo.md | triaged:project-specific | — |
+| 2026-04-18 | hook | .claude/hooks/check-stop-reminders.sh | triaged:project-specific | — |
+| 2026-04-18 | hook | .claude/hooks/check-heavy-tool.sh | triaged:project-specific | — |
+| 2026-04-18 | command | .claude/commands/improve-skill.md | triaged:project-specific | — |
+| 2026-04-18 | command | .claude/commands/create-skill.md | detected | — |
+| 2026-04-18 | command | .claude/commands/migrate-skill.md | detected | — |

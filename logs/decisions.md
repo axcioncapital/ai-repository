@@ -295,3 +295,16 @@
   - **(R5-alt)** QC-only per brief literal reading (rejected — asymmetrical, triage return was also measured in the audit).
   - **(Pointer-alt)** Move `usage/usage-log.md` → `logs/usage-log.md` and update command (rejected — breaks file history, no benefit; `usage/` namespace is coherent; command writing to `usage/` has established history).
 - **Follow-up:** Validate the new `/cleanup-worktree` protocol via one real invocation before relying on it for any substantive cleanup work. Per the audit's own R3 note, the on-demand loading is medium risk until test-invocation-validated.
+
+### 2026-04-18 — Tier 3 token-audit hardening: scope cuts after QC review
+- **Context:** Implementing the three Tier 3 fixes the operator selected (heavy-hook, /usage-analysis enforcement, pipeline-stage-4 tier flip). Pre-execution QC review surfaced two issues that altered the plan.
+- **Decisions:**
+  - **Drop pipeline-stage-4 tier flip from this batch.** Workspace CLAUDE.md → "Applying Audit Recommendations" requires top-3 affected-commands check + smoke test before applying audit-derived recommendations, with explicit "do not skip even when low risk." The plan justified flipping without the check on grounds that "rollback is one line." Operator approved dropping rather than overriding the bright-line. Belongs in a dedicated session.
+  - **Switch Fix 2 from new UserPromptSubmit hook to extending the existing Stop hook.** QC surfaced this as a simpler alternative that avoids adding a second hook event. Operator's stated intent ("block /wrap-session until /usage-analysis ran") is preserved by reminding at session-end instead of at /wrap-session-submit; substantively equivalent enforcement at lower architectural cost.
+- **Rationale:**
+  - **(pipeline-stage-4)** The "Applying Audit Recommendations" rule is bright-line precisely to prevent rollback-cost shortcuts. The same workspace CLAUDE.md ratified the rule on 2026-04-18; overriding it the same day on a deferred candidate would weaken the rule's authority. Cost of doing the validation properly is one focused session.
+  - **(Stop-hook substitution)** Stop hook fires at the natural reminder point. UserPromptSubmit-on-`/wrap-session` is one valid trigger but Stop-end is another and avoids the cost of a new hook event + a new script + a new failure surface. The reminder is informational either way.
+- **Alternatives considered:**
+  - **(pipeline-stage-4)** Keep in batch and document the top-3 check inline (rejected — top-3 trace requires reading project-implementer skill body and tracing /new-project Stage 4 invocation; non-trivial, would inflate the session). Defer with no follow-up plan (rejected — operator wants the closeout, just not at the cost of bright-line erosion).
+  - **(Stop-hook substitution)** Keep separate UserPromptSubmit hook (rejected — adds hook-event surface for no measurable benefit). Hard-block /wrap-session via UserPromptSubmit exit-2 (rejected — trivial sessions legitimately skip telemetry; hard-block would force an override flag for every trivial wrap, friction-without-signal).
+- **Follow-up:** Run a dedicated `pipeline-stage-4` tier-flip session that traces /new-project Stage 4 → project-implementer skill, confirms Sonnet handles the work, then flips frontmatter and updates Agent Tier Table.

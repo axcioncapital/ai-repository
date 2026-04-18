@@ -181,3 +181,24 @@
 - **Decisions logged:** 1 (3 judgment calls bundled: R11 calibration, R5 scope extension, pointer-vs-move)
 - **QC cycles:** 1 (fresh-context evaluation subagent — 0 Critical, 0 Major, 5 Minor; all swept; 3 self-caught regressions from Step 2 also fixed)
 - **Gates:** 4 (1 changed, 3 confirmed) — plan-approval:confirmed (exit condition Option A accepted without changes), qc-disposition:changed (operator approved "both recommendations + sweep 3 minors + bundled commit" after asking "what do you recommend"), bright-line-review:confirmed (R11 dual-condition calibration approved without changes), editorial-disagreement:confirmed (sweep-3-minors approach approved without changes)
+
+### 2026-04-18 — /repo-dd on ai-resources (standard depth) — 5 triaged fixes applied
+- **Commands used:** /repo-dd, /triage, /wrap-session
+- **Iterations:** 0 (no drafting — audit + triage + fixes)
+- **Decisions logged:** 0
+- **QC cycles:** 1 (independent triage-reviewer subagent on 12 findings; produced Do/Park table; all 5 Do items accepted without modification)
+- **Gates:** 3 (3 confirmed) — plan-approval:confirmed (scope = ai-resources standard, accepted without changes), qc-disposition:confirmed (Do/Park table accepted via "proceed per your recommendation"), triage-disposition:confirmed (triage-reviewer output passed through unmodified)
+
+### 2026-04-18 — /improve applied two Prime command fixes
+- **Commands used:** /improve, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 0
+- **QC cycles:** 0
+- **Gates:** 1 (1 changed) — plan-approval:changed (operator said "fix" — applied both findings; one proposal adapted because Prime's Step 5 output didn't have the line the analyst proposed prefixing)
+
+### 2026-04-18 — Tier 3 token-audit hardening: [HEAVY] PreToolUse hook + Stop-hook telemetry
+- **Commands used:** /qc-pass, /wrap-session
+- **Iterations:** 1 (plan v1 → REVISE → plan v2 approved)
+- **Decisions logged:** 2
+- **QC cycles:** 1 (REVISE → revised per recommendation → applied; no second QC after revision since changes were per the reviewer's prescriptive list)
+- **Gates:** 4 (2 confirmed, 2 changed) — plan-approval:changed (v1 plan revised after QC, v2 approved via "proceed per your recommendation"), qc-disposition:changed (REVISE list applied including dropping Fix 3 and switching Fix 2 hook event), scope-selection:confirmed (operator selected 3 fixes via AskUserQuestion, accepted as scope), commit-approval:confirmed (two commits + push approved with single "push" command)

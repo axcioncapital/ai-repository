@@ -1396,3 +1396,88 @@ Both **pushed** to origin/main at operator request.
 ### Open Questions
 
 None.
+
+## 2026-04-18 (late evening) — /repo-dd on ai-resources (standard depth) — 5 triaged fixes applied
+
+### Summary
+
+Ran `/repo-dd` factual audit on the ai-resources repo. 12 findings extracted; triage-reviewer subagent recommended 5 as Do, 7 as Park. Applied all 5 Do items: created two missing log files referenced by `/note` and `/coach`, resolved a CLAUDE.md contradiction between "show diff before committing" (Git Rules) and "commit directly, no permission" (Commit Rules), fixed `audit-repo` command's `reference/skills/...` path that only resolves in deployed projects (now uses fallback resolution), and added the `usage/` directory to the CLAUDE.md "What This Repo Contains" list. Committed as `5f4223e`, pushed.
+
+### Files Created
+
+- `audits/repo-due-diligence-2026-04-18-ai-resources.md` — factual audit report (19 findings across 3 clean checks, 6 discrepancies, 5 missing items, 5 violations)
+- `audits/working/dd-extract.md` — structured triage extract (12 findings, severities)
+- `logs/workflow-observations.md` — placeholder log file for `/note` command
+- `logs/coaching-log.md` — placeholder log file for `/coach` command
+
+### Files Modified
+
+- `CLAUDE.md` (ai-resources) — added `usage/` to "What This Repo Contains"; removed "Always show me the diff before committing" from Git Rules (contradicted Commit Rules "commit directly, no permission")
+- `.claude/commands/audit-repo.md` — SKILL_DIR resolution now tries `reference/skills/...` (deployed layout) then `skills/...` (ai-resources layout); previously broken when command runs in ai-resources itself
+
+### Decisions Made
+
+All decisions routine / operator-delegated to triage-reviewer recommendation ("proceed per your recommendation"). No analytical or scoping judgment — not logged to decisions.md.
+
+### Next Steps
+
+- 7 parked findings remain (CATALOG.md staleness, repo-health-analyzer non-standard structure, retrofit Failure Behavior into 40 pre-template skills, line-count overflow in 8 skills, command opening-pattern standardization, CATALOG.md location, CLAUDE.md unreferenced sections). Address in dedicated sessions when the judgment calls are ready, or defer.
+- Push the innovation-registry + cleanup-worktree files that were pre-existing unstaged changes from prior sessions (not part of this audit commit).
+- Consider `/improve` — 2 friction events logged today before this session.
+
+### Open Questions
+
+None.
+
+## 2026-04-18 — /improve applied two Prime command fixes
+
+### Summary
+Ran `/improve` on the session's friction log. The improvement-analyst surfaced two findings, both scoped to `.claude/commands/prime.md`. Operator directed "fix" — both applied and logged to improvement-log.md.
+
+### Files Created
+None.
+
+### Files Modified
+- `.claude/commands/prime.md` — Step 2 rewritten for pipe-delimited table grep pattern; new Step 4a live `git status` verification; new `**Working tree:**` line in Step 5 output.
+- `logs/improvement-log.md` — two `applied` entries appended.
+
+### Decisions Made
+- Fix 2 adapted from analyst proposal: the env snapshot doesn't currently render to a line in Prime's Step 5 output, so instead of prefixing a nonexistent line with a freshness caveat, added Step 4a (live `git status --short` + `git diff --stat HEAD`) and a new `**Working tree:**` output line. Same intent, cleaner shape.
+
+### Next Steps
+- Verify the Prime fixes on next `/prime` invocation — confirm innovation count reflects the 4 `detected` rows and working-tree line renders correctly.
+- 4 `detected` innovations remain in registry (from prior session: audit-repo, cleanup-worktree commands, check-stop-reminders.sh, check-heavy-tool.sh hooks) — triage below.
+
+### Open Questions
+None.
+
+## 2026-04-18 — Tier 3 token-audit hardening: [HEAVY] PreToolUse hook + Stop-hook telemetry check
+
+### Summary
+
+Closed the two automation gaps left from the 2026-04-18 token audits' Tier 3 (behavioral) findings. Promoted the `[HEAVY]` self-enforcement flag (workspace CLAUDE.md → Session Guardrails) to a real PreToolUse hook with exempt-command bypass, and extended the existing Stop hook with a usage-log freshness check so `/usage-analysis` is reminded automatically when stale. QC review (REVISE) caused two scope changes: dropped the `pipeline-stage-4` tier flip (bright-line rule supersedes shortcut), switched Fix 2 from a new UserPromptSubmit hook to extending the existing Stop hook (simpler).
+
+**Concurrency note:** a concurrent session ran `/improve` and wrapped while this session was active (entry above this one). That wrap detected my new hook files but didn't triage them. I'm staging only the files this session created/modified per the concurrent-session rule.
+
+### Files Created
+- `ai-resources/.claude/hooks/check-heavy-tool.sh` — PreToolUse hook (Read/Grep/Bash matcher). Python-backed. Heuristics + exempt-command bypass via transcript JSONL parse. Non-blocking output via `hookSpecificOutput.additionalContext`.
+- `ai-resources/.claude/hooks/check-stop-reminders.sh` — replaces inline Stop-hook command. Combines innovation-registry detected-count + `usage/usage-log.md` today's-entry presence into one `systemMessage`.
+- `/Users/patrik.lindeberg/.claude/plans/confirm-to-me-that-hashed-puppy.md` — plan file (out-of-repo, not committed).
+
+### Files Modified
+- `ai-resources/.claude/settings.json` — added `hooks.PreToolUse` block (matcher `Read|Grep|Bash`); replaced inline `Stop` command with script invocation.
+- `ai-resources/logs/improvement-log.md` — appended two closeout entries (`[HEAVY]` hook + Stop-hook telemetry).
+
+### Decisions Made
+- **Drop pipeline-stage-4 tier flip from this batch.** QC flagged that workspace CLAUDE.md → "Applying Audit Recommendations" requires top-3 affected-commands check + smoke test, with explicit "do not skip even when low risk." The plan's "rollback is one line" argument doesn't satisfy the bright-line. Belongs in a dedicated session.
+- **Switch Fix 2 from UserPromptSubmit hook to Stop-hook augmentation.** QC surfaced this as a simpler alternative — Stop fires at the natural reminder point, no new hook event. Logic combined into `check-stop-reminders.sh`.
+
+QC fixes (applied per reviewer's REVISE list, no operator decision needed): added exemption mechanism to heavy-hook v1; dropped `path` condition from Grep trigger (false-positive magnet); added binary-extension carve-out to Read trigger; specified exact hook JSON shapes; specified `bash <path>` invocation pattern.
+
+### Next Steps
+- **`pipeline-stage-4` tier flip — separate session.** Run "Applying Audit Recommendations" properly: trace the top-3 commands that delegate to pipeline-stage-4 (in practice: `/new-project` Stage 4 only, via `project-implementer` skill), confirm Sonnet handles the implementation work. Then flip `model: inherit` → `model: sonnet` and update Agent Tier Table in workspace CLAUDE.md.
+- **Heavy-hook iteration.** Hook is live in this repo. Watch for false-positive patterns over the next few sessions; tune triggers (likely candidates: tighten Bash `find` regex, add more binary extensions, possibly carve-outs for routine `git status`/`git diff`).
+- **Compress 8 oversize skills (>300 lines)** — deferred from the original Fix selection; multi-session effort, run per-skill via `/improve-skill`.
+
+### Open Questions
+None.

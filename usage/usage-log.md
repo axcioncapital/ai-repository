@@ -158,3 +158,24 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Trend vs. prior 3 entries: regression — prior 3 entries were all Acceptable; this session drops to Wasteful, driven by the Major re-read finding on session-notes.md (linter-race pattern) and the two rework cycles.
 
 **Recommendation:** Run `stat` on session-notes.md and any hook-adjacent file immediately before Edit — detects linter/auto-process modification and eliminates the forced re-read + retry cycle that drove this session's Major finding.
+
+### 2026-04-18 | Acceptable
+
+**Task:** Tier 3 token-audit hardening — created PreToolUse `[HEAVY]` warning hook with exempt-command bypass and replaced inline Stop hook with a script that adds usage-log telemetry-freshness check; QC-driven scope cuts dropped pipeline-stage-4 retrofit and switched Fix 2 from UserPromptSubmit to Stop-hook augmentation.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 8 |
+| Files read | 14 (re-reads: 2 — session-notes.md 2× at different offsets, innovation-registry.md 2× cat-then-Read) |
+| Files written/edited | 10 |
+| Tool calls | ~38 total (Read ~12, Bash ~10, Edit ~8, Write ~3, Agent ~2, ToolSearch ~3) |
+| Subagents | 2 |
+| Rework cycles | 1 |
+
+**Findings:**
+- Plan v1 → QC REVISE → plan v2 cycle prescribed 6 specific fixes including 2 scope cuts and 4 trigger-tightenings (Rework, Moderate) — clarify spec upfront or use outline-first approach; the QC cycle was high-value here (caught Fix 3 scope miss + Fix 2 hook-event mismatch), not avoidable waste.
+- Two Edit-before-Read harness misses — session-notes.md required re-Read after offset slice; innovation-registry.md required Read-tool after prior cat-via-Bash (Tool overhead, Minor) — when an edit on a large append log is anticipated, use the Read tool (not Bash cat) on first pass to satisfy the Read-before-Edit harness rule.
+- session-notes.md and innovation-registry.md each accessed 2× (Re-reads, Minor) — both forced by harness discipline rather than information gaps; pin first-read content when subsequent edits are likely.
+- Trend vs. prior 3 entries: improvement — prior entry was Wasteful (linter-race re-reads); this session returns to Acceptable matching the two before that, with re-reads dropped from 7 to 2 and rework cycles dropped from 2 to 1.
+
+**Recommendation:** When a session anticipates editing a large append-only log file (session-notes.md, innovation-registry.md, improvement-log.md), do the first read via the Read tool with a targeted offset rather than Bash cat — eliminates the Read-before-Edit harness retry that drove both Tool-overhead findings this session.
