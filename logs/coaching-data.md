@@ -165,3 +165,11 @@
 - **Decisions logged:** 1 (R13 closeout — move skill-chain to research-workflow/CLAUDE.md to sidestep audit-vs-pipeline-rule conflict)
 - **QC cycles:** 2 (qc-reviewer on tier retrofit: GO; qc-reviewer on R13 migration: GO)
 - **Gates:** 6 (1 changed, 5 confirmed) — plan-approval:confirmed (exit-condition Option B), plan-approval:changed (mid-session [SCOPE] extension → Option C on R8/R13), plan-approval:confirmed (R13 closeout Option C), qc-disposition:confirmed (tier retrofit GO), qc-disposition:confirmed (R13 GO), push-approval:confirmed (push executed).
+
+
+### 2026-04-18 — Token-cost residual audit: map prior post-mortems to applied fixes; raise MAX_THINKING_TOKENS
+- **Commands used:** /prime, /update-config, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 0 (operational tuning, not analytical/scoping)
+- **QC cycles:** 0 (diagnostic plan + single-line config edit)
+- **Gates:** 3 (0 changed, 3 confirmed) — plan-approval:confirmed (diagnostic plan approved as-is), qc-disposition:confirmed (recommendation "close C5 only" accepted without modification), bright-line-review:confirmed (operator accepted C5 bump from 10k→20k without pushback)

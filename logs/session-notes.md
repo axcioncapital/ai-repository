@@ -1313,3 +1313,36 @@ None.
 ## 2026-04-18 (token-audit R3+R4+R5+R11 bundle) — `/cleanup-worktree` structural improvements
 
 **Exit condition:** Operator approved Option A — full bundle via `/improve-skill worktree-cleanup-investigator`: R3 (conditional-load refs), R4 (subagent path-passing), R5 (QC write-to-disk-with-summary), R11 (compact breakpoints + quick-tier QC-skip branch). End-to-end with pipeline QC, one commit per logical unit. High autonomy; push remains manual.
+
+
+## 2026-04-18 (token-cost residual audit) — Map prior token-spend post-mortems to applied fixes; raise MAX_THINKING_TOKENS
+
+**Exit condition:** Diagnostic first, then operator-approved single config edit (C5). No pipeline, no exit-condition A/B/C — this was a read-heavy research turn plus a one-line settings change.
+
+### Summary
+
+Operator pasted three prior token-cost post-mortems (`/cleanup-worktree` ~30%, `/new-project` ~60%/DP-10 violation, `/token-audit` heavy Opus spend) and asked whether current fixes prevent repeat. Launched one Explore subagent to map 13 sub-problems (A1–A4, B1–B2, C1–C5) against improvement-log R1–R14, workspace CLAUDE.md Session Guardrails/Subagent Contracts/Model Tier, and `/cleanup-worktree` R3/R4/R5/R11 changes. Result: 9 of 13 addressed, 4 residual (A1 batched-reads, A4 plan-file growth, C4 additionalDirectories scope, C5 thinking-token cap). Recommended closing C5 only (cheapest + highest leverage); other residuals judged not worth the change. Operator approved C5; bumped `MAX_THINKING_TOKENS` from 10000 → 20000 in `~/.claude/settings.json`. Mid-execution correction: C5 was already partially addressed (cap existed at 10k); the diagnostic plan missed it because no audit reads global user settings — flagged this as a process gap.
+
+### Files Created
+
+- `~/.claude/plans/i-have-some-notes-velvety-cosmos.md` — diagnostic plan file mapping A1–C5 to fixes (not in any repo; ~/.claude/plans/ is outside git)
+
+### Files Modified
+
+- `~/.claude/settings.json` — `MAX_THINKING_TOKENS` 10000 → 20000 (global user settings; outside git)
+- `ai-resources/logs/session-notes.md` — this entry
+- `ai-resources/logs/coaching-data.md` — session profile entry
+
+### Decisions Made
+
+- **Close C5 only; accept A1/A4/C4 as residual.** C5 was judged cheapest and highest-leverage. A1 (batched reads in `/cleanup-worktree`) is already guarded behaviorally by `[HEAVY]`; adding a structural batcher to SKILL.md would bloat the skill. A4 (plan-file growth) is lowest-impact. C4 (`additionalDirectories` scoping) has a cost/benefit tradeoff — narrowing would break cross-project work that the workspace is designed to support. Raised cap to 20k rather than 10k on the judgment that 10k starves Opus judgment work; not logged to decisions.md (operational tuning, not scoping).
+
+### Next Steps
+
+- **Global settings audit blind-spot.** No audit (`/audit-repo`, `/repo-dd`, `/token-audit`) reads `~/.claude/settings.json`. The C5 framing error (cap claimed absent, was present at 10k) is a symptom. Worth adding a "global-settings" read to one of the audits or to `/prime`.
+- **Push** pending commits from today (this wrap + any earlier unpushed work).
+- Carried from prior sessions: `/audit-repo` sub-auditor coverage vs repo-review-brief; Sonnet model retrofit on 4 existing projects; agent tier retrofit for pipeline stages; `/prime` Step 2 innovation-registry grep fix.
+
+### Open Questions
+
+None.
