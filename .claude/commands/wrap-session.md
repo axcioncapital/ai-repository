@@ -38,6 +38,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 9. **Optional reflection.** Before the git commit step, ask: "Session reflection (optional, one line — what felt hard, easy, or surprising):" If Patrik provides one, add it as the `Reflection:` line in the coaching-data entry. If skipped, proceed without it.
 10. **Improvement verification.** Read `/logs/improvement-log.md` (if it exists). Find entries with status "applied" that have no "Verified:" line. If any exist, present: "Unverified improvements: [list with date and title]." Ask: "Verify any, or skip?" If confirmed, append `- **Verified:** {date} — confirmed by operator` to each entry. If skipped, proceed.
 11. **Remind about /improve.** If the session had friction events logged (check `/logs/friction-log.md` for today's entries), suggest: "Friction events were logged this session. Consider running `/improve` to analyze them."
+12. **Session telemetry.** Ask: "Run `/usage-analysis` to capture this session's token profile? [y/n/skip]". If `y`, instruct the operator to invoke `/usage-analysis` after wrap-session completes (do NOT invoke it yourself — it is operator-driven). If `n` or `skip`, proceed. For trivial sessions (single-file edit, one-question read), the operator may skip; do not argue. Rationale: R14 telemetry baseline depends on consistent capture.
 
 After updating logs, stage and commit changes:
 - First run: git add logs/ skills/ prompts/ .claude/

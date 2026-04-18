@@ -27,6 +27,24 @@ See `skills/ai-resource-builder/SKILL.md` for skill format, creation sequence, i
 
 Default to Claude Opus 4.6 (`claude-opus-4-6`) for subagents and API calls unless a faster model is explicitly justified for the task.
 
+Agent model tiering: see workspace `CLAUDE.md` → Model Tier → Agents for the canonical rule and Agent Tier Table.
+
+## Subagent Contracts
+
+Subagents that read, scan, or audit across many files must write full notes to disk and return only a short summary to the main session.
+
+- **Summary cap:** 30 lines. Tighter cap (20 lines) when per-unit invocations proliferate (one subagent per workflow, per chapter, per file). The cap is enforced in the agent's own body, not the orchestrator — each agent knows its own output shape.
+- **Notes to disk:** full findings go to a working-notes file under the invoking command's working directory (e.g., `audits/working/...`). Summary returned to main session includes the path.
+- **Main-session reads summary only.** Do not re-read the full notes unless the summary flags a specific finding that requires context.
+
+Existing implementations: `token-audit-auditor`, `token-audit-auditor-mechanical`, `repo-dd-auditor`. New audit/scan subagents follow the same contract.
+
+## Session Telemetry
+
+Run `/usage-analysis` at the end of every substantive session. Output goes to `logs/usage-log.md` and is the baseline that future token audits measure against — without the data, R14 (telemetry) can't detect whether R1–R13 optimizations moved the needle.
+
+`/wrap-session` prompts for this automatically. If the session was trivial (single-file edit, one-question read), dismiss with one letter; don't skip by default.
+
 ## General Session Rules
 
 - Do not create files or resources that weren't explicitly requested. Suggest additions in chat instead.

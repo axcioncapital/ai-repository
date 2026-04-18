@@ -1,5 +1,11 @@
 # Session Notes
 
+## 2026-04-18 (night) — Token-audit fix: repo-dd bundle (R6 + R7) via /improve-skill repo-dd-auditor
+
+**Exit condition:** Option B — Run `/improve-skill repo-dd-auditor` to address R6 (triage-extraction subagent) and R7 (deep-tier log-sweep subagent) in a single session. Pipeline includes evaluation + post-edit QC. Validation deferred to next `/repo-dd` run vs. 2026-04-12 baseline.
+
+**Autonomy implied:** Proceed through `/improve-skill` stages without per-stage pauses. Pause only on QC findings that change scope or on operator-decision flags from the skill itself.
+
 ## 2026-04-18 (late evening) — Apply token-audit R12 + R2 Phase 1; log three new audit-recurrence prevention entries
 
 **Exit condition:** /prime did not set a formal A/B/C option this session — operator opened with "continue fixing issues from the token audit" and then granted autonomy mid-session. Implicit scope: quick wins + R2 Phase 1 (per AskUserQuestion), followed by an operator-added second task (prevention planning). Both completed cleanly within the single session.
@@ -991,3 +997,9 @@ Total: 8 commits across 3 repos.
 ### Open Questions
 
 None. All applied changes are committed; deferred items logged; no QC findings remain open.
+
+## 2026-04-18 (night) — Prevention Session 1: agent-tier rule + subagent contracts + telemetry discipline
+
+**Exit condition:** Governance-only updates — extend workspace CLAUDE.md Model Tier section to cover agents with an Agent Tier Table; add Subagent Contracts + Session Telemetry sections to ai-resources CLAUDE.md; wire /usage-analysis prompt into /wrap-session. No skill edits. Unblocks Sessions 2 and 3 of the audit-recurrence-prevention sequence.
+
+**Autonomy:** High — governance edits are low-risk. Proceed through to commit without per-step approval; pause only for genuinely significant issues.
