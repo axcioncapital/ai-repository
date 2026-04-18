@@ -24,7 +24,7 @@ Trigger on any of these operator statements:
 - "investigate the dirty files"
 - "I don't remember what I did in previous sessions"
 - "the working tree is messy"
-- `/cleanup-worktree` (once the command ships)
+- `/cleanup-worktree` (see `ai-resources/.claude/commands/cleanup-worktree.md`)
 - `/wrap-session` discovers drift that predates the current session
 - `git status` shows 10+ dirty paths and the operator has lost track of provenance
 
@@ -49,13 +49,15 @@ This skill has a fixed invocation contract. Deviations are safety failures.
 
 **MUST produce a written plan file with the required schema.** The plan goes to `~/.claude/plans/<session-name>.md` (or wherever the current harness writes plans) and MUST contain the eight sections defined in `references/execution-protocol.md` → "Plan file schema": (1) original operator request, (2) git status snapshot, (3) per-path classification table, (4) hard-gate inventory, (5) commit split, (6) execution-time re-verification checklist, (7) bias-counter checklist, (8) revision history. The schema exists so two QC subagents and one triage subagent can read the plan as a stable contract. In-memory plans do not count — subagents need a file to read. A plan missing any section fails the first QC pass structurally.
 
-**MUST run two independent QC subagents.** One after the initial plan (`qc-pass`-style review), one after the revision. Triage runs between the two QC passes. Single-QC flows miss fabrications introduced by revisions.
+**MUST run an independent first QC subagent after the initial plan, and a second QC subagent after the revision UNLESS the quick-tier skip applies.** Triage runs between the two QC passes. The second QC is required when Section 4 (hard-gate inventory) contains ≥1 hard gate OR when the revision introduced any new file-content claim. For zero-hard-gate plans whose revision introduced zero new file-content claims, the second QC may be skipped with explicit Section-8 logging and operator-visible notification before `ExitPlanMode`. See `references/execution-protocol.md` § 6 for the full quick-tier rule. Single-QC flows on plans with hard gates or factual-claim revisions miss fabrications introduced by revisions.
 
 **MUST gate every irreversible operation.** Every `rm`, type change, or `git rm --cached` paired with filesystem removal requires a hard gate with a named confirmation phrase and explicit abort scope. See `references/execution-protocol.md` → section 7.
 
 **MUST NOT push.** Pushing remains a manual operator step. End with a push reminder and a reminder to run `/wrap-session`.
 
 ## Workflow
+
+Step numbers below are workflow-ordinal; the corresponding `references/execution-protocol.md` sections are cited in the text where a 1:1 mapping exists. The `/cleanup-worktree` command re-numbers these as Steps 1–11 — `ExitPlanMode` is command-Step 10, not workflow-step 8.
 
 ```
 1. Read `git status` and list every dirty path.
@@ -65,9 +67,9 @@ This skill has a fixed invocation contract. Deviations are safety failures.
 3. Enter plan mode. Write the plan file with per-file classifications, commit
    split, and hard-gate inventory.
 4. Run first QC subagent over the plan.
-5. Run triage subagent over QC findings + proposed responses.
+5. Run triage subagent over the QC report (passed by path) + proposed responses (inline). See `references/execution-protocol.md` § 4.
 6. Revise the plan to address must-fix findings.
-7. Run second QC subagent over the revised plan. (MANDATORY — not optional.)
+7. Run second QC subagent over the revised plan. Required unless the quick-tier skip applies (zero hard gates AND zero new file-content claims in the revision) — see `references/execution-protocol.md` § 6.
 8. ExitPlanMode. Operator approves.
 9. Execute commits in the order specified by the plan, running the hard-gate
    protocol at every irreversible operation and the execution-time
@@ -80,14 +82,14 @@ Detailed mechanics for steps 3–10 live in `references/execution-protocol.md`. 
 
 ## Reference Files
 
-Read these on demand — do not load all references at the start.
+Read these on demand — do NOT load them at skill-load time. The `/cleanup-worktree` command enforces this: Step 3 loads only `SKILL.md`; references are loaded at the specific trigger points below.
 
-| File | Read When |
+| File | Read When (specific triggers) |
 |---|---|
-| `references/decision-taxonomy.md` | Classifying any dirty path. Contains the seven per-file decisions (commit, untrack, delete, gitignore, convert-to-symlink, keep-as-local-fork, migrate-then-delete), the decision tree, evidence requirements per decision, and a combining-decisions table for paths that need multiple actions. |
-| `references/execution-protocol.md` | Writing the plan, running QC/triage, or executing commits. Contains plan-mode enforcement, investigation protocol, QC and triage subagent contracts, hard-gate protocol, execution-time re-verification guards, copy-to-symlink procedure, migrate-then-delete sequence, commit split guidance, post-commit verification, and push/wrap-session handling. |
+| `references/decision-taxonomy.md` | Immediately before beginning per-path classification (Workflow step 2 / command Step 4, first path in the loop). Contains the seven per-file decisions (commit, untrack, delete, gitignore, convert-to-symlink, keep-as-local-fork, migrate-then-delete), the decision tree, evidence requirements per decision, and a combining-decisions table for paths that need multiple actions. |
+| `references/execution-protocol.md` | Load sections on demand, not the whole file. Trigger points: (a) **before writing the plan file** — read § 1 (Plan-mode) and the "Plan file schema"; (b) **before each QC/triage subagent launch** — read § 3, § 4, or § 6 depending on which pass is running; (c) **before executing any destructive operation** — read § 7 (hard-gate protocol), § 8 (execution-time re-verification guards), and the relevant § 9–§ 10 for the operation type; (d) **before commit split decisions** — read § 11. |
 
-Both reference files include tables of contents. Use grep to jump to specific sections rather than reading linearly.
+Both reference files include tables of contents. Use grep to jump to specific sections rather than reading linearly. If an edge case during an earlier step surfaces a decision branch whose mechanics aren't covered by the on-demand section, grep the reference for the relevant section and read that section only — do not pre-load the entire file "just in case".
 
 ## Bundled Scripts
 
@@ -129,13 +131,15 @@ For any `.claude/commands/*.md`, the template may live in `ai-resources/.claude/
 
 **How to apply:** Always run `scripts/find-template.sh` for `.claude/commands/*.md`, `.claude/agents/*.md`, and `.claude/hooks/*` paths. The script mechanically checks every `ai-resources` subdirectory — it is the root-cause fix for the class of error text instructions produced.
 
-### Second QC pass is mandatory, not optional
+### Second QC pass is required unless the quick-tier skip applies
 
-After plan revision, run a second independent QC subagent. This is not a formality.
+After plan revision, run a second independent QC subagent. This is not a formality when it runs.
 
-**Why:** Revisions introduce new content that the first QC never saw. Both failure classes caught in the originating session (the fabricated date and an under-specified abort scope) were in revision text, not in the original plan.
+**Why:** Revisions introduce new content that the first QC never saw. The two failure classes caught in the originating session were (a) an under-specified abort scope on a hard gate, and (b) a fabricated "Apr 7 session incident" date inserted into revision text. A single QC pass would have missed both.
 
-**How to apply:** Step 7 of the workflow is mandatory. If the second QC finds new BLOCKING issues, loop back to revision. After two full revision cycles without convergence, surface the loop to the operator — there is something structurally wrong with the plan.
+**Quick-tier skip (calibrated, not removed):** The two failure classes above map to two preconditions: (a) requires a hard gate to exist; (b) requires the revision to introduce a new file-content claim. If a plan has **zero hard gates AND zero new file-content claims in its revision**, both failure surfaces are absent, and the second QC may be skipped. The skip requires explicit logging in plan Section 8 and operator-visible notification before `ExitPlanMode`. Full rule in `references/execution-protocol.md` § 6. The skip is a calibrated exemption, not a weakening — when a hard gate exists or a revision touches factual claims, the second QC remains required.
+
+**How to apply:** Check the quick-tier preconditions after revision. If either fails, run the second QC. If the second QC finds new BLOCKING issues, loop back to revision. After two full revision cycles without convergence, surface the loop to the operator — there is something structurally wrong with the plan.
 
 ### Hard gates require named confirmation phrases
 
@@ -157,7 +161,7 @@ Files that look obviously disposable (scratchpads, old memory entries, stale log
 
 ### The revision-introduces-new-bugs trap
 
-Revising a plan to address QC findings introduces new text that has not been independently reviewed. The second QC pass exists specifically to catch bugs in revisions — never skip it to "move faster." The cost of one extra subagent call is a tiny fraction of the cost of a botched commit.
+Revising a plan to address QC findings introduces new text that has not been independently reviewed. The second QC pass exists specifically to catch bugs in revisions. Do NOT skip it to "move faster" — the cost of one extra subagent call is a tiny fraction of the cost of a botched commit. The only permitted skip is the rule-based **quick-tier skip** (`references/execution-protocol.md` § 6), which requires zero hard gates AND zero new file-content claims in the revision; an operator-requested skip ("just run it") does not qualify and must still be refused per Failure Behavior.
 
 ### The working-tree-drift trap
 
@@ -175,7 +179,7 @@ Bundling every cleanup into a single "chore: worktree cleanup" commit makes the 
 | Operator declines a hard gate | Apply the gate's abort scope exactly as specified in the plan. Do NOT improvise — the abort scope is what prevents the commit from stranding in an inconsistent state. |
 | Second QC pass finds new BLOCKING issues | Revise again. After two full revision cycles without convergence, stop the pipeline and surface the loop to the operator. |
 | Execution-time re-verification guard fires (diff non-empty, inventory mismatch, etc.) | Stop the current commit. Surface the guard failure to the operator. Do NOT silently fall back to a safer operation — the guard failure is new information the plan did not account for. |
-| Operator says "skip QC, just run it" | Do not comply. The QC+triage layer is the load-bearing safety property of this skill. If the operator insists, surface the risk explicitly and only proceed if they confirm they accept responsibility for a cleanup without independent review — and log this explicitly in the plan's history section. |
+| Operator says "skip QC, just run it" | Do not comply. The QC+triage layer is the load-bearing safety property of this skill. The only permitted 2nd-QC skip is the rule-based quick-tier skip (`references/execution-protocol.md` § 6) — and even then, the first QC and triage still run. An operator-requested blanket skip is different: if the operator insists after the refusal is explained, surface the risk explicitly and only proceed if they confirm they accept responsibility for a cleanup without independent review — and log this explicitly in the plan's history section. |
 | File content is ambiguous — can't tell if it's legitimate work or accidental drift | Ask the operator. "Keep as commit" vs. "untrack" vs. "delete" depends on intent you cannot recover from the file alone. |
 | Git state is already partially broken (rebase in progress, merge conflict, detached HEAD) | Stop. This skill assumes a clean git-state baseline. Resolve the underlying state first, then restart the cleanup session. |
 
@@ -199,7 +203,7 @@ Bundling every cleanup into a single "chore: worktree cleanup" commit makes the 
 After completing a cleanup session, verify these properties before declaring done:
 
 - [ ] Every dirty path in the original `git status` is accounted for by a decision in the plan — no path was silently ignored.
-- [ ] Two independent QC passes ran against the plan (second one after revision).
+- [ ] First QC pass ran against the plan. Second QC pass ran after revision OR the quick-tier skip was applied with explicit Section-8 log entry and operator-visible notification before `ExitPlanMode`.
 - [ ] Triage ran between the two QC passes.
 - [ ] Every hard gate in the plan was executed interactively and received its named confirmation phrase (or its abort scope was applied on decline).
 - [ ] Every destructive operation re-ran its execution-time guard immediately before executing.
@@ -223,7 +227,7 @@ If any box is unchecked, the cleanup is not complete — surface the remainder t
 5. One `memory/old_feedback.md` file contains a Why paragraph not present elsewhere → classified as `migrate-then-delete` with destination `CLAUDE.md` (Assumptions gate section).
 6. `.DS_Store` is tracked but matched by `.gitignore` → classified as `untrack` paired with `gitignore` (add `.DS_Store` pattern if missing).
 7. Remaining 9 paths are new content, session data, and a new plan → classified as `commit` across 3 topical commits.
-8. Write plan to `~/.claude/plans/cleanup-2026-04-13.md` with 5 commits total, 2 hard gates (the deletion in the migrate-then-delete, and the three symlink conversions).
+8. Write plan to `~/.claude/plans/cleanup-worktree-2026-04-13-1430.md` with 5 commits total, 2 hard gates (the deletion in the migrate-then-delete, and the three symlink conversions).
 9. Run first QC subagent. QC flags: (a) under-specified abort scope on the migrate-then-delete gate; (b) missing verification that the memory migration is faithful.
 10. Run triage subagent over QC findings. Triage confirms both are must-fix; also surfaces that the symlink conversions should re-run their diffs at execution time (execution-time guard was implied but not written in the plan).
 11. Revise plan: add explicit abort scope to the deletion gate ("if declined: skip rm, skip gitignore append, still execute DS_Store untrack"); add the migration-faithfulness check; add execution-time diff re-verification for each symlink conversion.

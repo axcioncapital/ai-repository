@@ -79,7 +79,7 @@ Paths that need multiple decisions (see `decision-taxonomy.md` → Combining dec
 
 **Section 7 — Bias-counter checklist.** Pre-written acknowledgment that the bias counters from `SKILL.md → Bias Counters` have been applied: every file was read before classification, `find-template.sh` was run for every `.claude/*` path, no factual claim about a file is made without a corresponding file read. This section exists so the first QC pass has a declared baseline to verify against — not a promise, an audit artifact.
 
-**Section 8 — Revision history.** Initially empty. After the first QC pass and the triage pass, the main agent appends a subsection listing: each QC/triage finding, the proposed response, and (after revision) the exact plan edit that addressed it. The second QC pass reads this section to verify revisions are faithful to the findings they claim to address.
+**Section 8 — Revision history.** Initially empty. After the first QC pass and the triage pass, the main agent appends a subsection listing: each QC/triage finding, the proposed response, and (after revision) the exact plan edit that addressed it. For each revision edit, explicitly annotate whether it introduced a **new file-content claim** (a new factual assertion about a file's content, date, reference, provenance, or intent). This annotation is the audit trail the quick-tier skip rule (section 6) reads. The second QC pass — when it runs — reads this section to verify revisions are faithful to the findings they claim to address. If the quick-tier skip applied, Section 8 records the skip with its justification.
 
 ## 2. Investigation protocol
 
@@ -103,11 +103,14 @@ Paths that need multiple decisions (see `decision-taxonomy.md` → Combining dec
 **Rule:** Once the plan is written, run an independent QC subagent against the plan file before any revision or execution.
 
 **Subagent contract:**
-- Subagent type: `qc-gate` or `qc-reviewer` (whichever is available in the current project).
-- Inputs the subagent receives: (a) the plan file content, (b) the original operator request that triggered the cleanup, (c) the raw `git status` output the plan classifies.
-- Inputs the subagent does NOT receive: the creation conversation, prior turns, Claude's private reasoning about why each decision was made.
+- Subagent type: `qc-reviewer` (or `qc-gate` if the current project has that alias). Mirrors the path-passing + write-to-disk pattern used by `repo-dd-auditor` and `token-audit-auditor` and documented in `ai-resources/CLAUDE.md → Subagent Contracts`.
+- Inputs the subagent receives:
+  1. **`PLAN_PATH`** — absolute path to the plan file. The subagent reads the plan at invocation time. Do NOT pass the plan content verbatim. Path-passing is the standard pattern in this repo and is consistent with the workspace `CLAUDE.md → Input File Handling` rule ("subagents should receive paths, not content, when the content already lives on disk").
+  2. **Original operator request** — quoted inline in the subagent brief (short enough that inlining is cheaper than a second read).
+  3. **Git status snapshot** — quoted inline in the subagent brief (for the same reason).
+- Inputs the subagent does NOT receive: the creation conversation, prior turns, Claude's private reasoning about why each decision was made. Context isolation is enforced by withholding creation context, not by in-lining the plan.
 
-**Why isolation matters:** The subagent is the first independent reader of the plan. If the main agent justifies a decision during the creation conversation, that justification does not appear in the plan — only the decision does. The subagent evaluates what is actually written, which is what will be executed.
+**Why isolation matters:** The subagent is the first independent reader of the plan. If the main agent justifies a decision during the creation conversation, that justification does not appear in the plan — only the decision does. The subagent evaluates what is actually written, which is what will be executed. Path-passing preserves this property: the subagent reads the plan file with no access to creation context.
 
 **What the subagent is looking for:**
 - Factual errors in file descriptions (claims the file contains X when it does not).
@@ -116,7 +119,10 @@ Paths that need multiple decisions (see `decision-taxonomy.md` → Combining dec
 - Commit split mistakes (unrelated changes bundled; related changes split).
 - Decision misclassifications that a reader with no context would question.
 
-**Capture the full QC report** as a structured artifact — do not summarize it. Revisions in the next step must trace back to specific QC findings.
+**Output contract — write to disk, return summary:**
+- The subagent writes the full QC report to `<PLAN_PATH>.qc-pass-1.md` (same directory as the plan; suffix distinguishes first from second pass).
+- The subagent returns to the main session: (a) the absolute path to the report file, and (b) a ≤20-line structured summary (one line per finding with severity tag: BLOCKING / IMPORTANT / MINOR).
+- The main session reads the full report from disk only when a summary item requires deeper context (e.g., to draft a response during triage). Mirrors the 30-line-cap / write-full-notes-to-disk contract in `ai-resources/CLAUDE.md → Subagent Contracts`; tighter 20-line cap here because the QC report is invoked up to 3 times per cleanup session (2 QC + 1 triage).
 
 ## 4. Triage pass (independent subagent)
 
@@ -124,8 +130,12 @@ Paths that need multiple decisions (see `decision-taxonomy.md` → Combining dec
 
 **Subagent contract:**
 - Subagent type: `triage-reviewer`.
-- Inputs: the QC report, the plan file, and the main agent's proposed responses (one per finding: "will fix," "will clarify," "history-only," etc.).
+- Inputs the subagent receives:
+  1. **`QC_REPORT_PATH`** — absolute path to the first QC report written by §3 (e.g., `<PLAN_PATH>.qc-pass-1.md`). Subagent reads at invocation time.
+  2. **`PLAN_PATH`** — absolute path to the plan file. Subagent reads at invocation time.
+  3. **Proposed responses** — the main agent's one-line response per finding ("will fix", "will clarify", "history-only", "disagree — defend"). Passed inline; short enough that inlining is cheaper than writing a response file.
 - Inputs NOT received: the creation conversation.
+- Output contract — write to disk, return summary: the subagent writes the full triage report to `<PLAN_PATH>.triage.md` and returns (a) the absolute path and (b) a ≤20-line summary categorizing findings as must-fix / should-fix / history-only, plus any first-class alternatives surfaced.
 
 **What triage catches that QC misses:**
 - **First-class alternatives the main agent didn't consider.** Example from the originating session: QC flagged "deleting `memory/` loses the rationale." Main agent proposed adding a Why paragraph to the plan to document the loss. Triage surfaced migrate-then-delete as the correct alternative — lift the rationale into CLAUDE.md first, then delete. The triage reviewer's independence is what let it spot that "document the loss" and "prevent the loss" were different things.
@@ -149,21 +159,38 @@ Paths that need multiple decisions (see `decision-taxonomy.md` → Combining dec
 - Re-derives the commit split if reclassification changed which files belong together.
 
 **What a revision must NOT do:**
-- Silently address findings without logging what changed. Every revision should leave a trace (a revision note at the bottom of the plan, or a diff in a scratchpad) so the second QC pass can check whether the revision faithfully addressed the findings.
-- Introduce new claims about files without re-reading them. The revision is new content. The bias counter "never fabricate file details" applies to the revision exactly as it applies to the original plan.
+- Silently address findings without logging what changed. Every revision edit MUST be recorded in plan Section 8 (Revision history), with the per-edit annotation of whether the edit introduced a **new file-content claim**. That annotation gates the §6 quick-tier skip — it cannot be reconstructed post-hoc.
+- Introduce new claims about files without re-reading them. The revision is new content. The bias counter "never fabricate file details" applies to the revision exactly as it applies to the original plan. When an edit adds a new file-content claim, re-read the file before writing the claim, and mark the edit's Section-8 annotation accordingly.
 
-## 6. Second QC pass (mandatory after revision)
+## 6. Second QC pass (required unless quick-tier skip applies)
 
-**Rule:** Run a second QC subagent over the revised plan. This pass is NOT optional.
+**Rule:** Run a second QC subagent over the revised plan. This pass is **required** when Section 4 (hard-gate inventory) contains ≥1 hard gate OR when the revision introduced any new file-content claim. For zero-hard-gate plans whose revision introduced zero new file-content claims, the 2nd QC may be skipped per the **Quick-tier skip** rule below.
 
-**Why:** The revision introduces new content — new decision rationales, new abort scopes, sometimes new first-class alternatives. That new content has never been independently reviewed. The originating session's second QC pass caught a fabricated "Apr 7 session incident" that the main agent had inserted into the revision to explain a deletion. A single QC pass would have missed it because the fabrication was in text the first QC never saw.
+**Why the pass exists:** The revision introduces new content — new decision rationales, new abort scopes, sometimes new first-class alternatives. That new content has never been independently reviewed. The originating session's second QC pass caught a fabricated "Apr 7 session incident" that the main agent had inserted into the revision to explain a deletion, and an under-specified abort scope on a hard-gate block. A single QC pass would have missed both.
 
-**Subagent contract:**
-- Same type as the first QC pass.
-- Inputs: revised plan, original operator request, `git status` output, and (critically) the first QC report so the subagent can verify whether findings were addressed faithfully or merely deflected.
+**Why the rule is calibrated, not absolute:** The two failure classes the 2nd QC was authored to catch are (a) under-specified abort scope on hard gates, and (b) fabricated file-content claims in revision text. Class (a) cannot occur in a zero-hard-gate plan (no gates = no abort scopes to specify). Class (b) can only occur when the revision introduced new factual claims about files. A plan where both conditions are absent has no failure surface for the 2nd QC to catch, and the pass becomes duplicate work. The quick-tier rule below gates the skip on both conditions jointly.
+
+**Quick-tier skip (2nd QC may be skipped):**
+
+Both of the following MUST hold:
+1. Plan Section 4 contains **zero hard-gate blocks** (no `delete`, no `convert-to-symlink`, no `migrate-then-delete` deletion step, no paired `git rm --cached` + filesystem removal).
+2. The revision applied in §5 introduced **zero new file-content claims** (no new factual assertion about a file's content, date, reference, provenance, or intent that did not already appear in the pre-revision plan).
+
+If both conditions hold, the main agent MAY skip the 2nd QC and proceed to `ExitPlanMode`, with the following logging requirements:
+- **Plan Section 8** (Revision history) receives an explicit entry: `2nd QC skipped per quick-tier rule. Section 4 hard-gate count: 0. Revision new file-content claims: 0. Justification: <one line>.`
+- Before `ExitPlanMode`, the main agent surfaces the skip to the operator in the turn-level summary: "`2nd QC skipped per quick-tier rule — zero hard gates, zero new file-content claims in revision.`" The operator sees this before approving the plan.
+- If either condition is ambiguous (e.g., a decision could plausibly be reclassified as gated, or a revision rewording could plausibly be a new claim), **do not skip** — run the 2nd QC.
+
+**Subagent contract (when the 2nd QC runs):**
+- Same type as the first QC pass (`qc-reviewer` / `qc-gate`).
+- Inputs the subagent receives:
+  1. **`PLAN_PATH`** — absolute path to the revised plan. Read at invocation time.
+  2. **`FIRST_QC_REPORT_PATH`** — absolute path to the first QC report (from §3), so the subagent can verify whether findings were addressed faithfully rather than deflected. Read at invocation time.
+  3. Original operator request + `git status` snapshot — quoted inline.
 - Inputs NOT received: creation conversation, revision rationale from the main agent.
+- Output contract — write to disk, return summary: writes full report to `<PLAN_PATH>.qc-pass-2.md`, returns (a) the absolute path and (b) a ≤20-line summary.
 
-**Exit criteria:**
+**Exit criteria (after 2nd QC runs):**
 - If the second QC finds new BLOCKING issues: loop back to step 5 (revise again). After two full revision cycles without convergence, stop the pipeline and surface the loop to the operator — there is something structurally wrong with the plan or the approach.
 - If the second QC finds only MINOR issues: proceed to `ExitPlanMode` with those issues logged.
 - If the second QC clears: proceed to `ExitPlanMode`.
