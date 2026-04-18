@@ -12,6 +12,7 @@ Other directories:
 - `docs/` — Process documentation (session rituals, etc.)
 - `scripts/` — Utility scripts for repo maintenance
 - `style-references/` — Style reference materials consumed by formatting and prose-compliance skills
+- `usage/` — Session telemetry (`usage-log.md`) written by `/usage-analysis`; baseline for token audits
 
 These resources operate across a multi-tool ecosystem — not just Claude. Skills may reference or interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Do not design resources that assume a single-tool environment.
 
@@ -53,7 +54,6 @@ Run `/usage-analysis` at the end of every substantive session. Output goes to `u
 
 ## Git Rules
 
-- Always show me the diff before committing
 - Use descriptive commit messages: `new: skill-name — purpose` or `update: skill-name — what changed`
 - Multi-file changes: `batch: description`
 - Never force-push

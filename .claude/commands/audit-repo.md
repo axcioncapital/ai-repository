@@ -7,7 +7,7 @@ Input: $ARGUMENTS (optional) — not currently used, reserved for future scope o
 ### Step 1: Resolve Auditor Paths
 
 1. Set TARGET to the current working directory.
-2. Set SKILL_DIR to `reference/skills/repo-health-analyzer/agents/`
+2. Set SKILL_DIR by checking which of these paths exists (in order): `reference/skills/repo-health-analyzer/agents/` (deployed-project layout), then `skills/repo-health-analyzer/agents/` (ai-resources layout). Use the first path that resolves.
 3. Verify the following 8 agent files exist under SKILL_DIR:
    - `repo-health-analyzer.md` (lead agent)
    - `file-org-auditor.md`
