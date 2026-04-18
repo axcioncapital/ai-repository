@@ -37,3 +37,5 @@
 | 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-architecture.md | created | replaces Phase 2-3 of deleted produce-prose.md |
 | 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-prose-draft.md | created | replaces Phase 4-5c of deleted produce-prose.md |
 | 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-formatting.md | created | replaces Phase 6 + 6-QC of deleted produce-prose.md |
+| 2026-04-18 | agent | .claude/agents/token-audit-auditor.md | triaged:project-specific | — |
+| 2026-04-18 | command | .claude/commands/token-audit.md | triaged:project-specific | — |

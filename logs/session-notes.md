@@ -684,3 +684,111 @@ Continuation of the earlier 2026-04-13 "Grant ai-resources filesystem visibility
 
 ### Open Questions
 None. (The earlier "mystery auto-commits" flagged mid-session — `60820a7`, `8d9a01c`, `0db0d9d`, `95a88c6` — turned out to be commits from the earlier 2026-04-13 session already documented above, not mysterious at all.)
+
+## 2026-04-18 — /cleanup-worktree first real invocation — 4-commit sweep of accumulated 2026-04-17 drift
+
+### Summary
+
+First end-to-end real run of the newly-created `worktree-cleanup-investigator` skill and `/cleanup-worktree` command. Investigated 12 dirty paths in `ai-resources/`, produced an 8-section plan with two operator-decision soft flags (both defaulted), ran the mandatory two-QC-pass + triage protocol (first QC: REVISE BLOCKING with 7 findings; triage confirmed priority 4→3→5→2→6→7→1; Revision 1 applied; second QC: PASS WITH MINOR; Revision 2 applied), and executed 4 commits that landed clean and were pushed to origin/main. The session also surfaced 6 `/improve-skill` follow-ups against the skill itself, all logged in the plan file.
+
+### Files Created
+
+- `~/.claude/plans/noble-dancing-wall.md` — 8-section cleanup plan with full revision history (outside repo; plan artifact).
+- `docs/operator-principles.md` — new operator-facing reference doc (pre-authored, committed this session in batch #1).
+- `inbox/codex-second-opinion-brief.md` — Codex CLI integration build brief dated 2026-04-13 (pre-authored, committed this session in batch #4).
+- `inbox/worktree-cleanup-brief.md` — the original brief that drove the skill's creation (pre-authored, committed this session in batch #4 as historical record).
+- `reports/repo-health-report.md` — 2026-04-06 workspace health audit output (pre-authored, committed this session in batch #4).
+- `workflows/research-workflow/.claude/commands/produce-architecture.md` — Phase 1–4 orchestrator, part of the 2026-04-17 three-way split (pre-authored, committed this session in batch #2).
+- `workflows/research-workflow/.claude/commands/produce-formatting.md` — Phase 1–4 orchestrator, part of the three-way split (pre-authored, committed this session in batch #2).
+- `workflows/research-workflow/.claude/commands/qc-pass.md` + `refinement-pass.md` — workflow-template copies of the universal subagent launchers (pre-authored, committed this session in batch #2 as intentional local forks per G1 default).
+
+### Files Modified
+
+- `docs/session-rituals.md` — session-contract additions (exit condition, autonomy level), start-with-outcomes pattern, first-session-of-week scan, 60-second coherence scan, state-what's-working-first feedback, /compact strategy, mid-session checkpoint, "what would I forget" question, weekly improvement flush.
+- `workflows/research-workflow/.claude/commands/prime.md` — added step 5 session-contract prompt; renumbered "do not execute" to step 6.
+- `workflows/research-workflow/.claude/hooks/check-claim-ids.sh` — mode change only (100644 → 100755) to close the IMPORTANT finding in the 2026-04-06 health report.
+- `workflows/research-workflow/.claude/commands/produce-prose.md` — **deleted** (three-way split completed 2026-04-17; index-level removal staged this session).
+
+### Decisions Made
+
+Plan Section 4 addendum — operator soft flags, both defaulted:
+- **G1** (qc-pass.md + refinement-pass.md workflow copies): operator confirmed default "commit as local forks" rather than convert to symlinks, preserving the existing workflow-template duplication pattern.
+- **G2** (worktree-cleanup-brief.md post-consumption): operator confirmed default "commit as historical record" since no `ai-resources/CLAUDE.md` convention exists for post-consumption brief disposition.
+
+Plan QC revisions:
+- **Revision 1** (7 findings from first QC + triage): Section 4 restructured to "Hard gates: NONE" + clearly-labeled non-hard-gate sub-schema addendum; Path 11 downgraded to soft flag G2; Section 6 symlink-branch guards reframed as "PLAN REVISION REQUIRED"; Counter 2 re-scoped to present-on-disk paths with explicit D-status exclusion + substitute manual-check result; commit-prefix spec conflict surfaced (execution-protocol § 11 vs CLAUDE.md Git Rules) and resolved in favor of CLAUDE.md's `batch:`/`fix:` vocabulary; Path 4 reclassified from decision 3 (`delete`) to decision 1 (`commit` — stage pre-existing filesystem deletion); Path 6 line count dropped (not load-bearing).
+- **Revision 2** (1 finding from second QC): Row 12 + Pre-commit #4 guard line counts dropped (138 → actual 137 on `reports/repo-health-report.md`; same resolution pattern as Path 6).
+
+Session-level design decisions:
+- **Addendum over hoist** for Section 4 operator-decision flags — chose to extend Section 4 with a clearly-labeled sub-schema rather than add a ninth section, preserving the skill's 8-section plan schema. Logged as FCA1 in Section 8 for future `/improve-skill` consideration if addendum pattern proves awkward.
+- **Scope discipline** — every script blind spot, taxonomy gap, and spec-vs-spec conflict discovered during investigation was logged to the plan's `/improve-skill` follow-up list rather than fixed opportunistically in the same session. Six follow-ups landed:
+  1. find-template.sh Blind spot A (`workflows/` prefix pattern-matching gap).
+  2. find-template.sh Blind spot B (D-status inputs rejected by `[ ! -f ]` precondition).
+  3. decision-taxonomy.md § 3 does not carve out pre-existing filesystem deletion.
+  4. execution-protocol.md § 11 vs CLAUDE.md Git Rules commit-prefix vocabulary conflict.
+  5. `ai-resources/CLAUDE.md` silent on post-consumption inbox brief disposition.
+  6. Section 4 addendum pattern should be formalized into the plan schema if reused.
+
+### Commits Landed (pushed to origin/main)
+
+- `9866e4f` — `batch: docs — session rituals + operator principles (exit contract, weekly flush, mental-model feedback)`
+- `1673a7c` — `batch: research-workflow — /prime session contract + /produce-prose three-way split + universal qc/refinement passes`
+- `3a00211` — `fix: research-workflow — make check-claim-ids.sh executable (closes repo-health-report IMPORTANT finding)`
+- `92a6e6a` — `batch: inbox briefs + 2026-04-06 repo health report`
+
+Range: `85b4d4b..92a6e6a` on `main`.
+
+### Next Steps
+
+- `/improve-skill worktree-cleanup-investigator` in a dedicated session to action the 6 follow-ups logged in plan Section 8 (find-template.sh script patches, taxonomy § 3 clarification, execution-protocol § 11 commit-prefix reconciliation, inbox brief convention doc rule).
+- `/update-claude-md ai-resources` may be the cleaner home for follow-up #5 (inbox post-consumption convention) if the operator prefers a workspace rule over a skill-internal doc.
+- Consider a session-usage retrospective: this `/cleanup-worktree` run consumed ~10%+ of the daily usage limit — primarily three subagent passes at ~220k tokens combined and one bloated initial triage prompt that the operator correctly rejected. The skill is designed for safety on irreversible ops; this particular tree had zero hard gates, so a lightweight `/cleanup-worktree quick` tier that skips the second QC for no-hard-gate plans would meaningfully reduce cost and is worth flagging to `/improve-skill`.
+
+### Open Questions
+
+None. Plan approved and executed cleanly; push confirmed; all dirty paths accounted for; working tree clean.
+
+## 2026-04-18 — Built /token-audit infrastructure (v1.2 protocol + lean subagent + orchestrator command)
+
+### Summary
+
+Built three-file token-usage audit infrastructure in `ai-resources/` so a future session can run a 10-section audit of the repo's token efficiency. Operator authored v1.1 of the audit protocol; this session produced the execution harness: a slash command, v1.2 of the protocol (with `.claudeignore` checks corrected to `Read(pattern)` deny-rule checks — the actual Claude Code context-exclusion mechanism), and a fresh-context subagent for heavy-read sections. Went through two independent plan-level QC cycles (Option A 11-file skill-package rejected → Option E 3-file `/repo-dd`-pattern revised after new findings → approved) before any build, plus per-file QC on the built artifacts (GO verdict) before commit and push. No audit executed this session — that's a separate future session.
+
+### Files Created
+
+- `ai-resources/audits/token-audit-protocol.md` — v1.2 spec (632 lines; read by command and subagent at runtime)
+- `ai-resources/.claude/agents/token-audit-auditor.md` — lean subagent for Sections 2/4/5-conditional/6 (87 lines; fresh-context, facts-only)
+- `ai-resources/.claude/commands/token-audit.md` — `/token-audit [scope]` orchestrator (193 lines; inline steps in `/repo-dd` style)
+- `/Users/patrik.lindeberg/.claude/plans/i-want-to-develop-wondrous-blossom.md` — approved build plan (home directory, not in repo)
+
+### Files Modified
+
+None in repo.
+
+### Decisions Made
+
+**Architecture pattern (operator-directed pivot after QC cycle 1):** Chose `/repo-dd` 3-file pattern (command + spec + lean subagent) over `/audit-repo` 11-file skill-package pattern. Rationale: diagnostic-only audits don't need the skill-package overhead; protocol spec is the `/repo-dd` questionnaire analog.
+
+**Placement (operator-directed choice after QC cycle 2 surfaced alternative):** Standalone `/token-audit` rather than folding into `/repo-dd deep --token-focus`. Rationale: different cadences — token audit is periodic, `/repo-dd` is on-demand diligence. Overlap with `/repo-dd deep` Step 10 accepted; v2 may consolidate if first run surfaces >50% redundancy.
+
+**`.claudeignore` correction (autonomous, after QC finding C-NEW-1):** v1.2 protocol checks for `Read(pattern)` deny rules specifically — not generic `permissions.deny`. The actual Claude Code mechanism that prevents file-content loading is `permissions.deny` with `Read(...)` entries; `Write(...)` and `Bash(...)` denies don't answer the context-load question.
+
+**Scope handling:** `/token-audit` accepts empty | `ai-resources` | `workspace` | `project <name>`; reports land at `ai-resources/audits/` always; working notes at `ai-resources/audits/working/`.
+
+**Subagent style:** Protocol-executor, not section-branching — the agent reads the relevant protocol section and executes it verbatim; no section-specific measurement logic embedded.
+
+**Deploy strategy:** ai-resources-only for v1. No `/sync-workflow` propagation. Revisit after first real audit run.
+
+**Verification rule adjustment:** Pre-build plan's BLOCKING check "grep `.claudeignore` = 0" was too strict (caught meta-documentation in frontmatter + v1.2-correction parenthetical). Adjusted to behavior-aware: "no `.claudeignore` inspection instructions; matches in frontmatter/correction-notes permitted." Recorded in final verification report.
+
+### Next Steps
+
+1. Run `claude update` to move from 2.1.98 to 2.1.113 (security + subagent-timeout improvements).
+2. In a fresh future session, execute `/token-audit ai-resources` (or `/token-audit workspace` for broader leverage — workspace-root CLAUDE.md loads every session). Produces report at `ai-resources/audits/token-audit-YYYY-MM-DD[-{scope}].md`.
+3. Review the report; pick HIGH findings to act on.
+4. In a **separate** fix session, implement fixes. Diagnose and fix remain split per operator preference.
+
+### Open Questions
+
+None. Build complete, both QC cycles passed, per-file QC clean, committed (`801be2d`), pushed.
+

@@ -78,3 +78,18 @@
 - **Decisions logged:** 1
 - **QC cycles:** 2 (plan QC: REVISE → 8 revisions applied before ExitPlanMode → approved; implementation QC: GO with 3 minor follow-ups → all applied)
 - **Gates:** 3 (3 changed) — plan-approval:changed, scope-expansion:changed, qc-disposition:changed
+
+### 2026-04-18 — /cleanup-worktree first real invocation — 4-commit sweep of accumulated 2026-04-17 drift
+
+- **Commands used:** /cleanup-worktree, /qc-pass (invoked then skipped), /wrap-session
+- **Iterations:** 2 (plan Revision 1 → Revision 2)
+- **Decisions logged:** 2
+- **QC cycles:** 2 (first: REVISE BLOCKING, 7 findings, all addressed in Revision 1; second: PASS WITH MINOR, 1 off-by-one line count, addressed in Revision 2)
+- **Gates:** 1 (1 confirmed) — plan-approval:confirmed (operator approved post-revision; both soft flags G1/G2 resolved to defaults)
+
+### 2026-04-18 — Built /token-audit infrastructure (v1.2 protocol + lean subagent + orchestrator command)
+- **Commands used:** /qc-pass (3x), /context (2x), ExitPlanMode, /wrap-session, claude --version
+- **Iterations:** 3 (plan Option A → Option E v1 → Option E v2 approved); artifacts built once and passed per-file QC on first try
+- **Decisions logged:** 2
+- **QC cycles:** 3 (plan cycle 1: REVISE on 11-file Option A with 3 Critical + 6 Major; plan cycle 2: REVISE-AND-RESUBMIT on Option E v1 with 2 new Critical + 4 Major; per-file cycle 3: GO on built artifacts with 5 Minor cosmetic findings, none applied)
+- **Gates:** 4 (1 changed, 3 confirmed) — plan-approval:changed (operator pivoted from Option A to Option E after QC cycle 1), qc-disposition:changed (plan QC findings addressed via revision, twice), qc-disposition:confirmed (per-file QC on built artifacts passed clean), commit-approval:confirmed
