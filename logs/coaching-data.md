@@ -202,3 +202,10 @@
 - **Decisions logged:** 2
 - **QC cycles:** 1 (REVISE → revised per recommendation → applied; no second QC after revision since changes were per the reviewer's prescriptive list)
 - **Gates:** 4 (2 confirmed, 2 changed) — plan-approval:changed (v1 plan revised after QC, v2 approved via "proceed per your recommendation"), qc-disposition:changed (REVISE list applied including dropping Fix 3 and switching Fix 2 hook event), scope-selection:confirmed (operator selected 3 fixes via AskUserQuestion, accepted as scope), commit-approval:confirmed (two commits + push approved with single "push" command)
+
+### 2026-04-18 — /improve-skill pipeline tune-up
+- **Commands used:** /improve-skill audit (manual), /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 0
+- **QC cycles:** 1 (Explore-agent audit → main-agent triage → 4 gaps applied)
+- **Gates:** 2 (1 changed) — plan-approval:changed, bright-line-review:confirmed

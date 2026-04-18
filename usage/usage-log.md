@@ -179,3 +179,25 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Trend vs. prior 3 entries: improvement — prior entry was Wasteful (linter-race re-reads); this session returns to Acceptable matching the two before that, with re-reads dropped from 7 to 2 and rework cycles dropped from 2 to 1.
 
 **Recommendation:** When a session anticipates editing a large append-only log file (session-notes.md, innovation-registry.md, improvement-log.md), do the first read via the Read tool with a targeted offset rather than Bash cat — eliminates the Read-before-Edit harness retry that drove both Tool-overhead findings this session.
+
+
+### 2026-04-18 | Acceptable
+
+**Task:** Audited `/improve-skill` command and ai-resource-builder SKILL.md against workspace canonical rules; applied 4 fixes to improve-skill.md and added `model: opus` frontmatter to sibling create-skill and migrate-skill commands.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 8 |
+| Files read | 11 (re-reads: 1 — session-notes.md read 2x) |
+| Files written/edited | 8 |
+| Tool calls | ~26 total |
+| Subagents | 2 |
+| Rework cycles | 1 |
+
+**Findings:**
+- Edit-before-Read harness miss on 2 files (create-skill.md, innovation-registry.md) forced a satisfying 3-line Read before re-attempting the Edit — same pattern flagged in the prior usage entry (Tool overhead, Moderate).
+- Explore subagent returned a report exceeding its word-limit budget; content usable but the overrun represents subagent-contract drift (Context bloat, Minor).
+- Directed rework on frontmatter tier (sonnet → opus) after operator pushback; 1 cycle, single-line Edit (Rework, Minor).
+- Rating stability: matches the acceptable cadence of the last 3 entries (2 Acceptable, 1 Wasteful); no regression.
+
+**Recommendation:** Address the recurring Edit-before-Read miss by treating Bash `head`/`cat` as insufficient to satisfy the Read-before-Edit contract — run a proper `Read` on any file before the first `Edit`, even when the head preview seems sufficient.

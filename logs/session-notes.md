@@ -1481,3 +1481,29 @@ QC fixes (applied per reviewer's REVISE list, no operator decision needed): adde
 
 ### Open Questions
 None.
+
+## 2026-04-18 — /improve-skill pipeline tune-up + skill-pipeline model tiers
+
+### Summary
+Audited `/improve-skill` and the `ai-resource-builder` SKILL.md against workspace CLAUDE.md canonical rules (QC Independence, Post-edit QC, Model Tier, Subagent Contracts). Fixed four real gaps: missing post-edit QC subagent, no model tier declared, SKILL.md <-> command divergence on iteration step, and implicit breaking-change detection. Then extended the model-tier fix to sibling commands `/create-skill` and `/migrate-skill`, which were in the same undeclared state.
+
+### Files Created
+None.
+
+### Files Modified
+- `ai-resources/.claude/commands/improve-skill.md` — added `model: opus` frontmatter; inserted Step 5e post-edit QC (fresh-context subagent reviewing the fixed state + fix ledger, with skip carve-out for single-edit/formatting-only passes); cited the four breaking-change triggers in Step 1; surfaces post-edit QC verdict in Step 7 results.
+- `ai-resources/.claude/commands/create-skill.md` — added `model: opus` frontmatter (was undeclared).
+- `ai-resources/.claude/commands/migrate-skill.md` — added `model: opus` frontmatter (was undeclared).
+- `ai-resources/skills/ai-resource-builder/SKILL.md` — Improve Workflow Step 5 language now matches the pipeline's autonomous-apply behavior (reconciling stale "user picks numbers" wording).
+
+### Decisions Made
+- **Sonnet → Opus for `/improve-skill`.** Initial call was Sonnet (framed as orchestrator). Operator pushed back ("is sonnet safe move?") and I re-evaluated: Step 1 triage, Step 3 iteration generation, Step 5a-c severity classification + fix application + regression check, and Step 6 feedback-resolution rating are all judgment work — Opus tier per the workspace CLAUDE.md tier table. Flipped to Opus. Same reasoning applied to create-skill and migrate-skill.
+- **Skip plan QC subagent pass.** The Step 1 triage output is conversational, not a formal plan artifact — the CLAUDE.md Plan QC rule targets execution plans of the type produced by pipeline commands, not triage summaries. Not acted on.
+- **Shallow-evaluation flag stays non-blocking.** Current behavior (flag in Step 7) is correct; blocking would create friction on legitimately clean skills.
+
+### Next Steps
+- Push commit `ce310e5` when ready.
+- Follow-up audit candidate: scan remaining `ai-resources/.claude/commands/` for commands missing `model:` frontmatter. Deferred — not all commands need the same tier; requires per-command judgment.
+
+### Open Questions
+None.
