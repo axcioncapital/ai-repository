@@ -259,7 +259,7 @@ Otherwise, install the three pieces:
    Each section is a short-form mirror — not a verbatim copy of the workspace-level text — so it satisfies the workspace `## CLAUDE.md Scoping` rule ("short pointer acceptable; verbatim duplication is not") while preserving the 2026-04-13 "Commit Rules propagate by explicit copy" decision (inheritance alone proved unreliable in practice, so the rule must appear in-context).
 
    **Policy (per section, applied independently):**
-   - If `projects/{name}/CLAUDE.md` does not exist → create a minimal one with a project title (use the project name), a one-line description pulled from the pipeline's context pack if available (otherwise a generic placeholder), and all four canonical blocks below.
+   - If `projects/{name}/CLAUDE.md` does not exist → create a minimal one with a project title (use the project name) and all four canonical blocks below. Substitute `{name}` (project name) and `{project-description}` (one-line description from the pipeline's context pack, or a generic placeholder if absent) before executing the bash block — the heredoc uses quoted `<<'EOF'`, so no shell expansion happens at runtime.
    - If `projects/{name}/CLAUDE.md` exists and already contains a given heading → leave that section alone. Report "{section} already present, skipping."
    - If `projects/{name}/CLAUDE.md` exists but has no given heading → append that canonical block to the end of the file (preserving the existing content verbatim, preceded by a blank line).
 
@@ -319,9 +319,9 @@ Otherwise, install the three pieces:
 
    if [ ! -f "$CLAUDE_MD" ]; then
      cat > "$CLAUDE_MD" <<'EOF'
-# {project-title}
+# {name}
 
-{one-line description from context pack, or a placeholder}
+{project-description}
 
 ## Input File Handling
 
@@ -356,7 +356,9 @@ Auto-compact drops these by priority; name them explicitly so they survive. Befo
 
 When switching between unrelated tasks in the same terminal, prefer `/clear` over continuing in dirty context. Stale context from a prior task compounds and contaminates the next one.
 EOF
-     # Substitute {project-title} and description with real values
+     # Note: `{name}` and `{project-description}` are substituted by the
+     # calling agent before this bash block executes — same convention as
+     # all other `{name}` references in this command file.
    else
      # Ensure Input File Handling section (idempotent append)
      if grep -q '^## Input File Handling' "$CLAUDE_MD"; then
