@@ -50,4 +50,8 @@
 | 2026-04-18 | agent | .claude/agents/dd-extract-agent.md | triaged:project-specific | — |
 | 2026-04-18 | agent | .claude/agents/dd-log-sweep-agent.md | triaged:project-specific | — |
 | 2026-04-18 | hook | .claude/hooks/check-skill-size.sh | triaged:project-specific | — |
-| 2026-04-18 | hook | .claude/hooks/pre-commit | detected | — |
+| 2026-04-18 | hook | .claude/hooks/pre-commit | triaged:project-specific | — |
+| 2026-04-18 | agent | .claude/agents/pipeline-stage-2.md | triaged:project-specific | — |
+| 2026-04-18 | agent | .claude/agents/pipeline-stage-2-5.md | triaged:project-specific | — |
+| 2026-04-18 | agent | .claude/agents/pipeline-stage-3c.md | triaged:project-specific | — |
+| 2026-04-18 | agent | .claude/agents/session-guide-generator.md | triaged:project-specific | — |
