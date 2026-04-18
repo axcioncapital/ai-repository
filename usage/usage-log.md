@@ -201,3 +201,27 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Rating stability: matches the acceptable cadence of the last 3 entries (2 Acceptable, 1 Wasteful); no regression.
 
 **Recommendation:** Address the recurring Edit-before-Read miss by treating Bash `head`/`cat` as insufficient to satisfy the Read-before-Edit contract — run a proper `Read` on any file before the first `Edit`, even when the head preview seems sufficient.
+
+
+### 2026-04-18 | Acceptable
+
+**Task:** Trimmed three oversized SKILL.md files (ai-prose-decontamination 484→314, ai-resource-builder 463→401, prose-compliance-qc 330→210) via pure-relocation refactor — moved teaching examples and templates to sibling references/ files; each refactored skill passed independent qc-reviewer.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~14 |
+| Files read | ~10 (re-reads: 2 — operational-frontmatter.md 2× at different offsets, innovation-registry.md 2× via Read + Bash tail) |
+| Files written/edited | ~22 (7 new reference files, 3 SKILL.md edits, 1 reference edit, 4 log appends, 1 plan rewrite) |
+| Tool calls | ~54 total (Read ~10, Edit ~14, Write ~10, Bash ~10, Agent ~5, Grep ~3, ToolSearch ~2) |
+| Subagents | 6 |
+| Rework cycles | 2 |
+
+**Findings:**
+- Six subagents spawned across the session (1 Explore, 1 plan-QC, 1 triage, 3 post-edit QC) — each gate-purposed and required by QC discipline; no waste, but crosses the `[COST]` threshold of ≥4 subagents and warrants a checkpoint flag mid-session (Tool overhead, Minor — informational).
+- Plan v1 → plan v2 rework after qc-reviewer REVISE verdict with 4 findings; resolved by adopting pure-relocation framing (Rework, Moderate) — the QC cycle was high-value (caught semantic-edit drift before fix application), not avoidable waste; outline the relocation-vs-rewrite framing upfront in the plan to skip the cycle.
+- Skill 2 reference file required a single-line revert after post-edit QC flagged an introduced framing sentence as deviation from verbatim relocation (Rework, Minor) — when the spec is "verbatim relocation," do not add transitional framing in the destination file; lift bytes only.
+- innovation-registry.md accessed 2× (Read tool then Bash tail) and operational-frontmatter.md accessed 2× at different offsets — the registry pattern repeats from the prior 2 entries (Re-reads, Minor) — pin first-read content when subsequent edits or re-inspections are likely on append-only logs.
+- One Bash sed attempt on innovation-registry.md failed (Edit-tool "file not read yet" error → sed quoting issue → recovered via Read + Edit) (Tool overhead, Minor) — same Edit-before-Read harness pattern flagged in the prior 3 entries; satisfy the harness contract via the Read tool rather than chasing it with Bash.
+- Trend vs. prior 3 entries: stable — Acceptable matches the prior 2 Acceptable entries and the broader cadence; subagent count (6) is the highest in the trailing window but each was gate-purposed for QC discipline, not waste.
+
+**Recommendation:** When a session anticipates ≥3 post-edit QC subagents (one per artifact), batch the artifact-level QC findings into a single triage pass at the end rather than triaging per-artifact — same QC coverage, ~1 fewer subagent in the session ledger and a single decision point for the operator.

@@ -321,3 +321,24 @@
   - Keep the deferral (rejected — thin gate, no plan for when the validation run would happen, leaves tier table permanently inconsistent).
   - Flip to opus per operator's initial challenge (rejected — Stage 4 is spec-following, not judgment; escalating to opus would collapse the tiering logic across the pipeline; if Stage 4 needs opus, the fix is to tighten 3c's spec, not escalate 4).
 - **Follow-up:** First real `/new-project` run is the empirical validation. Revert to opus if sonnet underperforms.
+
+---
+
+## 2026-04-18 — Pure relocation as the canonical-pipeline-compatible refactor pattern
+
+- **Context:** Trimming 3 oversized skills (ai-prose-decontamination, ai-resource-builder, prose-compliance-qc) from the 2026-04-18 token-audit HIGH list. Two paths originally offered: full `/improve-skill` pipeline runs (slow, 3 sequential multi-hour sessions) or ad-hoc direct trims (quality risk). Operator asked for "a better solution that won't compromise quality." Initial v1 plan included "compress inline by ~20 L" and "tighten by ~6 L" line items. Plan-QC flagged: workspace CLAUDE.md says "Always use the canonical pipelines… for modifications" — semantic edits without /improve-skill = bright-line rule violation. Triage cascade established the load-bearing decision was whether to bypass /improve-skill.
+- **Decision:** Adopt pure structural relocation as the refactor pattern. Cut blocks verbatim from SKILL.md, paste into sibling `references/` files, leave a pointer behind. Zero rewording, zero compression, zero semantic editing. This stays inside the canonical-pipeline rule because the rule governs *content modifications*, not structural relocation. Each refactored SKILL.md still gets a mandatory post-edit qc-reviewer pass.
+- **Rationale:**
+  - Reconciles the operator's quality constraint with the canonical-pipeline rule. Quality is preserved because nothing changes about *what is said*; only *where it lives* changes.
+  - The pattern is canonical — `ai-resource-builder/SKILL.md` itself prescribes progressive disclosure (folder structure, references/ subfolder, on-demand loading).
+  - Faster than 3 sequential `/improve-skill` runs while still safer than ad-hoc trims (because the operational core can't be touched).
+  - Discipline is checkable: post-edit QC can verify no operational instruction was lost or weakened, just by diffing the relocated reference files against the original SKILL.md and confirming the pointers fire at the right moments.
+  - Generalizable: this pattern can trim the remaining 5 oversized skills without invoking /improve-skill. Token-budget gain is durable; quality risk is contained.
+- **Alternatives considered:**
+  - Full `/improve-skill` per skill (rejected — operator-blocked on time; 3 sequential pipeline runs is a multi-hour session and the audit flagged 8 skills, not 3).
+  - Direct trims with semantic editing (rejected — bright-line rule on canonical pipelines applies; would set precedent that "refactor" laundering bypasses QC gates).
+  - Mixed approach: pure relocation + small inline tightening with explicit operator approval of the bypass (rejected — adds operator-decision overhead per skill; pure relocation is cleaner and still hits ~85% of the trim opportunity).
+- **Follow-up:**
+  - Apply same pattern to remaining 5 oversized skills in a future session.
+  - Empirical verification of ai-resource-builder relocations comes from the first real `/create-skill` or `/improve-skill` invocation (smoke test deliberately skipped).
+  - If pure relocation proves insufficient for any skill (e.g., skill is genuinely all operational logic with no relocatable reference content), revisit per case — that's the real signal to use `/improve-skill`.

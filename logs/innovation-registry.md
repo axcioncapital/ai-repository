@@ -62,3 +62,4 @@
 | 2026-04-18 | command | .claude/commands/improve-skill.md | triaged:project-specific | — |
 | 2026-04-18 | command | .claude/commands/create-skill.md | triaged:project-specific | — (already canonical in ai-resources) |
 | 2026-04-18 | command | .claude/commands/migrate-skill.md | triaged:project-specific | — (already canonical in ai-resources) |
+| 2026-04-18 | agent | .claude/agents/pipeline-stage-4.md | triaged:project-specific | — |

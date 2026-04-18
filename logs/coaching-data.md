@@ -216,3 +216,10 @@
 - **Decisions logged:** 1
 - **QC cycles:** 0
 - **Gates:** 2 (2 changed) — bright-line-review:changed (operator challenged sonnet, I held line; operator accepted), plan-approval:changed (operator challenged deferral, I reversed; operator approved flip now)
+
+### 2026-04-18 — Trim 3 oversized skills via pure-relocation refactor
+- **Commands used:** /qc-pass, /triage, /wrap-session
+- **Iterations:** 1 (plan v1 → plan v2 after QC + triage cascade)
+- **Decisions logged:** 1
+- **QC cycles:** 4 (1 plan-QC: revise → fixed; 3 post-edit QC per skill: all GO, one MEDIUM auto-fixed on Skill 2)
+- **Gates:** 6 (4 changed) — plan-approval:changed, qc-disposition:confirmed, qc-disposition:confirmed, qc-disposition:changed (Skill 2 framing-sentence fix), bright-line-review:changed (smoke-test skip option), bright-line-review:confirmed (commit)

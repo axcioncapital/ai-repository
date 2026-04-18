@@ -1529,3 +1529,42 @@ None.
 
 ### Open Questions
 None.
+
+---
+
+## 2026-04-18 — Trim 3 oversized skills via pure-relocation refactor
+
+### Summary
+Trimmed three skills flagged by the 2026-04-18 token audit (out of 8 over the 300-line HIGH threshold) using a pure-relocation refactor — moved teaching examples and templates to sibling `references/` files, kept all operational logic inline. No content was reworded. Each refactored SKILL.md passed an independent qc-reviewer pass before commit.
+
+### Files Created
+- `skills/ai-prose-decontamination/references/change-log-template.md` — Change Log Format template (relocated from SKILL.md 355–419)
+- `skills/ai-prose-decontamination/references/worked-example.md` — End-to-end four-pass transformation (relocated from SKILL.md 435–485)
+- `skills/ai-prose-decontamination/references/sub-pattern-examples.md` — Before/After example pairs for sub-patterns 1a, 1b, 2a, 3a–c, 4a, plus Pass 4 main rhythm example
+- `skills/ai-resource-builder/references/skill-architecture.md` — Folder structure, size budget, progressive disclosure, bundled resources, naming (relocated from SKILL.md 28–77)
+- `skills/ai-resource-builder/references/required-sections.md` — Required Sections Checklist table (relocated from SKILL.md 398–411)
+- `skills/prose-compliance-qc/references/output-template.md` — Per-spec verdicts, findings entry format, severity defs, abbreviated example output (relocated from SKILL.md 205–296)
+- `skills/prose-compliance-qc/references/anti-pattern-checks.md` — ss1–ss5 named checks for Scan 1 sweep (relocated from SKILL.md 90–127)
+
+### Files Modified
+- `skills/ai-prose-decontamination/SKILL.md` — 484 → 314 L (35% reduction); pointers replace relocated blocks
+- `skills/ai-resource-builder/SKILL.md` — 463 → 401 L (13% reduction); Reference Files table updated with two new entries
+- `skills/ai-resource-builder/references/operational-frontmatter.md` — appended description-field good/bad examples
+- `skills/prose-compliance-qc/SKILL.md` — 330 → 210 L (36% reduction)
+
+### Decisions Made
+- **Approach: pure structural relocation, not /improve-skill pipeline.** Operator rejected both originally-offered paths (full /improve-skill = slow; ad-hoc trims = quality risk) and asked for a better solution. Plan-QC subsequently flagged that "compress/tighten" line items would constitute semantic editing and trigger the canonical-pipeline-bypass rule. Resolution: dropped all semantic-edit items, made the refactor cut-and-paste only. This kept the canonical-pipeline rule intact.
+- **Accepted ai-resource-builder gap above 300 L.** Plan-math reconciliation surfaced that available pure-relocation moves land that file at ~385 L (actual: 401 L), 100 L over threshold. Closing fully requires deferred command-file dedup (3-file refactor with command-behavior risk). Operator-equivalent decision via QC triage cascade: accept the gap, queue full sub-300 retrofit for a separate session.
+- **Skipped runtime smoke test for ai-resource-builder.** Plan called for invoking `/improve-skill` against a small skill to verify the methodology source still drives the pipelines after refactor. Operator chose Option 3 (skip — accept doc QC as sufficient). Risk: doc QC cannot detect behavioral breakage in /create-skill or /improve-skill; first real invocation of either command is the empirical check.
+
+QC fixes:
+- Removed framing sentence I introduced at `references/skill-architecture.md:3` after Skill 2 QC flagged it as a deviation from "verbatim relocation" discipline.
+
+### Next Steps
+- Push `e76d47d` to remote when ready.
+- 5 of 8 oversized skills remain (the audit's HIGH list shrinks from 8 → 5): `answer-spec-generator` (485 L), `research-plan-creator` (464 L), `evidence-to-report-writer` (332 L), `session-guide-generator` (320 L), `workflow-evaluator` (316 L). Same pure-relocation approach should work — separate session.
+- Deferred: command-file deduplication between `ai-resource-builder/SKILL.md` and `/create-skill` + `/improve-skill` commands. Would let ai-resource-builder Create/Improve workflows shrink to executive summaries and finally land that file under 300 L. 3-file refactor with command-behavior risk — needs its own session.
+- First real `/create-skill` or `/improve-skill` invocation is the empirical verification that ai-resource-builder's relocations did not break either pipeline.
+
+### Open Questions
+None.
