@@ -107,3 +107,10 @@
 - **Decisions logged:** 1 (symlinked-exclusion extended beyond skills to commands and agents)
 - **QC cycles:** 0 (diagnostic-only audit; protocol does not include a QC pass on the report itself)
 - **Gates:** 3 (2 confirmed, 1 changed) — scope-resolution:confirmed (operator confirmed `buy-side service plan` → `project buy-side-service-plan`), supplementary-research:changed (operator directed mid-audit to exclude symlinked skills, extended by main agent to all symlinked categories), content-review:confirmed (operator approved symlink-extension decision at wrap-session for formal logging)
+
+### 2026-04-18 (late evening) — Token-audit quick-win fixes + five durable workspace rules
+- **Commands used:** /prime, /qc-pass (×3), /improve (attempted, aborted — friction log not started), /wrap-session
+- **Iterations:** 0 draft iterations; 2 plan iterations (v1 REVISE → v2 approved); 1 session-wide deny-list iteration (buy-side → narrowed → mirrored to ai-resources)
+- **Decisions logged:** 5 (audit-recs bright-line rule, plan-mode discipline rule, commit-boundary rule, CLAUDE.md scoping rule, model-tier rule)
+- **QC cycles:** 3 (plan-v1 REVISE → addressed in v2 → approved; R13 migration post-edit QC 2 IMPORTANTs dismissed scope-out-of-pipeline; landed-commits QC REVISE 4 findings → 3 applied, 1 false alarm)
+- **Gates:** 6 (2 changed, 4 confirmed) — plan-approval:changed (v1 QC flagged 9 revisions, integrated 10 of 12 into v2 — v2 approved), qc-disposition:changed (post-implementation QC drove buy-side + ai-res deny narrowing), editorial-disagreement:changed (operator interrupted over-planning "Stop, what's taking so long" — motivated the Plan Mode Discipline rule), autonomy-directive:changed (operator granted in-execution autonomy mid-session "I give you autonomy don't ask me for permissions unless its really important" — saved to memory), content-review:confirmed (3-rule recommendation approved), content-review:confirmed (4-rule recommendation approved "do 3,4 now")

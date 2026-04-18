@@ -39,3 +39,10 @@
 | 2026-04-17 | command | workflows/research-workflow/.claude/commands/produce-formatting.md | created | replaces Phase 6 + 6-QC of deleted produce-prose.md |
 | 2026-04-18 | agent | .claude/agents/token-audit-auditor.md | triaged:project-specific | — |
 | 2026-04-18 | command | .claude/commands/token-audit.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/draft-section.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/review.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/challenge.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/service-design-review.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-synthesis.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-analysis.md | triaged:project-specific | — |
+| 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-cluster.md | triaged:project-specific | — |
