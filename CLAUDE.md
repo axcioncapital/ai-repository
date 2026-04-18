@@ -41,7 +41,7 @@ Existing implementations: `token-audit-auditor`, `token-audit-auditor-mechanical
 
 ## Session Telemetry
 
-Run `/usage-analysis` at the end of every substantive session. Output goes to `logs/usage-log.md` and is the baseline that future token audits measure against — without the data, R14 (telemetry) can't detect whether R1–R13 optimizations moved the needle.
+Run `/usage-analysis` at the end of every substantive session. Output goes to `usage/usage-log.md` and is the baseline that future token audits measure against — without the data, R14 (telemetry) can't detect whether R1–R13 optimizations moved the needle.
 
 `/wrap-session` prompts for this automatically. If the session was trivial (single-file edit, one-question read), dismiss with one letter; don't skip by default.
 
