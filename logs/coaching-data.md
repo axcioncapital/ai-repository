@@ -151,3 +151,10 @@
 - **Decisions logged:** 1 (defer Sonnet model default until per-project opus-frontmatter coverage is audited)
 - **QC cycles:** 1 (qc-reviewer subagent: GO, 3 minors flagged, no fixes applied)
 - **Gates:** 5 (0 changed, 5 confirmed) — plan-approval:confirmed (next-step ordering), plan-approval:confirmed (inbox triage approach), plan-approval:confirmed (denies-only retrofit + commit-per-project), plan-approval:confirmed (heredoc fix approach), qc-disposition:confirmed (GO with no fixes required)
+
+### 2026-04-18 — Post-prevention cleanup 2 (items 1–6 from prior wrap)
+- **Commands used:** /prime, /friction-log, /qc-pass, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 2 (defer repo-review brief pending /audit-repo coverage; majority-match normalization of nordic deny patterns)
+- **QC cycles:** 1 (qc-reviewer subagent: REVISE-light → findings captured in session notes → GO accepted)
+- **Gates:** 4 (0 changed, 4 confirmed) — plan-approval:confirmed (exit-condition Option A), plan-approval:confirmed (repo-review brief defer), qc-disposition:confirmed (GO-A accepted), push-approval:confirmed (push executed across 3 repos)

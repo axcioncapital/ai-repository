@@ -92,3 +92,25 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Trend vs prior 3 entries: stable-to-improving — Acceptable matches the prior two Acceptable entries and improves over Prevention Session 1 (Wasteful); zero rework cycles this session is the strongest signal.
 
 **Recommendation:** Batch Grep + targeted Read into a single turn when hunting for a convention or variable across a known file — eliminates the re-read pattern that has now appeared in 4 of the last 4 entries.
+
+
+### 2026-04-18 | Acceptable
+
+**Task:** Post-prevention cleanup 2 — executed items 1–6 from prior wrap's next-steps (innovation-registry triage, improvement-log status sync, inbox/archive docs, workspace concurrent-session rule, nordic settings.json normalization, friction-log init) and deferred repo-review brief after discovering overlap with `/audit-repo`.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~15 |
+| Files read | ~16 (re-reads: 0) |
+| Files written/edited | 9 |
+| Tool calls | ~45 |
+| Subagents | 2 |
+| Rework cycles | 0 |
+
+**Findings:**
+- ~3 Bash diagnostic calls spent chasing a false-positive "loose ends" signal caused by a stale Prime git-status snapshot (Tool overhead, Minor) — check `git log` against the Prime snapshot once upfront before treating flagged files as uncommitted work.
+- Prime Step 2 innovation-registry grep used wrong pattern for markdown-table format, undercounting 5 detected items as 0 (Tool overhead, Minor) — captured to friction-log for future `/improve`; informational only.
+- Six sequential Edits on improvement-log.md for status-line flips where each anchor's surrounding context differed (Missed parallelization, Minor — informational only) — sequential was correct here given non-uniform anchors.
+- Trend vs. prior 3 entries: stable-to-improving — Acceptable matches the prior 2 Acceptable entries and improves over Prevention Session 1 (Wasteful); zero rework cycles and zero re-reads this session are the strongest signals, with the re-read pattern flagged in 4-of-4 prior entries now broken.
+
+**Recommendation:** Reconcile Prime's git-status snapshot against `git log` once at session start before treating flagged files as loose ends — would have saved the ~3 diagnostic Bash calls this session.
