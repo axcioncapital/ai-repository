@@ -41,6 +41,19 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/check-heavy-tool.sh",
+            "timeout": 5,
+            "statusMessage": "Heavy-tool check..."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [

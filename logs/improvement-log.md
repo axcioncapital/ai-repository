@@ -1,6 +1,26 @@
 # Improvement Log
 
-### 2026-04-18 — Canonical project settings template for /new-project and research-workflow
+### 2026-04-18 — Promote `[HEAVY]` self-enforcement flag to PreToolUse hook with exempt-command bypass
+- **Status:** applied 2026-04-18 (Tier 3 hardening session)
+- **Category:** Audit-recurrence prevention (automation)
+- **Friction source:** 2026-04-18 token audits — Tier 3 gap. The `[HEAVY]` flag in workspace CLAUDE.md → Session Guardrails was a self-enforcement rule with no hook backing. Audit reviewer noted: "if `[HEAVY]` proves unreliable as a self-enforcement rule, promote it to a `PreToolUse` hook in a dedicated session." This entry closes that gap.
+- **Implementation:**
+  - `ai-resources/.claude/hooks/check-heavy-tool.sh` — Python-backed bash hook reading PreToolUse JSON envelope. Fires on Read/Grep/Bash. Heuristics: Read on text file >500 lines without `limit`; Grep without `glob`/`type`/sufficient `head_limit`; Bash patterns matching recursive ls, unscoped find, unbounded git log. Output via `hookSpecificOutput.additionalContext` — non-blocking.
+  - Exemption mechanism: parses `transcript_path` JSONL, extracts most recent real user prompt (not tool_result), matches against the 14 exempt commands per workspace CLAUDE.md Session Guardrails. If exempt, exits 0 without warning.
+  - Registered in `ai-resources/.claude/settings.json` under `hooks.PreToolUse` with matcher `"Read|Grep|Bash"`.
+- **Verified:** smoke-tested 7 cases (heavy Grep, targeted Grep, recursive ls, safe ls, large Read no-limit, large Read with-limit, exemption via synthetic transcript) — all match expected behavior.
+
+### 2026-04-18 — Extend Stop hook with usage-log telemetry-freshness check
+- **Status:** applied 2026-04-18 (Tier 3 hardening session)
+- **Category:** Audit-recurrence prevention (automation)
+- **Friction source:** 2026-04-18 token audit R14 (telemetry baseline). The `/usage-analysis` discipline relied on me prompting at `/wrap-session` and the operator not dismissing reflexively. Without it, future audits cannot measure whether R1–R13 fixes moved the needle.
+- **Implementation:**
+  - Existing inline Stop hook command (innovation-registry check) replaced with a script invocation: `ai-resources/.claude/hooks/check-stop-reminders.sh`.
+  - Script combines two checks: (1) innovation-registry detected-entry count (preserved verbatim from prior inline command), (2) `usage/usage-log.md` having a `### YYYY-MM-DD` entry for today. Both reminders concatenated into one `systemMessage`. Always exits 0.
+  - QC review preferred this over the original UserPromptSubmit-on-`/wrap-session` design — Stop hook fires at the natural reminder point and avoids adding a second hook event.
+- **Verified:** smoke-tested with current state — innovation count emits, today's usage entry already present so telemetry portion correctly suppressed.
+
+
 - **Status:** applied 2026-04-18 (Prevention Session 2)
 - **Verified:** 2026-04-18 — confirmed by operator
 - **Category:** Audit-recurrence prevention
