@@ -56,14 +56,27 @@ Input: $ARGUMENTS (optional) — depth control:
 
    The subagent reads the questionnaire, executes it against AUDIT_ROOT, and saves the report. This ensures the factual audit runs with fresh context and no bias from recent session work.
 
-10. When the subagent returns, read the saved report at REPORT_PATH to verify it was written.
+10. When the subagent returns, verify the report was written by checking that REPORT_PATH exists. Do not read the full report into main-session context — the dd-extract-agent (next step) will do that.
+
+---
+
+### Step 3b: Delegate Triage Extraction to Subagent
+
+11. **Launch the `dd-extract-agent` subagent.** Pass it:
+    - DD_REPORT = REPORT_PATH (the audit just written)
+    - EXTRACT_PATH = `{AUDIT_DIR}/working/dd-extract.md`
+    - DEPTH ($ARGUMENTS-derived value: "standard", "deep", or "full")
+
+    The subagent reads the full DD_REPORT once, writes a structured extract, and returns the extract path plus a finding count. This avoids re-reading the full report in Steps 14 and 33.
+
+12. Set EXTRACT_PATH to the path returned by the subagent.
 
 ---
 
 ### Step 4: Triage Findings
 
-14. Read the completed audit report.
-15. Extract every finding that describes a discrepancy, missing item, violation, contradiction, or deviation.
+14. Read EXTRACT_PATH (the structured extract from Step 11), not DD_REPORT.
+15. Iterate the Findings section of the extract. Each line is one finding to triage.
 16. Categorize each finding into exactly one of:
 
 **AUTO-FIX** — The fix is unambiguous and self-contained. It touches exactly one file, requires no judgment about intent, and cannot cascade into other references. Examples: creating a missing directory with .gitkeep, fixing a broken symlink where the intended target is obvious. If the fix *might* require checking downstream references or choosing between approaches, it is OPERATOR, not AUTO-FIX.
@@ -137,20 +150,19 @@ Steps 8-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 32. Set DEEP_REPORT_PATH:
     - If SCOPE_SLUG is empty: `{AUDIT_DIR}/repo-dd-deep-YYYY-MM-DD.md`
     - Otherwise: `{AUDIT_DIR}/repo-dd-deep-YYYY-MM-DD-{SCOPE_SLUG}.md`
-33. Read DD_REPORT fully. Extract Section 3.4 (downstream reference ranking), Section 5 (context load), Section 1.2 (hooks), and Section 2 (CLAUDE.md health) into working memory.
-34. Discover log files within AUDIT_ROOT. For each repo under AUDIT_ROOT (or, when AUDIT_ROOT is the workspace root, each repo under it — ai-resources, workflows, projects/*), check for:
-    - `logs/friction-log.md`
-    - `logs/improvement-log.md`
-    - `logs/session-notes.md`
-    - `logs/coaching-log.md`
-    - `logs/workflow-observations.md`
-    Record which files exist and which do not. Absence is a finding, not an error — do not warn for missing logs.
+33. Read EXTRACT_PATH (the structured extract from Step 11) for the deep-tier sections: Section 1.2 (hooks), Section 2 (CLAUDE.md health), Section 3.4 (downstream reference ranking), Section 5.1 (context load), Section 5.2 (unreferenced CLAUDE.md sections). Do not re-read DD_REPORT.
+34. **Launch the `dd-log-sweep-agent` subagent.** Pass it:
+    - AUDIT_ROOT
+    - SWEEP_PATH = `{AUDIT_DIR}/working/log-sweep.md`
+    - TODAY (YYYY-MM-DD)
+
+    The subagent discovers log files within AUDIT_ROOT (`logs/friction-log.md`, `logs/improvement-log.md`, `logs/session-notes.md`, `logs/coaching-log.md`, `logs/workflow-observations.md`, `logs/decisions.md`, `logs/innovation-registry.md`), reads them, and writes a structured pattern summary. Returns the sweep path plus pattern counts. Set SWEEP_PATH to the returned value.
 
 ---
 
 ### Step 9: Feature Criticality Assessment
 
-35. Extract the top-10 downstream reference ranking from DD_REPORT Section 3.4.
+35. Extract the top-10 downstream reference ranking from EXTRACT_PATH §3.4.
 36. For each item in the ranking, classify as:
     - **Load-bearing** — failure breaks multiple commands, pipelines, or session lifecycle flows. Criteria: referenced by 3+ commands/hooks, OR sits in a sequential pipeline where absence blocks downstream stages, OR is the sole source of truth for a shared convention.
     - **Supporting** — failure degrades but does not block. Criteria: referenced by 1-2 commands, has workarounds, or produces optional outputs.
@@ -163,14 +175,14 @@ Steps 8-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
     - Workflow management: /deploy-workflow → /sync-workflow
     For each chain, identify the single point of failure — the component whose breakage has the widest blast radius.
 38. Check for untracked dependencies — features that are load-bearing by convention but not by file reference. Examples: CLAUDE.md behavioral sections that shape every session, symlink conventions that deployments depend on, commit message formats that hooks parse.
-39. Cross-reference with DD_REPORT Section 2 (CLAUDE.md health) for contradictions or dead references in load-bearing files. A contradiction in a load-bearing file is Critical; in a peripheral file, Low.
+39. Cross-reference with EXTRACT_PATH §2 (CLAUDE.md health — enumerated contradictions and dead references) for items in load-bearing files. A contradiction in a load-bearing file is Critical; in a peripheral file, Low.
 40. Record all findings for Section 1 of the deep report with priority ratings (Critical / High / Medium / Low).
 
 ---
 
 ### Step 10: Context Management Assessment
 
-41. Extract Section 5.1 (context load per entry point) and Section 5.2 (unreferenced CLAUDE.md sections) from DD_REPORT.
+41. Extract Section 5.1 (context load per entry point) and Section 5.2 (unreferenced CLAUDE.md sections) from EXTRACT_PATH.
 42. For each entry point, assess context efficiency:
     - Calculate the ratio of operationally-referenced lines (sections referenced by commands/hooks) to total lines.
     - Flag entry points where less than 60% of loaded context is operationally referenced.
@@ -196,20 +208,17 @@ Steps 8-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 
 ### Step 11: Friction and Improvement Synthesis
 
-48. Read all discovered friction logs from Step 8 sub-step 34. For repos with no friction log, record: "{repo} — no friction log. Friction logging not active."
-49. Read all discovered improvement logs. For repos with no improvement log, record: "{repo} — no improvement log."
-50. Read all discovered session notes. Extract:
-    - Recurring themes in "Open Questions" sections
-    - Patterns in "Next Steps" that appear session after session (indicating stalled work)
-    - Any mentions of friction, workarounds, or "had to manually" in summaries
-51. Read all discovered coaching-log.md and workflow-observations.md files.
-52. Synthesize across all sources. Identify:
-    - **Recurring friction** — the same type of friction appearing 3+ times across any combination of logs and session notes. State the pattern and its frequency.
-    - **Unresolved improvements** — entries in improvement logs with status "logged" or "pending" older than 14 days. Suggestions acknowledged but never acted on.
-    - **Friction without improvement** — friction log entries that have no corresponding improvement log entry. Pain points logged but never analyzed.
-    - **Improvement without verification** — improvement log entries with status "applied" that have no subsequent session notes confirming the fix worked.
-    - **Cross-repo patterns** — friction patterns appearing in multiple repos, suggesting a systemic issue rather than a project-specific one.
-53. For each pattern found, draft a specific recommendation:
+48. Read SWEEP_PATH (the structured log-sweep summary from Step 34). Do not re-read the raw logs — the sweep agent already extracted the patterns.
+49. The sweep summary is structured into sections matching the synthesis categories: Discovered Logs, Recurring Friction, Unresolved Improvements, Friction Without Improvement, Improvement Without Verification, Cross-Repo Patterns, Innovation Triage Backlog, Recent-Decision Impact. Iterate each section.
+50. (Reserved — log discovery and reading are now performed by the sweep agent in Step 34.)
+51. (Reserved — log discovery and reading are now performed by the sweep agent in Step 34.)
+52. Adopt the sweep agent's pattern identifications as the working set:
+    - **Recurring friction** — from the Recurring Friction section.
+    - **Unresolved improvements** — from the Unresolved Improvements section.
+    - **Friction without improvement** — from the Friction Without Improvement section.
+    - **Improvement without verification** — from the Improvement Without Verification section.
+    - **Cross-repo patterns** — from the Cross-Repo Patterns section.
+53. For each pattern surfaced by the sweep, draft a specific recommendation:
     - What the friction is (evidence: file path, entry text, frequency)
     - Root cause assessment (tool gap, process gap, context gap, or operator habit)
     - Recommended action (create a skill, add a hook, modify a command, change a CLAUDE.md rule, or accept as inherent)
@@ -270,7 +279,7 @@ Steps 8-14 run only when $ARGUMENTS contains "deep" or "full". They produce a se
 ### Step 13: Pipeline Testing [Operator Gate]
 
 61. If $ARGUMENTS does not contain "full", skip to Step 14.
-62. **Test 1: Symlink resolution.** Check every symlink recorded in DD_REPORT Section 1.7. For each: does the target exist? Is it readable? Is the content non-empty? Record pass/fail per symlink.
+62. **Test 1: Symlink resolution.** Check every symlink recorded in EXTRACT_PATH §1.7. For each: does the target exist? Is it readable? Is the content non-empty? Record pass/fail per symlink.
 63. **Test 2: Template sync.** For each file that exists as both a canonical version (in ai-resources/skills/ or ai-resources/workflows/) and a deployed copy (in projects/), compare content. Record: identical, diverged (with line diff count), or missing copy.
 64. **Test 3: /deploy-workflow preconditions.** Verify without executing:
     - Template directory exists at workflows/research-workflow/
