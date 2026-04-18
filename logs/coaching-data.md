@@ -142,3 +142,12 @@
 - **Decisions logged:** 1 (canonical templates: archival-only deny set + model at top-level settings.json + 2026-04-13 short-form mirror preserved — three sub-decisions bundled)
 - **QC cycles:** 2 (post-edit qc-reviewer: GO, 2 pre-existing minors flagged; independent /qc-pass: GO, 3 minors, no fixes applied)
 - **Gates:** 1 (0 changed, 1 confirmed) — plan-approval:confirmed (operator picked Option A full end-to-end without revision)
+
+
+### 2026-04-18 — Execute 4 next-steps from Prevention Session 3 wrap
+
+- **Commands used:** /prime, /qc-pass, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1 (defer Sonnet model default until per-project opus-frontmatter coverage is audited)
+- **QC cycles:** 1 (qc-reviewer subagent: GO, 3 minors flagged, no fixes applied)
+- **Gates:** 5 (0 changed, 5 confirmed) — plan-approval:confirmed (next-step ordering), plan-approval:confirmed (inbox triage approach), plan-approval:confirmed (denies-only retrofit + commit-per-project), plan-approval:confirmed (heredoc fix approach), qc-disposition:confirmed (GO with no fixes required)

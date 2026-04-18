@@ -70,3 +70,25 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Trend vs prior 3 entries: stable — Acceptable matches Prevention Session 2 (Acceptable) and improves over Prevention Session 1 (Wasteful).
 
 **Recommendation:** Pin content of logs/innovation-registry.md and other multi-edit-target files on first read to eliminate avoidable re-reads when the auto-detect hook fires between edits.
+
+
+### 2026-04-18 | Acceptable
+
+**Task:** Cleanup session executing 4 next-steps from Prevention Session 3 wrap — push (no-op, no remote), inbox triage (1 archived, 2 deferred), retrofit archival denies into 4 project settings.json files, and fix `/new-project` step 4 heredoc minor. Independent QC returned GO.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 14 |
+| Files read | 11 (re-reads: 1 — new-project.md read 2x for variable hunt) |
+| Files written/edited | 10 |
+| Tool calls | ~34 |
+| Subagents | 2 |
+| Rework cycles | 0 |
+
+**Findings:**
+- new-project.md read twice — once for the step 4 edit, again for variable-convention hunt after Grep on `{name}` (Re-reads, Minor) — pin content or extract needed sections on first read; batch the Grep + targeted Read in the same turn.
+- One Bash diagnostic re-attempt on git remote/origin queries before discovering workspace repo has no remote configured (Tool overhead, Minor) — check `git remote -v` once upfront before chaining remote-dependent commands.
+- Sequential per-repo commit loop for 4 retrofit commits — necessary (each repo is its own git context, cannot parallelize commits) (Missed parallelization, Minor — informational only).
+- Trend vs prior 3 entries: stable-to-improving — Acceptable matches the prior two Acceptable entries and improves over Prevention Session 1 (Wasteful); zero rework cycles this session is the strongest signal.
+
+**Recommendation:** Batch Grep + targeted Read into a single turn when hunting for a convention or variable across a known file — eliminates the re-read pattern that has now appeared in 4 of the last 4 entries.

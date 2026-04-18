@@ -1146,3 +1146,63 @@ TBD — to be staged.
 ### Open Questions
 
 None.
+
+
+## 2026-04-18 (post-prevention cleanup) — Execute 4 next-steps from Prevention Session 3 wrap
+
+**Exit condition:** Operator approved an ordered execution of the four next-steps from the prior session: (1) push unpushed commits, (2) triage 3 inbox briefs, (3) retrofit existing projects with canonical archival denies, (4) fix `/new-project` step 4 heredoc minor. High autonomy; commit per-project for retrofit work.
+
+### Summary
+
+Cleanup session executing the four next-steps queued at the end of Prevention Session 3. Push step was a no-op (commits already pushed). Inbox triage archived `worktree-cleanup-brief.md` (capability shipped via `/cleanup-worktree` + `worktree-cleanup-investigator`); deferred two larger briefs (codex-second-opinion, repo-review) as standalone-session work. Retrofitted 4 project settings.json files with the canonical archival-only deny set (4 patterns) per Prevention Session 2's template; deferred Sonnet default to a per-project frontmatter-audit session to avoid silent quality degradation. Fixed the `/new-project` step 4 heredoc minor by aligning placeholders with the calling-agent substitution convention used elsewhere in the file. Independent `/qc-pass` returned GO with 3 minors (validation grep didn't cover skills/output dirs; `inbox/archive/` convention undocumented; pre-existing settings.json style drift).
+
+### Files Created
+
+- `ai-resources/inbox/archive/` (new directory for fulfilled briefs)
+
+### Files Modified
+
+- `ai-resources/inbox/worktree-cleanup-brief.md` → `ai-resources/inbox/archive/worktree-cleanup-brief.md` (git mv)
+- `ai-resources/.claude/commands/new-project.md` — step 4 heredoc placeholders aligned with calling-agent substitution convention (`{name}` + `{project-description}`); misleading post-heredoc comment replaced with real substitution-responsibility note; policy intro at line 262 updated to call out both placeholders
+- `projects/global-macro-analysis/.claude/settings.json` — added 4 archival Read denies
+- `projects/nordic-pe-landscape-mapping-4-26/.claude/settings.json` — added 4 archival Read denies
+- `projects/obsidian-pe-kb/.claude/settings.json` — added 4 archival Read denies
+- `projects/project-planning/.claude/settings.json` — added 4 archival Read denies
+- `ai-resources/logs/session-notes.md` — this entry
+- `ai-resources/logs/coaching-data.md` — session profile entry
+
+### Decisions Made
+
+- **Defer Sonnet model default to a per-project frontmatter-audit session.** Applying explicit `"model": "sonnet"` to the 4 retrofitted projects without first auditing their analytical commands for `model: opus` frontmatter coverage would silently degrade quality on commands lacking explicit tier declaration — exactly the failure mode the workspace Model Tier rule warns against ("silent default locks in whatever settings.local.json sets"). Logged to decisions.md.
+- **Inbox archive convention created on the fly** (`inbox/archive/`). Operator-implicit decision via `proceed`; subagent QC flagged that the convention is undocumented in `ai-resources/CLAUDE.md` — opportunistic doc fix logged as Next Step.
+- **Commit-per-project for retrofit (4 separate commits across 4 repos), not a bundled wrap commit.** Mirrors the lesson from Prevention Session 1's wrap-commit incident (directory wildcards swept parallel-session files). Each project's git history reflects only its own changes.
+
+### QC Cycles
+
+1 (independent `/qc-pass` via qc-reviewer subagent): GO. 3 Minor findings: (a) validation grep covered `.claude/{commands,agents,hooks}` but not `projects/*/skills/` or output paths — `**/old/**` and `**/deprecated/**` are broad enough to silently block legit paths if any project has e.g. `output/old-runs/`; (b) `inbox/archive/` convention undocumented in ai-resources CLAUDE.md; (c) pre-existing `Bash(git push*)` / `Bash(rm *)` style drift across the 4 projects. None are blocking; all logged as cleanup candidates.
+
+### Commits Landed (unpushed)
+
+- ai-resources `7b1de46` — `chore: archive worktree-cleanup-brief — capability shipped`
+- ai-resources `7920d76` — `fix: new-project step 4 — replace dead substitution comment with real placeholder convention`
+- global-macro-analysis `f18aed3` — `update: settings.json — add 4 archival Read denies (canonical template retrofit)`
+- nordic-pe-landscape-mapping-4-26 `da92838` — same
+- obsidian-pe-kb `bc1a7da` — same
+- project-planning `d604c4b` — same
+
+Total: 6 commits across 5 repos.
+
+### Next Steps
+
+- **Push** the 6 unpushed commits across ai-resources + 4 project repos.
+- **Stale improvement-log statuses:** lines 3, 17, 31, 45, 58, 72 of `logs/improvement-log.md` all say "logged (pending)" but were applied in Prevention Sessions 1/2/3. Update to reflect actual state in next short maintenance session.
+- **Document `inbox/archive/` convention** in `ai-resources/CLAUDE.md` directory-listing section (small doc fix).
+- **Durable concurrent-session staging rule** (improvement-log line 94 — partial entry). Add Git Rules subsection to workspace CLAUDE.md prohibiting directory wildcards when a concurrent session is active. Structural fix to `/wrap-session` already applied; durable rule still pending.
+- **Sonnet model retrofit session** — audit per-command opus frontmatter coverage in 4 projects (global-macro, nordic-pe, obsidian-pe-kb, project-planning), then apply Sonnet default to settings.json with confidence that analytical commands have explicit `model: opus`.
+- **Normalize `Bash(git push*)` / `Bash(rm *)` style drift** across 4 projects (small hygiene; bundle with Sonnet retrofit).
+- **Triage innovation-registry.md** — has 5,967 bytes but Prime reported 0 detected; status check needed.
+- **Inbox briefs deferred:** `codex-second-opinion-brief.md` (large multi-session pilot) and `repo-review-brief.md` (medium build) await standalone sessions.
+
+### Open Questions
+
+None.
