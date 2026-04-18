@@ -1,10 +1,6 @@
 {
   "permissions": {
     "deny": [
-      "Read(audits/**)",
-      "Read(logs/**)",
-      "Read(reports/**)",
-      "Read(inbox/**)",
       "Read(archive/**)"
     ]
   },
