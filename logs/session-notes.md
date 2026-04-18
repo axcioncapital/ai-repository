@@ -1,5 +1,49 @@
 # Session Notes
 
+## 2026-04-18 (late evening) — Apply token-audit R12 + R2 Phase 1; log three new audit-recurrence prevention entries
+
+**Exit condition:** /prime did not set a formal A/B/C option this session — operator opened with "continue fixing issues from the token audit" and then granted autonomy mid-session. Implicit scope: quick wins + R2 Phase 1 (per AskUserQuestion), followed by an operator-added second task (prevention planning). Both completed cleanly within the single session.
+
+### Summary
+
+Applied two token-audit recommendations (R12, R2 Phase 1) — R9 confirmed already-applied. Then, on operator request, scoped out four audit-recurrence prevention buckets and appended three new entries to `improvement-log.md` (two template-level entries from a prior session already existed). All actual rule / hook / questionnaire / template edits deferred to three future sessions per an explicit sequencing note. Independent QC pass on the initial plan caught a mechanism-verification gap — plan revised from caller-side model override to split-agent-file approach before execution. Three commits, all on `main`, unpushed.
+
+### Files Created
+
+- `.claude/agents/token-audit-auditor-mechanical.md` — new Haiku-tier subagent for mechanical token-audit sections (2, 5, 6). Copy of `token-audit-auditor.md` with frontmatter changes only.
+- Memory: `feedback_permission_prompts.md` (user-home memory, not in repo) — captures operator frustration with harness permission prompts during autonomy grants; suggests `/fewer-permission-prompts` at wrap.
+
+### Files Modified
+
+- `.claude/agents/repo-dd-auditor.md` — frontmatter `model: opus` → `model: sonnet` (R12).
+- `.claude/agents/token-audit-auditor.md` — description narrowed to Section 4 only (split rationale). Body and `model: opus` unchanged.
+- `.claude/commands/token-audit.md` — Step 11 existence-check updated to verify both agent files; Steps 20, 32, 34 launch `token-audit-auditor-mechanical`; Step 27 (Section 4) unchanged on Opus agent.
+- `logs/improvement-log.md` — appended three new audit-recurrence prevention entries (Model Tier rule extension; subagent-summary cap + /usage-analysis discipline; /repo-dd questionnaire additions; pre-commit skill-size hook) plus a three-session sequencing note.
+
+### Decisions Made
+
+**Split-agent-file approach for R2 Phase 1 (scoping — logged to decisions.md separately):** Initial plan proposed caller-side `model: haiku` override at each `token-audit.md` launch site. QC pass flagged the mechanism as unverified (Task/Agent tool schema may not honor per-call model override with no error signal). Revised to two distinct agent files with distinct frontmatter — declarative, greppable, verifiable by file diff. Audit line 378 had sanctioned this shape.
+
+**Routine execution decisions (not separately logged):**
+- R9 confirm-only: Explore subagent found `~/.claude/settings.json` already holds `effortLevel: medium`, `MAX_THINKING_TOKENS: "10000"`, `DISABLE_AUTOUPDATER: "1"`. No edit needed; logged in the R2 Phase 1 commit body.
+- Two-commit sequencing (Commit A for R12 alone, Commit B for R2 Phase 1) adopted per QC finding — preserves bisect-friendly history even though both fall under the same audit.
+- Deferred prevention-implementation to three future sessions (rules first, templates second, detection+automation last) rather than bundling into this session.
+
+### Next Steps
+
+1. **Push commits** — `375f0ac`, `c62a51b`, `0962c0c` sit unpushed on `main`.
+2. **Prevention Session 1 (rules, ~45 min)** — extend workspace CLAUDE.md Model Tier to cover agents; publish Agent Tier Table; add Subagent Contracts + Session Telemetry sections to ai-resources CLAUDE.md; wire `/usage-analysis` into `/wrap-session`. Per improvement-log entries dated 2026-04-18.
+3. **Prevention Session 2 (templates, ~1–2 hrs)** — canonical project settings template + canonical project CLAUDE.md template via `/new-project` pipeline + research-workflow template.
+4. **Prevention Session 3 (detection + automation, ~45 min)** — three questionnaire items to `/repo-dd`; pre-commit skill-size hook. Depends on Sessions 1 + 2.
+5. **R2 Phase 1 validation** — on next `/token-audit ai-resources`, compare Sections 2 / 6 outputs against 2026-04-18 Opus baseline. Criterion: exact match on counts; zero missing findings.
+6. **R12 validation** — on next `/repo-dd` (small scope), compare finding count/category coverage against 2026-04-12 Opus baseline. Revert if a finding class is missed.
+7. **Deferred from prior session** — `/cleanup-worktree` bundle (R3+R4+R5+R11); `/repo-dd` subagent bundle (R6+R7); skill compression (R8). All queued.
+8. **Consider `/fewer-permission-prompts`** at session start next time — harness prompts on `.claude/**` edits fired repeatedly during this autonomous run.
+
+### Open Questions
+
+None. All commits landed; deferred items logged with sequencing; no QC findings remain open.
+
 ## 2026-04-18 (pm) — Execute /token-audit ai-resources
 
 **Exit condition:** Option B — Run Sections 1–8 (inventory + all findings), pause before Section 9 (optimization plan synthesis) for operator review of HIGH/MEDIUM shortlist, then continue to completion.

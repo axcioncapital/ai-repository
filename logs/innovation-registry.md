@@ -46,3 +46,4 @@
 | 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-synthesis.md | triaged:project-specific | — |
 | 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-analysis.md | triaged:project-specific | — |
 | 2026-04-18 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/buy-side-service-plan/.claude/commands/run-cluster.md | triaged:project-specific | — |
+| 2026-04-18 | agent | .claude/agents/token-audit-auditor-mechanical.md | triaged:project-specific | — |

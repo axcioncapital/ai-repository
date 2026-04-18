@@ -1,5 +1,12 @@
 # Coaching Data
 
+### 2026-04-18 (late evening) — Apply token-audit R12 + R2 Phase 1; log three new audit-recurrence prevention entries
+- **Commands used:** /prime, /qc-pass, /wrap-session; plan mode entered twice
+- **Iterations:** 0 (no drafting — config + agent-file + log-file edits)
+- **Decisions logged:** 1 (split-agent-file shape for R2 Phase 1 over caller-side model override)
+- **QC cycles:** 1 (plan-level qc-reviewer returned REVISE — caller-side override mechanism unverified; revised to split-agent-file, which the audit had sanctioned)
+- **Gates:** 3 (3 changed) — plan-approval:changed (first plan REVISE → revised plan approved), plan-approval:changed (second plan, prevention scope clarified mid-plan via AskUserQuestion → "defer to future session but write brief"), qc-disposition:changed (operator directed "proceed per your recommendation" after QC findings)
+
 ### 2026-04-17 — /improve-skill ai-prose-decontamination + produce-prose-draft stop-gap cleanup + /improve-skill prose-compliance-qc
 - **Commands used:** /prime, /improve-skill (×2), /wrap-session
 - **Iterations:** 0 (no drafting — skill/command edits)
