@@ -114,3 +114,25 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 - Trend vs. prior 3 entries: stable-to-improving — Acceptable matches the prior 2 Acceptable entries and improves over Prevention Session 1 (Wasteful); zero rework cycles and zero re-reads this session are the strongest signals, with the re-read pattern flagged in 4-of-4 prior entries now broken.
 
 **Recommendation:** Reconcile Prime's git-status snapshot against `git log` once at session start before treating flagged files as loose ends — would have saved the ~3 diagnostic Bash calls this session.
+
+
+### 2026-04-18 | Wasteful
+
+**Task:** Agent model tier retrofit (Option B — 4 safe candidates of 5 acted on, pipeline-stage-4 deferred) + R13 closeout (move 8-line research-workflow skill chain from ai-resources/CLAUDE.md to workflows/research-workflow/CLAUDE.md). Three commits landed; two pushed to origin.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~22 |
+| Files read | ~14 (re-reads: 7 — session-notes.md 3×, CLAUDE.md workspace 2×, ai-resources/CLAUDE.md 2×, decisions.md 2×) |
+| Files written/edited | 9 |
+| Tool calls | ~34 total (Read ~9, Edit ~9, Bash ~10, Grep ~6) |
+| Subagents | 2 |
+| Rework cycles | 2 |
+
+**Findings:**
+- session-notes.md read 3× across the session — forced by intervening linter/auto-process modifications between Read and Edit (Re-reads, Major) — use `stat` on the file immediately before Edit to detect modification; if mtime has changed, re-read only the affected anchor region, not the full file.
+- Two Edit retries due to "file modified since read" errors on CLAUDE.md workspace and session-notes.md (Rework, Moderate) — run `stat` before Edit on files known to be touched by hooks; would have eliminated both forced re-reads and their associated retries.
+- Cross-repo commit sequencing error — ai-resources files staged but committed in wrong order; required a second git commit pass to capture missed files (Rework, Moderate) — commit the child repo (ai-resources) first, then the parent; sequence matters when staging spans repos in a single turn.
+- Trend vs. prior 3 entries: regression — prior 3 entries were all Acceptable; this session drops to Wasteful, driven by the Major re-read finding on session-notes.md (linter-race pattern) and the two rework cycles.
+
+**Recommendation:** Run `stat` on session-notes.md and any hook-adjacent file immediately before Edit — detects linter/auto-process modification and eliminates the forced re-read + retry cycle that drove this session's Major finding.

@@ -158,3 +158,10 @@
 - **Decisions logged:** 2 (defer repo-review brief pending /audit-repo coverage; majority-match normalization of nordic deny patterns)
 - **QC cycles:** 1 (qc-reviewer subagent: REVISE-light → findings captured in session notes → GO accepted)
 - **Gates:** 4 (0 changed, 4 confirmed) — plan-approval:confirmed (exit-condition Option A), plan-approval:confirmed (repo-review brief defer), qc-disposition:confirmed (GO-A accepted), push-approval:confirmed (push executed across 3 repos)
+
+### 2026-04-18 — Agent tier retrofit (Option B) + R13 skill-chain migration (Option C)
+- **Commands used:** /prime, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1 (R13 closeout — move skill-chain to research-workflow/CLAUDE.md to sidestep audit-vs-pipeline-rule conflict)
+- **QC cycles:** 2 (qc-reviewer on tier retrofit: GO; qc-reviewer on R13 migration: GO)
+- **Gates:** 6 (1 changed, 5 confirmed) — plan-approval:confirmed (exit-condition Option B), plan-approval:changed (mid-session [SCOPE] extension → Option C on R8/R13), plan-approval:confirmed (R13 closeout Option C), qc-disposition:confirmed (tier retrofit GO), qc-disposition:confirmed (R13 GO), push-approval:confirmed (push executed).

@@ -8,6 +8,51 @@
 
 **Autonomy implied:** Proceed through tier retrofit + R13 migration end-to-end. Pause only on QC findings that change scope.
 
+### Summary
+
+Closed two token-audit follow-ups. Applied the four "safe" candidates from the Agent Tier Table retrofit: promoted pipeline-stage-2, pipeline-stage-2-5, and pipeline-stage-3c from `inherit` to `opus` (analytical work); demoted session-guide-generator to `sonnet` (structured generation). Deferred pipeline-stage-4 demotion gated behind an end-to-end `/new-project` validation run — the 3c→4 spec hand-off now carries a tighter upstream spec, which changes risk calculus for 4's demotion. Mid-session, operator asked to close out R8 and R13; flagged [SCOPE] and resolved to Option C (R13 this session, R8 deferred to dedicated `/improve-skill` sessions per skill). R13 closeout: the 8-line research-workflow "Cross-References" skill chain was moved from always-loaded `ai-resources/CLAUDE.md` to `workflows/research-workflow/CLAUDE.md` (new "Skill Dependency Chain" section) — matches the workspace scoping rule ("task-type-specific instructions belong at the task-type's home"). Two commits landed on ai-resources main and pushed to origin; parent-repo workspace `CLAUDE.md` change committed locally (parent repo has no remote configured).
+
+### Files Created
+
+None.
+
+### Files Modified
+
+- `.claude/agents/pipeline-stage-2.md` — frontmatter `model: inherit` → `opus`.
+- `.claude/agents/pipeline-stage-2-5.md` — frontmatter `model: inherit` → `opus`.
+- `.claude/agents/pipeline-stage-3c.md` — frontmatter `model: inherit` → `opus`.
+- `.claude/agents/session-guide-generator.md` — frontmatter `model: inherit` → `sonnet`.
+- `../CLAUDE.md` (workspace root) — Agent Tier Table updated: 4 retrofitted rows show explicit tier + "Retrofitted 2026-04-18 from inherit." note; pipeline-stage-4 row retains `inherit` with deferral note.
+- `CLAUDE.md` (ai-resources) — removed 8-line "Cross-References" section (research-workflow skill chain) per R13 closeout.
+- `workflows/research-workflow/CLAUDE.md` — added "Skill Dependency Chain" section between "Workflow Overview" and "Workflow Status Command".
+- `logs/decisions.md` — appended decision for R13 closeout rationale (audit-vs-pipeline-rule conflict, alternatives considered).
+
+### Decisions Made
+
+**Operator-directed:**
+- Exit condition Option B (4 safe candidates, defer stage-4) — confirmed at /prime.
+- Mid-session Option C on R8/R13 scope extension — R13 this session, R8 deferred. [SCOPE] flagged and resolved.
+- R13 closeout Option C (move skill chain to research-workflow/CLAUDE.md, not ai-resource-builder/SKILL.md) — sidesteps the audit-vs-pipeline-rule conflict; logged in decisions.md.
+- Push ai-resources (origin/main, two commits).
+
+**Routine / QC fixes:**
+- First Edit on CLAUDE.md tier table failed "Read before Edit" check; re-read and re-applied cleanly.
+- Commit-boundary error: initial cross-repo staging + single `git commit` only landed the parent repo's CLAUDE.md change. Followed with a second `git commit` in ai-resources to capture the agent frontmatter + session-notes files that were staged but not yet committed. No content lost; two commits instead of one.
+
+### Next Steps
+
+1. **Pipeline-stage-4 → sonnet demotion** — gate on one end-to-end `/new-project` validation run. Criteria: does the Opus-upgraded 3c hand a spec tight enough that Sonnet stage-4 executes without judgment gaps? If yes, demote; if no, revert candidate.
+2. **R8a — /improve-skill ai-prose-decontamination** (484 L → <300 L). Dedicated session. Audit flagged cross-pipeline implications — validate via before/after run on a known chapter.
+3. **R8b — /improve-skill answer-spec-generator** (485 L → <300 L). Dedicated session. Independent of R8a.
+4. **R1 — Read(pattern) deny rules** — needs a focused session with command-compatibility validation (/prime, /wrap-session, /repo-dd, /token-audit all read from the audit-recommended deny directories). The settings edit is 5 min; the test sweep is the real work.
+5. **Validation carries from prior sessions** — still passive, fires on next invocation: R2 Phase 1 + R12 vs. baselines; skill-size hook on next SKILL.md stage; broadened allowlist prompt-suppression.
+6. **Workspace repo remote** — parent "Axcion AI Repo" has no remote configured. If workspace CLAUDE.md updates should be versioned off-box, configure one; otherwise accept local-only posture as intentional.
+7. **Deferred from prior sessions** — R3+R4+R5+R11 /cleanup-worktree bundle; /new-project step 4 heredoc substitution comment; wrap-session.md step 12-13 concurrent-session fix verification.
+
+### Open Questions
+
+None. All commits landed; all decisions logged; deferrals explicitly scoped with acceptance criteria.
+
 ## 2026-04-18 (deep night) — Prevention Session 3: detection + automation (questionnaire items + skill-size hook)
 
 **Exit condition:** Option A — Both items applied, separate commits per item, post-edit QC subagent on each. Two commits expected. Per /prime, also commits the night session's R6+R7 bundle and settings.json permission update before starting Session 3 (already done: commits 1e0668d, 6cf8269).
