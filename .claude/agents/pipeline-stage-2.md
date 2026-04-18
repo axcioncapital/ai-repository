@@ -1,7 +1,7 @@
 ---
 name: pipeline-stage-2
 description: "Pipeline Stage 2: Create implementation project plan from approved context pack. Delegated by /new-project."
-model: inherit
+model: opus
 tools: Read, Write, Bash, Glob, Grep
 skills:
   - implementation-project-planner

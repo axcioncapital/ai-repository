@@ -1,7 +1,7 @@
 ---
 name: session-guide-generator
 description: "Generates a session-by-session execution guide for a configured project. Reads project artifacts and repo state, produces session-guide.md. Used by /session-guide and as Pipeline Stage 6 (optional) in /new-project."
-model: inherit
+model: sonnet
 tools: Read, Write, Glob, Grep
 permissionMode: default
 skills:

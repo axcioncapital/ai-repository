@@ -1,7 +1,7 @@
 ---
 name: pipeline-stage-3c
 description: "Pipeline Stage 3c: Write line-level implementation spec from approved architecture and repo snapshot. Delegated by /new-project."
-model: inherit
+model: opus
 tools: Read, Write, Bash, Glob, Grep
 permissionMode: default
 skills:

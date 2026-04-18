@@ -1,7 +1,7 @@
 ---
 name: pipeline-stage-2-5
 description: "Pipeline Stage 2.5: Write technical specification from context pack and project plan. Delegated by /new-project. Conditional — may be skipped for simple projects."
-model: inherit
+model: opus
 tools: Read, Write, Bash, Glob, Grep
 permissionMode: default
 skills:

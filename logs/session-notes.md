@@ -1,5 +1,11 @@
 # Session Notes
 
+## 2026-04-18 (evening) — Agent model tier retrofit (Option B: 4 safe candidates, defer stage-4)
+
+**Exit condition:** Option B — Apply the three opus promotions (pipeline-stage-2, pipeline-stage-2-5, pipeline-stage-3c) and the one sonnet demotion (session-guide-generator). Defer pipeline-stage-4 demotion until a validation run. Update Agent Tier Table in workspace CLAUDE.md. Single commit. Post-edit QC subagent before commit.
+
+**Autonomy implied:** Proceed through all four frontmatter edits + Agent Tier Table update end-to-end. Pause only on QC findings that change scope.
+
 ## 2026-04-18 (deep night) — Prevention Session 3: detection + automation (questionnaire items + skill-size hook)
 
 **Exit condition:** Option A — Both items applied, separate commits per item, post-edit QC subagent on each. Two commits expected. Per /prime, also commits the night session's R6+R7 bundle and settings.json permission update before starting Session 3 (already done: commits 1e0668d, 6cf8269).
