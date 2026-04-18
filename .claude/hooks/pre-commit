@@ -67,15 +67,7 @@ for skill_file in $staged_skills; do
         errors=$((errors + 1))
     fi
 
-    # --- Check 6: Body length ---
-    total_lines=$(wc -l < "$skill_file")
-    body_lines=$((total_lines - closing_line - 1))
-    if [ "$body_lines" -gt 500 ]; then
-        echo "  WARN: Body is $body_lines lines (convention: under 500)"
-        # Warning only — don't block commit
-    fi
-
-    # --- Check 7: No prohibited files ---
+    # --- Check 6: No prohibited files ---
     for prohibited in "README.md" "CHANGELOG.md" "INSTALLATION_GUIDE.md" "QUICK_REFERENCE.md"; do
         if git diff --cached --name-only | grep -q "^$skill_dir/$prohibited$"; then
             echo "  FAIL: Prohibited file '$prohibited' staged for commit"
@@ -90,7 +82,13 @@ echo ""
 if [ $errors -gt 0 ]; then
     echo "BLOCKED: $errors error(s) found. Fix before committing."
     exit 1
-else
-    echo "All skill checks passed."
-    exit 0
 fi
+
+# Informational skill-size check (non-blocking, exit 0 even on warnings)
+hook_dir="$(dirname "$0")"
+if [ -x "$hook_dir/check-skill-size.sh" ]; then
+    "$hook_dir/check-skill-size.sh" || true
+fi
+
+echo "All skill checks passed."
+exit 0
