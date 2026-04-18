@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 # Create Skill Pipeline
 
 Execute this pipeline when Patrik provides a resource brief for a new skill.

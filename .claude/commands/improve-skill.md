@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Improve an existing skill: $ARGUMENTS
 
 Execute this pipeline when Patrik points to an existing skill and provides feedback or improvement ideas.
@@ -19,7 +23,7 @@ Before doing anything else, present:
 1. **Your understanding** of each suggestion — restate what Patrik is asking for in your own words
 2. **Triage results** — for each suggestion, assess clarity, logic, compatibility, and complexity per the improver methodology
 3. **Clarifying questions** — anything ambiguous or that could be interpreted multiple ways
-4. **Potential problems** — breaking changes, scope concerns, anything that could go wrong
+4. **Potential problems** — breaking changes, scope concerns, anything that could go wrong. Apply the four breaking-change triggers in SKILL.md Improve Workflow Step 2: output-schema changes, core-constraint removal, required-section renames, default changes downstream resources depend on.
 5. **Downstream impact** — read any skills referenced by or referencing this skill (check the cross-references section in CLAUDE.md) and flag whether the proposed changes would break interfaces or assumptions in connected skills
 
 If any suggestions conflict with each other, flag the conflict explicitly.
@@ -99,6 +103,24 @@ If the same issue persists after Pass 1 and the regression check (2 fix attempts
    ```
 3. Flag the stall for Patrik in Step 7 results
 
+### 5e: Post-Edit QC (Subagent)
+
+After Pass 1, the regression check, and any stall handling, run an independent post-edit QC pass before proceeding to Step 6.
+
+Spawn a fresh subagent, passing it ONLY:
+
+- The evaluation framework contents (already read in Step 4)
+- The fixed SKILL.md (and any modified bundled resources)
+- The fix ledger from Step 5b (what was changed, why, which issue each fix resolved)
+
+The subagent's task: "Verify that each logged fix resolved its target issue, check for regressions introduced by the fixes, and confirm the edited passages read cleanly in context. Do not re-run the full evaluation — focus on the fixed state."
+
+The subagent must NOT receive the original feedback, the improvement conversation, or the original evaluator's report beyond the fix ledger.
+
+Capture the post-edit QC report. If it surfaces unresolved BLOCKING/IMPORTANT issues or regressions, loop back into Step 5b for one additional fix pass (then re-run 5e once). If issues persist after that pass, log a stall per 5d and surface to Patrik in Step 7.
+
+**Skip 5e only for:** single-edit fix passes, or formatting-only changes with no content risk (matches CLAUDE.md carve-out).
+
 ## Step 6: Verify Against Embedded Spec and Original Feedback
 
 Read the skill's own YAML description and body. Check:
@@ -119,7 +141,7 @@ Show Patrik:
 
 1. **The skill** — complete final version after all changes and auto-fixes
 2. **Evaluation report** — the subagent's full output (with shallow-evaluation flag if triggered)
-3. **Fixes applied** — what Critical/Major issues were found, how they were resolved, and whether secondary fixes were needed
+3. **Fixes applied** — what Critical/Major issues were found, how they were resolved, whether secondary fixes were needed, and the post-edit QC verdict from Step 5e
 4. **Feedback resolution** — status of each original feedback item (Resolved / Partially resolved / Unresolved)
 5. **Remaining issues** — any Minor issues, spec verification mismatches, or shallow-evaluation concerns
 6. **The diff** — complete diff from the baseline version (Step 0) to the final version

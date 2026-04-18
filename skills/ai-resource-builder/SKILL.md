@@ -367,7 +367,7 @@ Rules:
 - Include at least one targeting failure behavior or edge cases
 - Stay within the resource's existing scope
 
-User picks numbers to apply, or skips. One additional round max.
+Apply non-conflicting suggestions automatically; skip any that would modify or reverse a Step 4 change and note what was skipped and why. One additional round max.
 
 ### Step 6: Quality Check
 

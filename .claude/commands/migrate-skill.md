@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Migrate a skill from Claude Chat to Claude Code: $ARGUMENTS
 
 Execute this pipeline when Patrik provides skill content from Claude Chat (pasted text, project instructions, or artifact content) that needs to be migrated into a properly formatted SKILL.md in the skill library.
