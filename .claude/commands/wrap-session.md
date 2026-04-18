@@ -38,9 +38,12 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 9. **Optional reflection.** Before the git commit step, ask: "Session reflection (optional, one line — what felt hard, easy, or surprising):" If Patrik provides one, add it as the `Reflection:` line in the coaching-data entry. If skipped, proceed without it.
 10. **Improvement verification.** Read `/logs/improvement-log.md` (if it exists). Find entries with status "applied" that have no "Verified:" line. If any exist, present: "Unverified improvements: [list with date and title]." Ask: "Verify any, or skip?" If confirmed, append `- **Verified:** {date} — confirmed by operator` to each entry. If skipped, proceed.
 11. **Remind about /improve.** If the session had friction events logged (check `/logs/friction-log.md` for today's entries), suggest: "Friction events were logged this session. Consider running `/improve` to analyze them."
-12. **Session telemetry.** Ask: "Run `/usage-analysis` to capture this session's token profile? [y/n/skip]". If `y`, instruct the operator to invoke `/usage-analysis` after wrap-session completes (do NOT invoke it yourself — it is operator-driven). If `n` or `skip`, proceed. For trivial sessions (single-file edit, one-question read), the operator may skip; do not argue. Rationale: R14 telemetry baseline depends on consistent capture.
+12. **Session telemetry.** Run the usage analysis inline before committing — do NOT defer to the operator. Execute the full `/usage-analysis` flow (build session summary, read existing `usage/usage-log.md` if it exists, delegate to the `session-usage-analyzer` subagent per `ai-resources/skills/session-usage-analyzer/SKILL.md`, write the returned entry to the log). For trivial sessions (single-file edit, one-question read, aborted session), skip with a one-line note in chat ("Telemetry skipped — trivial session") and proceed. Rationale: R14 telemetry baseline depends on consistent capture; inlining the analysis prevents the common failure mode where the operator forgets to invoke it post-wrap and the session drops out of the record.
 
-After updating logs, stage and commit changes:
-- First run: git add logs/ skills/ prompts/ .claude/
-- Then run: git commit -m "session: [brief description of session work]"
-Run these as two separate commands, not chained.
+After updating logs and writing the telemetry entry, stage and commit changes. **Stage by explicit file paths**, not directory wildcards — directory-level `git add` silently sweeps uncommitted files from concurrent sessions. Enumerate from the Files Created / Files Modified sections just written to the session note, plus always-present wrap-touched files:
+- Always-staged (if modified this session): `logs/session-notes.md`, `logs/decisions.md`, `logs/coaching-data.md`, `logs/improvement-log.md`, `logs/innovation-registry.md`, `usage/usage-log.md`
+- Session-specific: every path listed in Files Created / Files Modified for this session, staged by explicit name
+
+Run as two separate commands, not chained:
+- `git add <explicit paths>` (enumerate; no trailing `/` wildcards)
+- `git commit -m "session: [brief description of session work]"`
