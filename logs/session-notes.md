@@ -1003,3 +1003,48 @@ None. All applied changes are committed; deferred items logged; no QC findings r
 **Exit condition:** Governance-only updates — extend workspace CLAUDE.md Model Tier section to cover agents with an Agent Tier Table; add Subagent Contracts + Session Telemetry sections to ai-resources CLAUDE.md; wire /usage-analysis prompt into /wrap-session. No skill edits. Unblocks Sessions 2 and 3 of the audit-recurrence-prevention sequence.
 
 **Autonomy:** High — governance edits are low-risk. Proceed through to commit without per-step approval; pause only for genuinely significant issues.
+
+### Summary
+
+Implemented Prevention Session 1 from the 2026-04-18 improvement-log: three governance-only edits that extend workspace CLAUDE.md's Model Tier rule to cover agents (with a 21-row Agent Tier Table), add Subagent Contracts + Session Telemetry sections to ai-resources CLAUDE.md, and wire a `/usage-analysis` prompt into `/wrap-session` step 12. One post-edit QC pass surfaced two factual gaps in the Agent Tier Table (missing `dd-extract-agent` + `dd-log-sweep-agent`, both haiku, produced by a parallel `/improve-skill repo-dd-auditor` session); both added before commit. No skill edits — unblocks Sessions 2 and 3 of the audit-recurrence-prevention sequence.
+
+### Files Created
+
+None.
+
+### Files Modified
+
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/CLAUDE.md` — Model Tier section extended with Agents subsection (Haiku/Sonnet/Opus tier-by-work-type rule) and 21-row Agent Tier Table with migration candidates flagged.
+- `ai-resources/CLAUDE.md` — added `## Subagent Contracts` (30-line summary cap, notes-to-disk pattern) and `## Session Telemetry` (`/usage-analysis` discipline) sections; added one-line pointer under `## Model Preference` referencing workspace CLAUDE.md for agent tiering.
+- `ai-resources/.claude/commands/wrap-session.md` — added step 12 (session telemetry prompt) before the commit section. Delegates invocation to the operator rather than auto-running `/usage-analysis`.
+- `ai-resources/logs/session-notes.md` — this entry.
+- `ai-resources/logs/decisions.md` — Agent Tier Table scoping decision (see below).
+- `ai-resources/logs/coaching-data.md` — session profile entry.
+
+### Decisions Made
+
+- **Agent Tier Table includes untracked `dd-extract-agent` + `dd-log-sweep-agent`.** Both exist on disk as haiku but are untracked — produced by a concurrent `/improve-skill repo-dd-auditor` session the operator disclosed mid-session. Logged to decisions.md.
+- **`session-usage-analyzer` removed from Subagent Contracts "existing implementations" list.** QC flagged it as a skill, not an agent. Cleaner to list only actual subagents.
+- **Inherit-tier agents marked "Candidate:" rather than retrofitted.** Session scope was governance-only; changing agent tiers would be a code edit outside the exit condition. Five candidates flagged for a future session.
+
+### QC Cycles
+
+1 (post-edit qc-reviewer): REVISE — 2 Important findings. Both applied: added two missing agent rows; removed `session-usage-analyzer` from Subagent Contracts list.
+
+### Commits Landed (unpushed)
+
+- `130b986` — `update: workspace CLAUDE.md — Model Tier extended to agents + Agent Tier Table`
+- `5b4ab39` — `batch: ai-resources — subagent contracts + session telemetry discipline (prevention session 1)`
+
+Total this session: 2 commits. Combined with prior unpushed work and the parallel repo-dd session: ~10+ unpushed commits across 3 repos.
+
+### Next Steps
+
+- **Push** all unpushed commits across ai-resources, buy-side-service-plan, and workspace repos.
+- **Prevention Session 2** (~1-2 hrs): canonical project settings template + canonical project CLAUDE.md template. Touches `/new-project` pipeline + research-workflow templates. Re-read 2026-04-13 "Commit Rules propagate by explicit copy" decision before starting.
+- **Prevention Session 3** (~45 min, depends on 1+2): three questionnaire items to `/repo-dd` + pre-commit skill-size warning hook.
+
+### Open Questions
+
+None. Exit condition met; post-edit QC resolved; commits landed.
+

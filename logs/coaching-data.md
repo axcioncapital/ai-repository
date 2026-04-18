@@ -121,3 +121,10 @@
 - **Decisions logged:** 5 (audit-recs bright-line rule, plan-mode discipline rule, commit-boundary rule, CLAUDE.md scoping rule, model-tier rule)
 - **QC cycles:** 3 (plan-v1 REVISE → addressed in v2 → approved; R13 migration post-edit QC 2 IMPORTANTs dismissed scope-out-of-pipeline; landed-commits QC REVISE 4 findings → 3 applied, 1 false alarm)
 - **Gates:** 6 (2 changed, 4 confirmed) — plan-approval:changed (v1 QC flagged 9 revisions, integrated 10 of 12 into v2 — v2 approved), qc-disposition:changed (post-implementation QC drove buy-side + ai-res deny narrowing), editorial-disagreement:changed (operator interrupted over-planning "Stop, what's taking so long" — motivated the Plan Mode Discipline rule), autonomy-directive:changed (operator granted in-execution autonomy mid-session "I give you autonomy don't ask me for permissions unless its really important" — saved to memory), content-review:confirmed (3-rule recommendation approved), content-review:confirmed (4-rule recommendation approved "do 3,4 now")
+
+### 2026-04-18 — Prevention Session 1: agent-tier rule + subagent contracts + telemetry discipline
+- **Commands used:** /prime, /fewer-permission-prompts, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1 (Agent Tier Table includes untracked agents from concurrent session)
+- **QC cycles:** 1 (post-edit qc-reviewer: REVISE → 2 Important findings → both applied → accepted)
+- **Gates:** 2 (0 changed, 2 confirmed) — plan-approval:confirmed (operator picked the 3-edit governance scope "C: Session 1", no revisions), content-review:confirmed (QC findings applied without dispute, operator said "proceed")
