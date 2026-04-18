@@ -128,3 +128,10 @@
 - **Decisions logged:** 1 (Agent Tier Table includes untracked agents from concurrent session)
 - **QC cycles:** 1 (post-edit qc-reviewer: REVISE → 2 Important findings → both applied → accepted)
 - **Gates:** 2 (0 changed, 2 confirmed) — plan-approval:confirmed (operator picked the 3-edit governance scope "C: Session 1", no revisions), content-review:confirmed (QC findings applied without dispute, operator said "proceed")
+
+### 2026-04-18 — Prevention Session 2: canonical project settings + CLAUDE.md templates
+- **Commands used:** /prime, /qc-pass, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1 (canonical templates: archival-only deny set + model at top-level settings.json + 2026-04-13 short-form mirror preserved — three sub-decisions bundled)
+- **QC cycles:** 2 (post-edit qc-reviewer: GO, 2 pre-existing minors flagged; independent /qc-pass: GO, 3 minors, no fixes applied)
+- **Gates:** 1 (0 changed, 1 confirmed) — plan-approval:confirmed (operator picked Option A full end-to-end without revision)
