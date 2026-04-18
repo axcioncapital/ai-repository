@@ -63,3 +63,11 @@ With 100+ skills, context budget pressure becomes real:
 - **Retire dead skills.** Skills that haven't triggered in weeks consume description budget and risk false triggers.
 - **Watch for conflicts.** Two skills with similar descriptions confuse Claude's selection. Add negative triggers to both when domains overlap.
 - **CLAUDE.md interaction.** CLAUDE.md is loaded even when skills run in a forked subagent context. Don't duplicate CLAUDE.md guidance inside skills.
+
+## Description Field Examples
+
+Good description:
+> Creates, evaluates, and improves AI resources (skills, prompts, project instructions). Use when building new skills, reviewing resource quality, or applying feedback to existing resources. Do NOT use for workflow design or non-AI documents.
+
+Bad description:
+> A helpful tool for working with various types of AI resources including but not limited to skills and prompts.

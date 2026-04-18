@@ -27,54 +27,7 @@ If the user provides feedback on an existing resource, use **Improve** even if t
 
 ## Skill Architecture
 
-### Folder Structure
-
-```
-skill-name/
-├── SKILL.md          # Required — main instructions
-├── scripts/          # Optional — executable code for deterministic tasks
-├── references/       # Optional — documentation loaded on demand
-└── assets/           # Optional — files used in output (templates, icons)
-```
-
-Only create subdirectories that will contain files. No README inside skill folders.
-
-### Size Budget
-
-Keep SKILL.md body under 500 lines (YAML frontmatter counts). When approaching the limit, split into reference files and link from SKILL.md with guidance on when to read them.
-
-### Progressive Disclosure
-
-Three-level loading system:
-
-1. **Metadata** (name + description) — always in Claude's context (~100 words)
-2. **SKILL.md body** — loaded when skill triggers (<5k words)
-3. **Bundled resources** — loaded as needed by Claude
-
-Rules:
-- **One level deep.** All reference files link directly from SKILL.md. Never chain references (SKILL.md -> ref-A.md -> ref-B.md).
-- **TOC for long files.** Any reference file over 100 lines must include a table of contents.
-- **Execute vs. read.** For every bundled script, SKILL.md must clarify whether Claude should execute it or read it as reference. Default to execute.
-
-### Bundled Resources
-
-| Type | When to Include | Example |
-|------|----------------|---------|
-| **scripts/** | Same code rewritten repeatedly; deterministic reliability needed | `scripts/rotate_pdf.py` |
-| **references/** | Documentation Claude should reference while working | `references/schema.md` |
-| **assets/** | Files used in output, not loaded into context | `assets/template.pptx` |
-
-Keep SKILL.md lean. Move detailed schemas, examples, and reference material to reference files. For files >10k words, include grep search patterns in SKILL.md. Avoid duplication between SKILL.md and reference files.
-
-**Script bundling signal:** If Claude independently generates the same helper script across multiple tasks, that's a strong signal to bundle it in `scripts/` and reference it from SKILL.md.
-
-### Naming
-
-- **Folder name:** kebab-case only. No spaces, underscores, or capitals.
-- **Preferred form:** gerund (verb + -ing) or noun phrase: `processing-pdfs`, `pdf-processing`.
-- **Namespace prefixes** for domain grouping at scale: `research-*`, `doc-*`, `mg-*`.
-- **Folder name must match** the `name` field in frontmatter.
-- **Avoid:** vague names (`helper`, `utils`), reserved words (`anthropic-*`, `claude-*`, `skill`).
+For the full architecture reference — folder structure, the 500-line size budget, the three-level progressive disclosure rules (metadata / SKILL.md body / bundled resources), the bundled resource types (`scripts/`, `references/`, `assets/`), and naming conventions — read [`references/skill-architecture.md`](references/skill-architecture.md). Load it whenever designing a new skill folder, restructuring an existing one, or deciding whether to add a sibling file.
 
 ## Frontmatter Standards
 
@@ -95,13 +48,7 @@ Rules:
 - **Include negative triggers** when the skill risks over-triggering or conflicts with another skill: "Do NOT use for simple data exploration (use data-viz instead)."
 - **Max 1024 characters** total, but aim for under 200 when possible.
 
-Good description:
-> Creates, evaluates, and improves AI resources (skills, prompts, project instructions). Use when building new skills, reviewing resource quality, or applying feedback to existing resources. Do NOT use for workflow design or non-AI documents.
-
-Bad description:
-> A helpful tool for working with various types of AI resources including but not limited to skills and prompts.
-
-For the full operational frontmatter field table (allowed-tools, paths, context, effort, model, hooks, and more), read `references/operational-frontmatter.md`.
+For good and bad description examples, plus the full operational frontmatter field table (allowed-tools, paths, context, effort, model, hooks, and more), read [`references/operational-frontmatter.md`](references/operational-frontmatter.md).
 
 **Companion hooks principle:** If a check is binary (pass/fail), runs the same way every time, and doesn't need Claude's reasoning — it should be a hook, not a skill instruction. Examples: linting after code generation, blocking commits with sensitive files.
 
@@ -397,18 +344,7 @@ If changes span 3+ sections significantly but don't require new sections, flag a
 
 ## Required Sections Checklist
 
-Every well-formed resource should include these sections. Mark N/A with brief justification when a section genuinely does not apply.
-
-| Section | Purpose | Applies To |
-|---------|---------|------------|
-| **Known Pitfalls** | Failure modes specific to the domain or Claude's behavior | All resources |
-| **Validation Loop** | How to verify the resource produces correct output | Skills with complex outputs |
-| **Runtime Recommendations** | Model, effort, context, companion hooks guidance | Skills |
-| **Examples** | Input/output pairs showing desired behavior | Output-dependent resources |
-| **Failure Behavior** | What to do when blocked, uncertain, or missing input | All resources |
-| **Bias Countering** | Instructions to counter default model tendencies | Analytical/generative resources |
-
-These sections are the implementation mechanism for several evaluation layers (Failure Behavior, Output Contract, Reasoning Constraints). Designing with them in mind produces resources that score well on evaluation.
+For the full required-sections table (Known Pitfalls, Validation Loop, Runtime Recommendations, Examples, Failure Behavior, Bias Countering — what each is for and which resource types they apply to), read [`references/required-sections.md`](references/required-sections.md). These sections are the implementation mechanism for several evaluation layers (Failure Behavior, Output Contract, Reasoning Constraints).
 
 ## Writing Standards
 
@@ -427,9 +363,11 @@ Read these on demand. Do not load all references at the start of a session.
 
 | File | Read When |
 |------|-----------|
+| `references/skill-architecture.md` | Designing a skill folder, restructuring an existing one, or deciding whether to add a sibling file. Contains folder structure, size budget, progressive disclosure rules, bundled resource types, and naming conventions. |
 | `references/evaluation-framework.md` | Running a full evaluation, or the pipeline commands need to pass a standalone framework to a subagent. Contains the complete 8-layer definitions, priority matrix, type-specific criteria, convention gate, and combined output format. |
-| `references/operational-frontmatter.md` | Configuring frontmatter fields beyond `name` and `description`. Contains the full field table: allowed-tools, paths, context, effort, model, hooks, disable-model-invocation, and more. |
+| `references/operational-frontmatter.md` | Configuring frontmatter fields beyond `name` and `description`, or needing description-field examples. Contains the full field table: allowed-tools, paths, context, effort, model, hooks, disable-model-invocation, and good/bad description examples. |
 | `references/writing-standards.md` | Writing or reviewing SKILL.md body content. Contains degrees of freedom with examples, anti-railroading, capability vs. preference skills, bias countering, skill composition, and the full anti-patterns table. |
+| `references/required-sections.md` | Verifying which sections a resource should include (Known Pitfalls, Validation Loop, Runtime Recommendations, Examples, Failure Behavior, Bias Countering) and which resource types each applies to. |
 | `references/examples.md` | Needing calibration on what good output looks like for each mode. Contains condensed worked examples for Create, Evaluate, and Improve. |
 
 All references link directly from this file. References do not link to other references.

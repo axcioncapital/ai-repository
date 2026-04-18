@@ -118,17 +118,7 @@ For very short passages (under 500 words), flag any paragraph running two or mor
 
 **Cut contrast when:** (a) both sides are generalities ("need and acceptability are not the same variable"); (b) it is rhetorical ornament on something the reader already accepts; (c) two or more contrasts in the same paragraph do not compound.
 
-*Before:*
-> Scope is defined by where the service can remove genuine cost or friction within the fund's existing chain. It is not defined by what Axcíon can build or by what the market appears to want.
-
-Two sentences of pure contrast. The second refuses general alternatives the reader wasn't going to assume — rhetorical crispness rather than sharpening.
-
-*After:*
-> Scope is defined by where the service can remove genuine cost or friction within the fund's existing chain. The chain — not Axcíon's capability set or market demand signals — determines what qualifies as scope.
-
-One contrast clause embedded in a single sentence, naming the refused alternatives in passing.
-
-**Note:** Contrast used specifically to defend against objections the reader has not raised is handled by Pass 3 (phantom objections), not here. This sub-pattern addresses contrast as cadence; Pass 3 addresses contrast as false opposition.
+*Before/after example, plus the note distinguishing this sub-pattern from Pass 3 phantom-objection contrast:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 1a).
 
 ### Sub-pattern 1b: Abstract-noun stacking
 
@@ -143,15 +133,7 @@ AI prose reaches for nominalized compounds — three or more abstract nouns stac
 
 None is automatically wrong. Each is a candidate for compression review.
 
-*Before:*
-> Shallow matching at the sourcing-to-screening coupling point is the smallest coherent intervention.
-
-Four abstract nouns before the main verb. The reader parses four compressions before reaching the claim.
-
-*After:*
-> Shallow matching is the document's term for flagging deals at the point where sourcing hands off to screening. It is the smallest intervention that still does useful work.
-
-"Shallow matching" stays (the document names and operates on it). "Sourcing-to-screening coupling point" unpacks into a verb-driven clause. "Smallest coherent intervention" becomes "smallest intervention that still does useful work."
+*Before/after example:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 1b).
 
 **Load-bearing carve-out.** If the style reference names specific compressed terms as part of the document's operating vocabulary (e.g., "Minimum Viable Service," "augmentation framing"), those terms are exempt. All other compressions are subject to the default.
 
@@ -199,19 +181,7 @@ Sections often end on sentences that gesture toward the next section's subject (
 
 **Rule.** Sections end on their own conclusion. Cross-references to adjacent sections belong in the body prose (inside the section, where a transition can carry real information), not as the final sentence. The final sentence should be the strongest delivery of the section's finding.
 
-*Before:*
-> The question this opens is operational: what form the service takes, and at which point in the chain it intervenes first.
-
-The final sentence tells the reader what the next section will address. The reader already knows — they are about to read it. The section's own conclusion is displaced by the pivot.
-
-*After:*
-> The economic case for augmentation rests on these three dimensions operating together. None of them individually would justify the service; their combination is what makes the structural position viable.
-
-The final sentence lands the section's conclusion. The next section still follows; the transition belongs in the next section's opening, not in this section's closing.
-
-**Distinction from summary-closings.** Pass 2's main list already flags "paragraph-closing sentence that summarises the paragraph's own argument." Pivot closings are different: they do not restate the section, they gesture past it. Both are cut, but the diagnostic is distinct — a summary restates; a pivot announces what comes next.
-
-**What to do with the cross-reference content.** If the pivot sentence carries information the reader would otherwise lack ("permanent exclusions are specified in the boundaries section"), move that sentence into the body of the section where the information is operationally relevant, not at the end where it displaces the landing.
+*Before/after example, plus the distinction from summary-closings and what to do with cross-reference content:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 2a).
 
 ---
 
@@ -233,37 +203,19 @@ AI prose builds elaborate logical scaffolds around claims that don't need them. 
 
 When a finding is well-evidenced and the reader has no reason to resist it, state it directly with its citation. Do not build the case from first principles.
 
-*Before:*
-> The structural gap that justifies external buy-side support narrows as internal coverage approaches self-sufficiency. This is because larger funds increasingly internalize advisory functions through strategic finance teams, dedicated sector coverage, and in-house origination capability. The net result is that funds above EUR 2B are less likely to benefit from the service.
-
-*After:*
-> Funds above EUR 2B increasingly internalise advisory functions — strategic finance teams, dedicated sector coverage, in-house origination. The structural gap narrows as internal coverage approaches self-sufficiency.
-
-Two sentences instead of three. Same information. The reader didn't need the middle sentence explaining *why* internalising advisory functions reduces the gap — that's self-evident.
+*Before/after example:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 3a).
 
 ### Sub-pattern 3b: Stacking qualifications
 
 When every claim gets a caveat, a boundary condition, and an evidence-quality note in the same sentence or paragraph. Spread these across the text. Not every claim needs all three simultaneously.
 
-*Before:*
-> These figures derive from a single-vendor benchmark (SPS) and should be treated as indicative rather than precise. The dual-channel coverage trap means this gap is not addressable through incremental effort: the intermediated channel excludes by sell-side process design, and the proprietary channel cannot compensate at scale.
-
-*After:*
-> The median fund sees roughly 18% of relevant transactions — a figure from a single-vendor benchmark, directionally consistent with other evidence but not precise. The gap is structural: the intermediated channel excludes by sell-side process design, and the proprietary channel cannot compensate at scale.
-
-The qualification is woven in rather than isolated as its own sentence. The finding lands without being pre-emptively weakened.
+*Before/after example:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 3b).
 
 ### Sub-pattern 3c: Defending against phantom objections
 
 Addressing counterarguments or alternative interpretations that the reader has not raised and would not raise.
 
-*Before:*
-> This is not deferral. It is scheduled resolution with empirical inputs on the positive path and a defined decision trigger on the negative path. Designing the conversion mechanism now, before any fund has experienced the service, would produce a theoretical construct that Year 1 data would require revising.
-
-*After:*
-> The conversion mechanism is designed during Year 1 using operational data. Positive-path activation when monitoring shows sufficient conversion indicators. Negative-scenario trigger at month 9. Fallback position defined.
-
-The reader didn't think it was deferral until the prose insisted it wasn't. The defence created the doubt it was trying to prevent. State the mechanism and move on.
+*Before/after example:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 3c).
 
 ---
 
@@ -275,13 +227,7 @@ After passes 1–3, the prose should be leaner. This pass addresses the remainin
 
 **Action:** Find the paragraph's key finding, conclusion, or pivot. Compress it into a short sentence (3–8 words). Let the longer sentences around it carry the explanation. The short sentence creates emphasis through contrast, not through bold or italics.
 
-*Before:*
-> The entire client acquisition logic depends on cold outreach to funds with no prior Axcion relationship. The evidence base is the thinnest of any critical assumption. The headwinds compound: informal networks command structural presence, the 3% sourcing adoption rate documents cultural resistance, and the augmentation framing constraint means the pitch cannot imply the fund's existing approach is deficient.
-
-*After:*
-> Cold outreach is the weakest bet in the model. The entire client acquisition logic depends on it, the evidence base is the thinnest of any critical assumption, and the headwinds compound: informal networks have structural presence, only 3% of sourcing is outsourced, and the pitch cannot imply the fund's existing approach is deficient.
-
-"Cold outreach is the weakest bet in the model" — eight words that land the point. The longer sentence that follows develops it.
+*Before/after example:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Pass 4 main example) for a worked example of compressing a paragraph's key finding into a sub-10-word lead sentence.
 
 **Frequency target:** At least one sentence under 10 words per paragraph of four or more sentences. Two consecutive paragraphs without rhythmic variation is a problem.
 
@@ -299,14 +245,7 @@ AI prose generates short, hard-edged declarative sentences that sound like princ
 
 **Counting.** Count maxim sentences per section (use heading boundaries, not paragraph boundaries — the budget is a section-level quota). If a section has two or more, flag. Choose the one that genuinely earns its place and rewrite the others as ordinary sentences inside their paragraphs.
 
-*Before (three maxims in a single section):*
-> (…argument…) Capability does not create entitlement. (…more argument…) Quality failure is terminal. Design accordingly. (…later in the same section…) Year 1 is the empirical test.
-
-Three maxims in one section. The first carries genuine analytical weight (a positioning refusal the rest of the document builds on). The second pair (*Quality failure is terminal. Design accordingly.*) restates in aphoristic form a point the surrounding paragraph already makes. *Year 1 is the empirical test.* could land as a pivot (normal Pass 4 rhythm) but becomes noise when two maxims have already fired in the same section.
-
-*After:*
-
-Keep *Capability does not create entitlement.* as the section's one earned maxim. Rewrite the others as ordinary sentences: "A quality failure is unrecoverable, so the service is designed to avoid any pathway that could produce one." "The Year 1 design treats each interaction as a test of whether the assumptions hold."
+*Before/after example:* See [`references/sub-pattern-examples.md`](references/sub-pattern-examples.md) (Sub-pattern 4a) for a worked example of trimming three maxims in a single section to one earned maxim.
 
 **Distinction from normal short-sentence rhythm.** Pass 4's main guidance ("What short sentences are NOT") excludes labels, fragments, and fillers. The maxim budget adds one more constraint: short sentences that read as standalone aphorisms count against the budget even when they also serve rhythm. A short sentence that lands a finding, compresses a claim, or pivots a paragraph is normal rhythm and does not count. A short sentence that reads as a slide-ready generalization does count.
 
@@ -354,69 +293,7 @@ Write the decontaminated prose to the output path supplied by the calling agent.
 
 ## Change Log Format
 
-Produce a structured change log as output. When invoked within a pipeline, the calling agent writes this to `{prose_output_dir}/decontamination-log.md`. When invoked standalone, present it directly.
-
-```
-# Decontamination Change Log
-
-Passes applied: 4
-Total changes: [N]
-Pass 1 (Ornamental Language): [N] changes
-  — contrast-template overuse (1a): [N]
-  — abstract-noun stacking (1b): [N]
-  — flagged-word registry (1c): [N swaps / N carve-outs preserved] or [not provided]
-  — other ornamental edits: [N]
-Pass 2 (Repetition): [N] changes
-  — pivot closings (2a): [N]
-  — other repetition edits: [N]
-Pass 3 (Over-Argumentation): [N] changes
-Pass 4 (Rhythm): [N] changes
-  — pseudo-maxim budget (4a): [N]
-  — other rhythm edits: [N]
-
-Style reference: [provided]
-Prose quality standards: [provided / not provided]
-Flagged-Word Registry: [provided / not provided]
-Source fidelity spot-check: [passed / skipped (no source provided)]
-
-## Bright-Line Flags
-
-[Empty if no analytical claims or sourced statements were touched. If populated, list each flagged change with location, the proposed edit, and which bright-line check it triggers.]
-
-## Changes
-
-### Pass 1 — Ornamental Language
-
-[P1-1] Location: [H2 section name], paragraph [N]
-Sub-pattern: [contrast-template (1a) | abstract-noun stacking (1b) | registry swap (1c) | other]
-Before: "[quoted original]"
-After: "[quoted replacement]"
-Rationale: [one sentence — what AI pattern was removed]
-
-### Pass 2 — Repetition
-
-[P2-1] Location: [H2 section name], paragraph [N]
-Sub-pattern: [pivot closing (2a) | other]
-Removed: "[quoted deleted text]"
-Rationale: [one sentence — what it restated or what it gestured at]
-
-### Pass 3 — Over-Argumentation
-
-[P3-1] Location: [H2 section name], paragraph [N]
-Before: "[quoted original passage]"
-After: "[quoted compressed version]"
-Rationale: [one sentence — what scaffolding was unnecessary]
-
-### Pass 4 — Rhythm
-
-[P4-1] Location: [H2 section name], paragraph [N]
-Sub-pattern: [pseudo-maxim (4a) | other]
-Before: "[quoted original]"
-After: "[quoted restructured version]"
-Rationale: [one sentence — what rhythm problem was fixed]
-```
-
-**Consolidation rule:** If more than 20 changes in a single pass, consolidate into grouped entries with representative examples. Example: "P1-1 through P1-8: Replaced elevated constructions across 6 paragraphs" with 2–3 representative before/after pairs. Summary counts remain exact.
+Produce a structured change log as output. When invoked within a pipeline, the calling agent writes this to `{prose_output_dir}/decontamination-log.md`. When invoked standalone, present it directly. Use the full template at [`references/change-log-template.md`](references/change-log-template.md), which specifies the header layout, per-pass change entry format, bright-line flags section, and the consolidation rule for high-volume changes.
 
 ---
 
@@ -432,53 +309,6 @@ Rationale: [one sentence — what rhythm problem was fixed]
 
 ---
 
-## Worked Example: All Four Passes Applied
+## Worked Example
 
-The following shows a full section transformed through all four passes. Study the changes — the patterns here repeat throughout any AI-produced prose.
-
-### Original (AI pipeline output)
-
-> The position Axcion occupies is **buy-side advisory partner**. This is a deliberate structural choice, not a marketing label.
->
-> The distinction from an intermediary is mandate architecture. An intermediary connects parties. Its economic interest is in the connection itself. A partner's economic interest is in the fund's outcome quality. The **retainer structure**, where compensation is independent of deal completion, enforces this distinction economically. The permanent exclusions enforce it architecturally: no investment committee preparation (the fund's sovereign activity), no concurrent sell-side mandates creating buy-side conflicts, no market intelligence until trust prerequisites are earned through demonstrated deal-cycle performance.
->
-> The distinction from a service provider is depth of integration. A service provider delivers a defined output to a specification. A partner operates alongside the deal team at progressively deeper chain stages as trust permits. The **co-sourcing model**, embedded support alongside the deal team rather than independent execution, is the operating model at the delegation ceiling. This requires senior-caliber delivery and PE-process literacy as a binary entry requirement.
->
-> The partner claim has a temporal dimension. Year 1 delivers the structural alignment that makes the claim credible: mandate authority aligned with the buyer, conflict-free architecture, fee calibration to the underserved segment, and confidentiality rigor. These are architectural features in place from the first client conversation. The depth-of-integration dimension is earned through deal-cycle performance, consistent with what the trust research established: that performance in deal-specific activities dominates relationship history as the trust advancement mechanism. Axcion can legitimately claim structural partner alignment from Year 1 while being clear that operational partnership depth, the co-sourcing model, the criteria refinement through revealed preferences, the progressive access to deeper chain stages, develops over time as the phase-dependent trust dynamic plays out.
->
-> The partner trajectory is not promised. It is earned per deal cycle. The service promises structural alignment and performance at the current chain depth. What it earns, over time, is expanded access.
-
-### After All Four Passes
-
-> Axcion is a buy-side advisory partner. Not an intermediary, not a service provider — a partner. The distinction is structural.
->
-> An intermediary's economic interest is in the connection itself. A partner's interest is in the fund's outcome. The retainer structure enforces this: compensation is independent of deal completion. The permanent exclusions reinforce it — no IC preparation, no concurrent sell-side mandates, no market intelligence before trust is earned through deal-cycle performance.
->
-> A service provider delivers a defined output to a specification. A partner operates alongside the deal team, going deeper as trust permits. At the delegation ceiling, the operating model is co-sourcing: embedded support alongside the deal team, not independent execution. This requires PE-process literacy as a binary entry requirement.
->
-> The partner claim has two layers. The structural layer is in place from the first conversation: mandate authority aligned with the buyer, conflict-free architecture, fee calibration to the segment, confidentiality rigor. The depth layer is earned. Deal-cycle performance is what advances trust — not relationship history, not time served. Year 1 delivers the structure. Depth follows performance.
->
-> The trajectory is not promised. It is earned per deal cycle.
-
-### What Changed and Why
-
-**Pass 1 (ornamental language):**
-- "This is a deliberate structural choice, not a marketing label" — cut. The prose demonstrates the distinction; it doesn't need to insist it's deliberate.
-- "the fund's sovereign activity" — cut. The parenthetical explanation is ornamental.
-- "consistent with what the trust research established: that performance in deal-specific activities dominates relationship history as the trust advancement mechanism" — rewritten as "Deal-cycle performance is what advances trust — not relationship history, not time served." Same finding, half the words, no appeal to authority.
-- "as the phase-dependent trust dynamic plays out" — cut entirely. Jargon wrapping a simple idea the preceding sentences already expressed.
-- "senior-caliber delivery and PE-process literacy as a binary entry requirement" — "PE-process literacy as a binary entry requirement." Senior-caliber is implied by binary entry requirement.
-
-**Pass 2 (repetition):**
-- "The retainer structure... enforces this distinction economically. The permanent exclusions enforce it architecturally" — collapsed. Both sentences say "this feature enforces the distinction." Keep both features, remove the repeated framing.
-- "These are architectural features in place from the first client conversation." — cut. The list speaks for itself.
-- Final paragraph: "The service promises structural alignment and performance at the current chain depth. What it earns, over time, is expanded access." — cut. "The trajectory is not promised. It is earned per deal cycle" is the strongest formulation.
-
-**Pass 3 (over-argumentation):**
-- "Axcion can legitimately claim structural partner alignment from Year 1 while being clear that operational partnership depth... develops over time" — rewritten as "Year 1 delivers the structure. Depth follows performance." The reader doesn't need the legitimacy argument.
-
-**Pass 4 (rhythm):**
-- "Not an intermediary, not a service provider — a partner." — short, direct. Sets up the structural explanation.
-- "The distinction is structural." — four words. Lands the reframe before longer sentences develop it.
-- "The depth layer is earned." — five words. Pivots from what's given to what's built.
-- "Year 1 delivers the structure. Depth follows performance." — two short sentences closing the argument. Each under seven words.
+For an end-to-end transformation showing all four passes applied to a single section, see [`references/worked-example.md`](references/worked-example.md).

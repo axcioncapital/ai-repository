@@ -87,43 +87,9 @@ ss2: Evidence-summary pattern, Missing frame — CLEAR; Claim parade — VIOLATI
 
 Expand only violations.
 
-### ss1 checks to sweep (Architecture)
-- Thesis delivery
-- Must-land content
-- Word count (only if architecture spec provided)
-- Cross-references
+### Checks to sweep (ss1–ss5)
 
-### ss2 checks to sweep (Structure and Argument)
-- Evidence-summary pattern
-- Missing frame
-- Claim parade
-- Missing "so what" (structural)
-- Transition gaps
-- Emphasis mismatch
-- Catalogue structure
-- Flat conclusion
-
-### ss3 checks to sweep (Style Spec Compliance)
-- Tone and voice
-- Audience calibration
-- Formatting conventions
-- Prohibited patterns
-
-### ss4 checks to sweep (Prose Quality)
-- Source-first sentences
-- Attribution stacking
-- Claim-source-claim-source rhythm
-- Parenthetical data dumps
-- Empty sophistication
-- Rhetorical filler
-- Concept stacking
-- Undefined terms
-
-### ss5 checks to sweep (Completeness and Fidelity)
-- Unsupported claims
-- Hedging calibration
-- Defensive comprehensiveness
-- Uninterpreted evidence
+For the full list of named checks under each evaluation section (ss1 Architecture, ss2 Structure and Argument, ss3 Style Spec Compliance, ss4 Prose Quality, ss5 Completeness and Fidelity), read [`references/anti-pattern-checks.md`](references/anti-pattern-checks.md). Sweep every check named there; treat the list as authoritative for Scan 1.
 
 ---
 
@@ -205,95 +171,9 @@ If no cross-spec tensions are found, state "No cross-spec tensions identified."
 
 ## Output Format
 
-### Per-Spec Verdicts
+Produce the consolidated output in four sections: **Per-Spec Verdicts** (table), **Mode Note** (which mode Scan 3 ran in), **Findings** (consolidated list ordered by severity HIGH/MEDIUM/LOW), **Cross-Spec Tensions**, **Priority Fixes** (top 5).
 
-| Spec | Verdict | Violation Count |
-|------|---------|-----------------|
-| Skill anti-patterns | COMPLIANT / ISSUES FOUND | [n] |
-| Style spec | COMPLIANT / ISSUES FOUND | [n] |
-| Architecture / Source fidelity | COMPLIANT / ISSUES FOUND | [n] |
-
-### Mode Note
-
-State which mode Scan 3 ran in (Full or Degraded) and which inputs were provided.
-
-### Findings
-
-List all violations from all three scans in a single consolidated list, ordered by severity (HIGH, MEDIUM, LOW).
-
-Each finding:
-
-```
-**[#] — [Short label]**
-Source scan: Skill / Style / Architecture (or Source Fidelity)
-Quoted passage: "[exact quote]"
-Violation: [one sentence — what spec requirement it breaks]
-Severity: HIGH / MEDIUM / LOW
-```
-
-**Severity definitions:**
-- **HIGH** — the prose fails a stated requirement from one of the three specs
-- **MEDIUM** — the prose weakens compliance without outright failing
-- **LOW** — minor, borderline, or debatable
-
-### Cross-Spec Tensions
-
-List tensions, or "No cross-spec tensions identified."
-
-Each tension:
-```
-**Tension [#]: [Short label]**
-Competing requirements: [Spec A requires X] vs. [Spec B requires Y]
-Resolution path: [suggested approach]
-Escalation: [Yes/No — Yes if no clean resolution]
-```
-
-### Priority Fixes
-
-Top 5 changes that would most improve compliance, in priority order. For each, reference the finding number(s) it addresses and note if a cross-spec tension affects the fix.
-
-### Example Output (abbreviated)
-
-```
-### Per-Spec Verdicts
-
-| Spec | Verdict | Violation Count |
-|------|---------|-----------------|
-| Skill anti-patterns | ISSUES FOUND | 2 |
-| Style spec | COMPLIANT | 0 |
-| Architecture / Source fidelity | ISSUES FOUND | 1 |
-
-### Mode Note
-Scan 3 ran in Degraded mode (source decision document provided, no architecture spec).
-
-### Findings
-
-**1 — Catalogue structure in service boundaries**
-Source scan: Skill (ss2)
-Quoted passage: "The service does not include: (a) deal origination, (b) LP fundraising, (c) portfolio company operations, (d) regulatory compliance, (e) tax advisory..."
-Violation: Five-plus item enumeration without analytical framing (catalogue structure check)
-Severity: MEDIUM
-
-**2 — Rhetorical filler in introduction**
-Source scan: Skill (ss4)
-Quoted passage: "It is worth noting that the pricing model plays a critical role..."
-Violation: Empty sophistication — "it is worth noting" adds no information
-Severity: LOW
-
-**3 — Dropped design choice from source**
-Source scan: Source Fidelity
-Quoted passage: [absent — Decision 4 from source not represented]
-Violation: Source decision document contains Decision 4 (minimum commitment period) which does not appear in the prose
-Severity: HIGH
-
-### Cross-Spec Tensions
-No cross-spec tensions identified.
-
-### Priority Fixes
-1. Restore Decision 4 (minimum commitment period) from source document [Finding 3]
-2. Add analytical framing around the service boundaries list [Finding 1]
-3. Remove "it is worth noting" construction [Finding 2]
-```
+For the full template — including the per-spec verdicts table layout, the per-finding entry format, severity definitions (HIGH/MEDIUM/LOW), the cross-spec tension entry format, and an abbreviated example output — read [`references/output-template.md`](references/output-template.md).
 
 ---
 
