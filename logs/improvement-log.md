@@ -28,6 +28,65 @@
   - `ai-resources/workflows/research-workflow/CLAUDE.md` (template)
   - Any CLAUDE.md template referenced by `/deploy-workflow`
 
-### Sequencing note
-- Tackle both items in a single session; they touch overlapping files (`/new-project` pipeline + research-workflow template). Expect ~1–2 hours with QC pass against a real next-project deployment.
-- Before implementing, re-read the 2026-04-13 decision ("Commit Rules propagate by explicit copy to every project CLAUDE.md") to confirm whether the inheritance workaround is still needed or whether Claude Code's CLAUDE.md loading has improved enough to trust short-form pointers.
+### 2026-04-18 — Extend Model Tier rule to cover agents; publish a tier table
+
+- **Status:** logged (pending)
+- **Category:** Audit-recurrence prevention
+- **Friction source:** 2026-04-18 token-audit §7.6 + §8 practice 7 + R2 Phase 1 (same-day fix session). Workspace `CLAUDE.md` "Model Tier" section (lines 185–193) governs **commands only**. The current agent fleet ships as 10 Opus / 5 inherit (= Opus) / 3 Sonnet / 0 Haiku — no rule prevents a new agent from defaulting to Opus when the work is mechanical. R2 Phase 1 (splitting `token-audit-auditor` into mechanical/judgment variants) is the kind of retrofit a rule would prevent. R12 (`repo-dd-auditor` Opus→Sonnet) is another.
+- **Proposal:**
+  - Extend workspace `CLAUDE.md` → Model Tier to include an Agents subsection mirroring the Commands one: *"New agent definitions must declare `model:` explicitly. Tier by work type: Haiku for mechanical measurement / file census / format checks; Sonnet for structured factual work (questionnaire-driven audits, fact extraction); Opus for judgment (QC, refinement, synthesis, triage, critique, workflow-stage-3b architecture)."*
+  - Publish a concrete **Agent Tier Table** in the same section listing the current fleet with correct tier (18 agents per audit §5.1 / post-fix inventory: 10 Opus, 4 Sonnet — adding `repo-dd-auditor` after R12, 1 Haiku — adding `token-audit-auditor-mechanical` after R2 Phase 1, 3 inherit-from-default). Mark migration candidates.
+  - Add a one-line maintenance note: *"When adding a new agent, place it in the table. When changing an agent's tier, update the table in the same commit."*
+  - Add a one-line pointer to `ai-resources/CLAUDE.md`: "Agent model tiering: see workspace CLAUDE.md → Model Tier." No duplication.
+- **Target files:**
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/CLAUDE.md` (Model Tier section — extend)
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/CLAUDE.md` (one-line pointer)
+
+### 2026-04-18 — Codify subagent-summary cap + /usage-analysis discipline in ai-resources CLAUDE.md
+
+- **Status:** logged (pending)
+- **Category:** Audit-recurrence prevention
+- **Friction source:** 2026-04-18 token-audit §9.3 safeguards #3 (subagent return-size cap) and #7 (mandatory `/usage-analysis` at wrap) + R14. Neither is written down as a rule. §7.3 confirms the two-file output-to-disk pattern is in place, but no convention enforces the **summary length cap** (30 lines for Sections 2/5/6, 20 for Section 4 in `token-audit-auditor` — lives in one agent's body, not as a shared convention). R14 (telemetry baseline) depends on a discipline the operator must sustain; without it, future audits can't measure the impact of R1–R13.
+- **Proposal:**
+  - Add a short **Subagent Contracts** section to `ai-resources/CLAUDE.md`: summary files cap at 30 lines (20 when per-unit invocations proliferate, e.g., per-workflow or per-chapter); full notes path returned; main session reads summary only. Reference the existing implementations: `token-audit-auditor`, `token-audit-auditor-mechanical` (post-R2 Phase 1), `repo-dd-auditor`, `session-usage-analyzer`.
+  - Add a **Session Telemetry** subsection stating that `/usage-analysis` should run at the end of every substantive session. Wire the prompt into `/wrap-session` (queued as R14 implementation) — operator can dismiss with one-letter confirmation if the session was trivial.
+  - Do NOT extend this rule to project-level CLAUDE.md files — it's ai-resources-scope discipline, not per-project.
+- **Target files:**
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/CLAUDE.md` (two new sections)
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/.claude/commands/wrap-session.md` (add `/usage-analysis` prompt at end)
+
+### 2026-04-18 — Add three questionnaire items to /repo-dd
+
+- **Status:** logged (pending)
+- **Category:** Audit-recurrence prevention (detection)
+- **Friction source:** 2026-04-18 token-audit §9.3 safeguards #2 (agent-tier drift) and #6 (CLAUDE.md task-type-instruction bloat). The audit itself had to do this work ad hoc; `/repo-dd` should catch drift on every cycle so a future `/token-audit` is rarely the first to see it. Adding a new-project-parity check closes the loop on the pending canonical-template entries above — projects created before the template lands need detection until they're retrofitted.
+- **Proposal:** Add three items to `ai-resources/audits/questionnaire.md`:
+  1. **Agent model tier drift:** for each `.claude/agents/*.md` under the audit scope, does the `model:` field match the Agent Tier Table in workspace CLAUDE.md? List mismatches.
+  2. **CLAUDE.md task-type bloat:** does any CLAUDE.md file contain task-type-specific instructions (skill-methodology, workflow-methodology, creation sequences) that should be migrated to SKILL.md or workflow reference docs per workspace CLAUDE.md → "CLAUDE.md Scoping" rule? List candidates.
+  3. **New-project settings parity:** for each project under `projects/`, does `.claude/settings.json` contain the canonical `Read(...)` deny list (minimum: `Read(archive/**)`)? Does `.claude/settings.local.json` declare `model: sonnet`? List projects missing either.
+- **Dependency:** The canonical-template entries above (settings + CLAUDE.md) must land first for item 3 to have a stable reference. Entry A (Agent Tier Table) must land first for item 1 to have a reference.
+- **Target files:**
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/questionnaire.md`
+  - Downstream if needed: `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/.claude/agents/repo-dd-auditor.md` and `.claude/commands/repo-dd.md` for question-layout surfacing.
+
+### 2026-04-18 — Pre-commit skill-size warning hook (informational, non-blocking)
+
+- **Status:** logged (pending)
+- **Category:** Audit-recurrence prevention (automation)
+- **Friction source:** 2026-04-18 token-audit §2.1 + §9.3 safeguard #4. Eight skills exceed 300 lines; two exceed 480. Nothing warns at commit time that a SKILL.md is growing past the recommended threshold — bloat is only caught at the next audit, by which point compressing is a bigger session.
+- **Proposal:**
+  - Add a pre-commit hook under `ai-resources/.claude/hooks/` (e.g., `check-skill-size.sh`) that measures any staged `SKILL.md` file and emits an **informational** warning when line count > 300. Non-blocking — warning text only, exit 0.
+  - Register it in `ai-resources/.claude/settings.json` alongside the existing hook block. Verify no path conflict with the existing `check-skill-validation.sh`-style hook.
+  - Keep it lightweight: single bash script, `wc -l` on each staged SKILL.md, stderr warning, no external deps.
+- **Risk:** Low. Informational output only; operator can ignore.
+- **Target files:**
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/.claude/hooks/check-skill-size.sh` (new)
+  - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/.claude/settings.json` (hook registration)
+
+### Sequencing note (five entries combined)
+
+Suggested three-session sequence:
+
+- **Session 1 (rules, ~45 min):** Entry "Extend Model Tier rule to agents" + Entry "Codify subagent-summary cap + /usage-analysis discipline". Purely CLAUDE.md + one `/wrap-session` edit. Lowest risk, highest per-turn leverage.
+- **Session 2 (templates, ~1–2 hrs):** Existing entries — canonical project settings template + canonical project CLAUDE.md template. Touches `/new-project` pipeline + research-workflow templates. Before implementing, re-read the 2026-04-13 decision ("Commit Rules propagate by explicit copy") to confirm whether the inheritance workaround is still needed.
+- **Session 3 (detection + automation, ~45 min):** Entry "Add three questionnaire items to /repo-dd" + Entry "Pre-commit skill-size warning hook". Depends on Session 1 (Agent Tier Table) and Session 2 (canonical templates) landing first so the new questionnaire items have stable references.
