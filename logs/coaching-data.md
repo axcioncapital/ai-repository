@@ -93,3 +93,17 @@
 - **Decisions logged:** 2
 - **QC cycles:** 3 (plan cycle 1: REVISE on 11-file Option A with 3 Critical + 6 Major; plan cycle 2: REVISE-AND-RESUBMIT on Option E v1 with 2 new Critical + 4 Major; per-file cycle 3: GO on built artifacts with 5 Minor cosmetic findings, none applied)
 - **Gates:** 4 (1 changed, 3 confirmed) — plan-approval:changed (operator pivoted from Option A to Option E after QC cycle 1), qc-disposition:changed (plan QC findings addressed via revision, twice), qc-disposition:confirmed (per-file QC on built artifacts passed clean), commit-approval:confirmed
+
+### 2026-04-18 (pm) — Execute /token-audit ai-resources
+- **Commands used:** /prime, /token-audit, /wrap-session
+- **Iterations:** 0 (no drafting — diagnostic audit produces a single report artifact)
+- **Decisions logged:** 1 (Tier B drop at Section 9 checkpoint)
+- **QC cycles:** 0 (diagnostic-only audit; protocol does not include a QC pass on the report itself)
+- **Gates:** 2 (1 confirmed, 1 changed) — exit-condition:confirmed (operator selected Option B cleanly at /prime), content-review:changed (operator dropped Tier B at the Section 9 shortlist checkpoint, reducing optimization-plan scope from 12 themes to 7)
+
+### 2026-04-18 (evening) — Execute /token-audit project buy-side-service-plan
+- **Commands used:** /token-audit, /wrap-session
+- **Iterations:** 0 (no drafting — diagnostic audit produces a single report artifact)
+- **Decisions logged:** 1 (symlinked-exclusion extended beyond skills to commands and agents)
+- **QC cycles:** 0 (diagnostic-only audit; protocol does not include a QC pass on the report itself)
+- **Gates:** 3 (2 confirmed, 1 changed) — scope-resolution:confirmed (operator confirmed `buy-side service plan` → `project buy-side-service-plan`), supplementary-research:changed (operator directed mid-audit to exclude symlinked skills, extended by main agent to all symlinked categories), content-review:confirmed (operator approved symlink-extension decision at wrap-session for formal logging)
