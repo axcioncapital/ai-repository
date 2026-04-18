@@ -1,7 +1,7 @@
 ---
 name: repo-dd-auditor
 description: Independent repo due diligence auditor. Executes the factual audit (Steps 1-6) with fresh context. Invoked by /repo-dd. Do not use for other purposes.
-model: opus
+model: sonnet
 tools:
   - Read
   - Write
