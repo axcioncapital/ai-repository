@@ -1,5 +1,11 @@
 # Session Notes
 
+## 2026-04-18 (deep night) — Prevention Session 3: detection + automation (questionnaire items + skill-size hook)
+
+**Exit condition:** Option A — Both items applied, separate commits per item, post-edit QC subagent on each. Two commits expected. Per /prime, also commits the night session's R6+R7 bundle and settings.json permission update before starting Session 3 (already done: commits 1e0668d, 6cf8269).
+
+**Autonomy implied:** Proceed through both items end-to-end with per-item post-edit QC pause only if QC surfaces a finding that changes scope.
+
 ## 2026-04-18 (night) — Token-audit fix: repo-dd bundle (R6 + R7) via /improve-skill repo-dd-auditor
 
 **Exit condition:** Option B — Run `/improve-skill repo-dd-auditor` to address R6 (triage-extraction subagent) and R7 (deep-tier log-sweep subagent) in a single session. Pipeline includes evaluation + post-edit QC. Validation deferred to next `/repo-dd` run vs. 2026-04-12 baseline.

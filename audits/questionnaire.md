@@ -63,6 +63,8 @@ Previous audit: [date of most recent previous audit, or "None"]
 
 2.5. List any features described in CLAUDE.md where at least one referenced file exists but at least one other referenced file does not (e.g., a command is defined but its template is missing, a hook is described but the script it calls doesn't exist). State what exists and what's missing.
 
+2.6. For each CLAUDE.md file under the audit scope (workspace root, ai-resources, projects/*, workflows/*), list any sections containing task-type-specific instructions (skill-creation methodology, workflow-stage instructions, evaluation frameworks, file-format conventions for a single artifact type) of the kind the workspace CLAUDE.md → "CLAUDE.md Scoping" rule names as belonging in SKILL.md or workflow reference docs rather than in CLAUDE.md. State the section heading, approximate line count, and the task-type the section addresses.
+
 ## Section 3: Dependency References
 
 *Purpose: Map which files reference which, so you can see where a single break would cascade.*
@@ -96,6 +98,13 @@ Previous audit: [date of most recent previous audit, or "None"]
 4.6. For each slash command, verify that its definition follows the expected syntax and that all referenced file paths resolve. List any that fail either check.
 
 4.7. List any slash command names that are duplicated or that match built-in Claude Code commands.
+
+4.8. For each `.claude/agents/*.md` file under the audit scope, read the `model:` frontmatter field and compare against the Agent Tier Table in the workspace CLAUDE.md → "Model Tier" → "Agents" subsection. List any agent whose declared tier (Haiku / Sonnet / Opus / inherit) does not match the table, or that is missing from the table entirely. State the agent file, the declared tier, the expected tier per the table, and whether the tier is missing or mismatched.
+
+4.9. For each project directory under `projects/` in the audit scope, compare `.claude/settings.json` against the canonical baseline declared in `ai-resources/.claude/commands/new-project.md` (the `CANONICAL_PERMS` block and the `"model": "sonnet"` top-level default at line ~179). Report:
+   - Whether `.claude/settings.json` contains the canonical `permissions.deny` entries (minimum: `Read(archive/**)`); list missing deny entries per project.
+   - Whether `.claude/settings.json` declares `"model": "sonnet"` at the top level; list projects missing the declaration.
+   - For each project, the date of the most recent commit touching `.claude/settings.json`, and the date of the most recent commit touching the `CANONICAL_PERMS` block in `new-project.md`. (Lets a reader see at a glance which projects predate the current canonical baseline.)
 
 ## Section 5: Context Load
 
