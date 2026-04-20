@@ -2,7 +2,7 @@
 name: citation-converter
 description: >
   Converts report prose containing inline claim IDs into fully cited output
-  with formatted footnotes (Instruction A) or inline attribution (Instruction B),
+  with a per-H1-module `## Sources` block (Instruction A) or inline attribution (Instruction B),
   and produces a complete Citation Traceability Layer. Do NOT use for writing or
   rewriting prose (that's evidence-to-report-writer), for editorial decisions, or
   for fact-verification. Do NOT use when writing prose for the first time from
@@ -43,7 +43,7 @@ Any other change — rewording, tightening, reordering, smoothing, compressing �
 
 1. **Prose Draft** (required) — The report prose to be cited. May contain inline claim IDs (Mode 1) or not (Mode 2).
 2. **Evidence Pack / Synthesis Briefs** (required) — Source metadata for claims. Accepted formats: compressed synthesis briefs, gap-fill supplement metadata, full evidence packs. If the format is unrecognized, stop and ask the operator to clarify before proceeding.
-3. **Citation Instruction** (required) — Either **A** (Internal Research — footnotes) or **B** (Client-Facing — inline attribution). Do not mix. If not specified, ask before proceeding. Do not default to either.
+3. **Citation Instruction** (required) — Either **A** (Internal Research — section-local `## Sources` block) or **B** (Client-Facing — inline attribution). Do not mix. If not specified, ask before proceeding. Do not default to either.
 4. **Exclusion Table** (optional) — Claim IDs deliberately omitted from prose, with rationale. Not flagged as missing in the Completeness Check.
 5. **Existing Traceability Layer** (optional) — If Source Registry and Claim-to-Source Map already exist from a prior run, accept and reuse. Skip Steps 1–2, run only Steps 3–4.
 6. **Supplementary Evidence Items** (optional) — Items tagged `[SUPPLEMENTARY]` with gap type, finding, source, grade, and status. These appear in the Supplementary Items Map only, never in the main Claim-to-Source Map.
@@ -67,7 +67,7 @@ Run only when prose lacks claim IDs.
 
 ### Step 1 — Build Source Registry (working artifact)
 
-Build internally to enable Steps 2–3. Not included in final output — the Claim-to-Source Map and Bibliography/Sources Consulted cover its contents.
+Build internally to enable Steps 2–3. Not included in final output — the Claim-to-Source Map and the per-module `## Sources` blocks (Instruction A) or inline Sources Consulted (Instruction B) cover its contents.
 
 Extract all unique sources from the evidence pack. Assign sequential registry IDs (S01, S02, ...).
 
@@ -155,14 +155,15 @@ For multi-section processing, add a "Sections Used In" column. Optional for sing
 ### Completeness Check
 [Failures listed, or "All claims traced. All checks passed."]
 
-### Bibliography
-[Per Instruction A or Sources Consulted per Instruction B]
+### Sources (published) + Source Registry (internal)
+[Per Instruction A: per-H1-module `## Sources` block with compact inline source index. See references/instruction-a.md for placement, label format, and numbering rules. The Source Registry is the working artifact — global Registry IDs (S01, S02, … continuing across modules) mapped to per-module local numbers.]
+[Per Instruction B: Sources Consulted as inline attribution. See references/instruction-b.md.]
 
 ### Change Log
 | Location | Change Type | Original Text | Modified Text | Rationale |
 ```
 
-Change Type must be one of: `claim ID removal`, `footnote insertion`, `attribution insertion`, `conflict/gap hedging`. Any other Change Type is a prose preservation violation.
+Change Type must be one of: `claim ID removal`, `source number insertion`, `attribution insertion`, `conflict/gap hedging`. Any other Change Type is a prose preservation violation.
 
 **Fresh Citation mode adds:**
 
@@ -189,7 +190,7 @@ Flag every constructed or missing metadata instance in Completeness Check.
 
 **Single invocation limit:** ~80 claim IDs and ~8,000 words of prose.
 
-**Larger documents:** Process section by section. Pass the full Traceability Layer (File 2) plus the working Source Registry from the previous section as Input 5. The new section extends them — adding new registry entries, claim mappings, and bibliography entries while preserving existing ones. Source numbering continues sequentially.
+**Larger documents:** Process section by section. Pass the full Traceability Layer (File 2) plus the working Source Registry from the previous section as Input 5. The new section extends them — adding new Registry IDs, claim mappings, and Sources block entries while preserving existing ones. Source numbering resets at 1 for each H1 module in its published Sources block. The Source Registry (working artifact) accumulates Registry IDs across sections for traceability (S01, S02, … continuing globally — Registry IDs do NOT reset at module boundaries; only the published Sources block's local numbering resets). Each module's Sources block uses its own independent local numbering derived from first-appearance order in that module's prose.
 
 **Approaching the limit:** Complete the current section cleanly. Flag remaining sections: "Sections [X–Y] pending — continue with this Traceability Layer as Input 5."
 
@@ -213,13 +214,17 @@ Before delivering, verify:
 - [ ] Every claim ID from input appears in output (cited or in exclusion table)
 - [ ] No claim IDs remain in output prose
 - [ ] Citation format matches specified Instruction — no mixing
-- [ ] Footnote numbers are per unique source, not per claim (A)
-- [ ] Bibliography contains no duplicate sources (A)
-- [ ] Bibliography entries contain no quality flags or supplementary tags (A)
-- [ ] Date format consistent: MM/YYYY / year-only / "c. YYYY" / "n.d." (A)
-- [ ] Bibliography entries use Unicode superscript, bold author, italic title (A)
-- [ ] Footnote-to-Source Mapping table included when needed (A)
-- [ ] Multi-source claims: combined source numbers in single superscript (A)
+- [ ] Sources numbering is per-module and per-unique-source — each module's block numbers in first-appearance order starting at 1; numbering resets at each H1 module boundary (A)
+- [ ] Within a module's Sources block, duplicate labels are allowed (two distinct sources with the same compressed label at different local numbers); duplicate Registry IDs within one module are not (A)
+- [ ] Sources block entries contain no quality flags or supplementary tags (A)
+- [ ] Date format consistent in Source Registry (working artifact): MM/YYYY / year-only / "c. YYYY" / "n.d." (A). Dates do NOT appear in the published `## Sources` block — labels are org/author only (A)
+- [ ] Sources block entries use compressed labels only — organization or author surname(s). No titles, italics, quotation marks, bold, URLs, publication dates, access dates, or paywall annotations (A)
+- [ ] Source Mapping table (per-module) included in Traceability Layer when needed (A)
+- [ ] Multi-source claims: space-separated superscripts (`¹ ² ³`), never middle-dot `˒` or commas (A)
+- [ ] Each H1 module has its own `## Sources` block placed after its last content line, separated by `---` on its own line (A)
+- [ ] When a module's last content is a table, `---` sits immediately after the table's final row with no blank line between (A)
+- [ ] No global `## Bibliography` or `## References` block exists (A)
+- [ ] Source numbering resets at each H1 module, starting at 1 in first-appearance order (A)
 - [ ] Low-grade sources excluded from prose, present in Sources Consulted (B)
 - [ ] Supplementary items in Supplementary Items Map only
 - [ ] Known Absences table complete with decisions
@@ -228,13 +233,15 @@ Before delivering, verify:
 - [ ] Change Log present with every modification listed; no unauthorized Change Types
 - [ ] Prose preservation: output matches input except at Change Log locations
 - [ ] Markdown headings and blank lines preserved
-- [ ] Bibliography entries separated by blank lines (A)
+- [ ] Sources block entries are on a single line separated by ` · ` (space + U+00B7 middle dot + space); no blank lines between entries; no bold, italic, quotation marks, URLs, or dates in labels (A)
 - [ ] Fresh Citation mode: Match Report included, low-confidence matches not auto-cited
 
 ## Edge Cases
 
 - **Claim ID with no source metadata:** Include in cited prose. Mark `MISSING — requires remediation` in Claim-to-Source Map. Flag in Completeness Check. Do not invent attribution.
-- **Same source in multiple sections:** Reuse the source's existing footnote number (A). Note all sections in Claim-to-Source Map.
+- **Cross-module citation:** A source cited in module A and also in module B gets its own entry in each module's Sources block at that module's local number (A). The compressed label is identical across modules; the local numbers differ. This is the normal case under the section-local model, not a duplication defect. If two distinct sources from the same org are both cited cross-module, both appear in each module's Sources block with identical labels but different local numbers — this is expected and not a defect. The Source Registry (working artifact) tracks the shared Registry ID across modules; note all modules each source is used in via the Source Mapping table.
+- **Unused evidence pack entries:** Sources present in evidence but never cited in prose do not appear in any Sources block. They appear only in the Source Registry (working artifact).
+- **Re-run / preserve-existing-superscripts:** If the input prose already contains superscript citations that resolve correctly against the new module-local source list (each in-prose superscript maps to an entry in that module's Sources block at the same local number), preserve them as-is. Renumber a module's citations only when (a) current numbering contradicts first-appearance order within the module, (b) uncited entries need to be dropped and doing so leaves gaps in the sequence, or (c) the module does not yet have a Sources block and one must be created.
 - **Exclusion table provided:** Excluded IDs are expected absences. Record in Completeness Check.
 - **Re-run with existing traceability layer:** Accept as Input 5. Skip Steps 1–2. Run Steps 3–4 only.
 - **Supplementary item without tag:** Treat as supplementary, flag missing tag in Supplementary Items Map.
