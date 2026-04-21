@@ -237,3 +237,10 @@
 - **Decisions logged:** 2 (produce-prose refactor scope + permissions fix)
 - **QC cycles:** 2 (1 plan-QC: REVISE → triage+fix → post-edit PASS-with-fixes → 2 minor fixes → second post-edit GO; 0 post-change QC on permissions fix — executed on operator-demanded urgency)
 - **Gates:** 6 (3 changed) — ask-user-question:confirmed (refactor scope+skill-edit inclusion), plan-approval:changed (operator edited plan after REVISE verdict), qc-disposition:confirmed (triage "Fix" posture applied), bright-line-review:confirmed (commit A + B approved), challenge-disposition:changed (operator demanded permissions fix "EVERY PROJECT" — expanded scope from single file to cross-tree audit), bright-line-review:confirmed (permissions commits)
+
+### 2026-04-21 — Created /recommend command
+- **Commands used:** /clarify, /qc-pass, /wrap-session
+- **Iterations:** 0 (single-file prompt-only command; no drafting)
+- **Decisions logged:** 0
+- **QC cycles:** 1 (plan-QC: PARTIAL → 2 substantive fixes (guardrail list + verification gaps) applied to plan → operator approved without second QC)
+- **Gates:** 5 (2 changed) — ask-user-question:confirmed (5 clarifying answers resolved), plan-approval:confirmed (proceed), challenge-disposition:changed (operator expanded scope with discoverability-hint requirement mid-session), challenge-disposition:changed (operator ruled out /clarify amendment, deferred hint placement), bright-line-review:confirmed (commit 6bccafc)

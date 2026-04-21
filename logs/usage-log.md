@@ -2,6 +2,36 @@
 
 <!-- entries below -->
 
+### 2026-04-21 | Efficient
+
+**Task:** Created `/recommend` slash command as operator-facing counterpart to `/clarify`. Single 15-line prompt-only command file, plan-mode-gated with qc-reviewer validation.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 14 |
+| Files read | 8 (re-reads: 2) |
+| Files written/edited | 4 |
+| Tool calls | ~28 |
+| Subagents | 1 |
+| Rework cycles | 1 |
+
+**Findings:**
+- Plan file took 1 QC cycle (PARTIAL verdict → 2 substantive fixes → operator approval without second QC) — within the normal QC→Triage auto-loop envelope, not waste (Rework, Minor/expected).
+- Two small-file tail re-reads (session-notes.md ~10 lines 2x, coaching-data.md partial 2x) for append-point verification before Edit — cheap and functional, not material (Re-reads, Minor).
+- One failed git commit from workspace root (nested-repo confusion) retried from inside ai-resources — single cheap retry (Tool overhead, Minor).
+- Mid-session scope expansion ("hint for when to use /recommend") retracted by operator before execution — zero artifact cost, clean retraction (no category).
+- STOP interrupt mid-AskUserQuestion preparation prevented an unneeded 3-option prompt — avoided waste rather than caused it.
+- Significant improvement vs. prior two entries (Wasteful 6 cycles / 7 subagents, then Acceptable 2 cycles / 5 subagents) — this session: 1 cycle / 1 subagent, tight scope throughout.
+
+**Recommendation:** No action needed.
+
+**Estimated savings:** N/A
+
+**Additional levers (ROI-ranked):**
+- Session shape is the target profile for single-file prompt-only command creation — one qc-reviewer pass on plan, no subagent output duplication to disk, targeted Edits rather than wholesale rewrites. Worth codifying as the reference envelope for `/create-skill`-adjacent command authoring.
+- Marginal: the two small-file tail re-reads (~20 lines total) could be collapsed by reading once and pinning the append-point offset, but savings are <500 tokens/session — not worth the discipline overhead.
+- Marginal: the failed-commit retry could be avoided by checking `git rev-parse --show-toplevel` before staging when working near nested-repo boundaries — ~300–500 tokens/session on affected sessions only, low frequency.
+
 ### 2026-04-21 | Wasteful
 
 **Task:** Created new shared skill `prose-refinement-writer` via /create-skill to address unclear sentence-to-sentence logical shifts and underdeveloped hardest claims in produce-prose-draft output.

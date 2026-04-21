@@ -1643,3 +1643,35 @@ None.
 - Token-savings estimate grounding — ~30K figure assumes ~60% excerpting baseline; actual delta measured by post-smoke-test usage-log entry.
 
 
+## 2026-04-21 — Created /recommend command
+
+### Summary
+Built `/recommend` as the operator-facing counterpart to `/clarify`. The command instructs Claude to answer its own open clarifying questions as the operator would, state every defaulted decision up front (so the operator has time to interject), and then execute. Autonomy Rules non-negotiables still pause; genuinely load-bearing questions still block. Single-file command (no YAML frontmatter), matches `clarify.md` / `scope.md` precedent. Plan QC caught two substantive gaps (partial guardrail enumeration, verification gaps) — both fixed before writing the command file.
+
+### Files Created
+- `ai-resources/.claude/commands/recommend.md` — new slash command: "answer your own questions, state the premise, execute, pause on non-negotiables."
+
+### Files Modified
+None.
+
+### Decisions Made
+- **Name:** `/recommend` (operator preference).
+- **Scope of override:** Not a blanket override. All canonical Autonomy Rules pause-triggers still apply — command body refers to CLAUDE.md as source of truth rather than enumerating (QC fix).
+- **Transparency model:** Every defaulted decision announced up front before execution, plus inline announcements as they arise mid-flight.
+- **File location:** `ai-resources/.claude/commands/` (canonical shared library).
+- **Format:** Prompt-only markdown, no YAML frontmatter.
+- **Discoverability hint:** Deferred. Operator ruled out amending `clarify.md`; location (CLAUDE.md rule vs. command-internal vs. docs) left open.
+- **Permission-prompt suppression during `/recommend` execution:** Surfaced as a separate concern. Not fixable via markdown command content; the right tool is `/fewer-permission-prompts`. Deferred to a separate session.
+
+### QC Fixes Applied
+- Replaced partial 6-of-8 Autonomy Rules enumeration with a pointer to workspace CLAUDE.md (fixes risk of future reader treating the subset as authoritative).
+- Added two verification checks: decision-announcement test (step 4 behavior) and non-negotiable pause test (confirms `/recommend` does not suppress hard-no triggers like `git push`).
+
+### Next Steps
+- Push commit `6bccafc` when ready.
+- Future: decide where the `/recommend` discoverability hint should live.
+- Future: if permission prompts continue to interrupt autonomous execution, run `/fewer-permission-prompts` to audit and expand the allowlist.
+
+### Open Questions
+- Placement of the `/recommend` discoverability hint (CLAUDE.md rule, command-internal "when to use" section, or a docs entry).
+
