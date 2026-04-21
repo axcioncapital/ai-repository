@@ -61,6 +61,7 @@ For non-critical issues (formatting, minor wording, small structural fixes), app
 
 - Sub-agents receive content from the main agent, not file paths. The main agent reads the file and passes the content.
 - Exception: Verification Agent reads source files directly (independent derivation), but receives the main output from the main agent.
+- Exception: large read-only reference files (`style-reference.md`, `context/prose-quality-standards.md`) may be passed by absolute path when the subagent is instructed to read them before applying the skill. Rationale: avoids duplicating ~1,200 lines of reference content across main-agent context and each subagent brief. Operand artifacts (the document being worked on) and skill content remain content-passed per the general rule.
 - Sub-agents do not persist state between invocations. Each call is fresh. If prior results are needed, the main agent provides them explicitly.
 - Sub-agents do not inherit the parent agent's session state. When launching a sub-agent, pass the working state it needs — output directory paths, files already created, stages completed — so it does not rediscover what the parent already knows.
 
