@@ -3,6 +3,12 @@
     "allow": [
       "Edit(.claude/**)",
       "Write(.claude/**)",
+      "Edit(**/.claude/**)",
+      "Write(**/.claude/**)",
+      "Edit(**/.claude)",
+      "Write(**/.claude)",
+      "Edit(/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/**)",
+      "Write(/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/**)",
       "Edit(logs/**)",
       "Write(logs/**)",
       "Edit(audits/**)",
