@@ -31,9 +31,9 @@ The chapter to evaluate. Strip any internal traceability layers — evaluate onl
 
 ### 2. Style Spec (required — blocking)
 
-The style specification governing tone, voice, audience, formatting conventions, and any other prose constraints for the document.
+The style specification governing tone, voice, audience, formatting conventions, and any other prose constraints for the document. **Passed as an absolute file path.** Read the file at the provided path before evaluating; do not expect inlined content.
 
-**If missing:** Do not proceed. Flag and request before evaluating.
+**If missing (no path provided, or path does not resolve to a readable file):** Do not proceed. Flag and request before evaluating.
 
 **Minimal spec:** A style spec with fewer than 3 explicit constraints is accepted but noted as "limited style spec" in the summary assessment. Evaluate §3 against what is stated — do not infer unstated constraints.
 

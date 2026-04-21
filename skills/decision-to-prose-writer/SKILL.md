@@ -98,7 +98,7 @@ The approved Part 2 section. Contains:
 
 ### 2. Style Reference (required)
 
-Voice and register constraints for Part 2 prose. Apply directly.
+Voice and register constraints for Part 2 prose. **Passed as an absolute file path.** Read the file at the provided path before writing; apply directly as the authority for voice, tone, and editorial standards. If no path is provided, or the path does not resolve to a readable file, flag and request before writing.
 
 ### 3. Editorial Annotations (optional)
 

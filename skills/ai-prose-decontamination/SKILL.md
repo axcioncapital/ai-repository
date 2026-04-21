@@ -41,13 +41,13 @@ The document to decontaminate. This should be post-review prose — substantive 
 
 ### 2. Style Reference (required — blocking)
 
-The style specification governing tone, voice, audience, and editorial standards. The style reference is the authority on what register is appropriate for this document. Pass 1 checks the style reference before flagging elevated language — if the style reference permits a construction, it stays.
+The style specification governing tone, voice, audience, and editorial standards. The style reference is the authority on what register is appropriate for this document. Pass 1 checks the style reference before flagging elevated language — if the style reference permits a construction, it stays. **Passed as an absolute file path.** Read the file at the provided path before running any passes.
 
-**If missing:** Do not proceed. Flag and request before running any passes.
+**If missing (no path provided, or path does not resolve to a readable file):** Do not proceed. Flag and request before running any passes.
 
 ### 3. Prose Quality Standards (recommended — not blocking)
 
-The prose quality standards document for this project. When provided, aligns the decontamination passes with existing standards — particularly Standard 1 (no self-annotation), Standard 3 (sentence rhythm), and Standard 5 (no preambles). When absent, the four passes use their own internal logic. Note the absence in the change log header.
+The prose quality standards document for this project. When provided, aligns the decontamination passes with existing standards — particularly Standard 1 (no self-annotation), Standard 3 (sentence rhythm), and Standard 5 (no preambles). When absent, the four passes use their own internal logic. Note the absence in the change log header. **Passed as an absolute file path when provided.** Read the file at the provided path before running the passes; if no path is provided, proceed with the four passes' internal logic and note the absence.
 
 ### 4. Source Document (optional)
 

@@ -28,7 +28,7 @@ If the caller does not name a mode, default to Sequential mode and state the ass
 
 ## Inputs
 
-All required unless noted. Content is passed directly (not file paths).
+All required unless noted. Prose and skill content are passed directly. Style Spec and Prose Quality Standards are passed as absolute file paths — read them from disk before running the scans.
 
 ### 1. Prose Draft (required)
 
@@ -40,7 +40,7 @@ The full content of `chapter-prose-reviewer/SKILL.md`. Used as an anti-pattern c
 
 ### 3. Style Spec (required, blocking)
 
-The style specification governing tone, voice, audience, formatting conventions, and prohibited patterns. If missing, halt and request before evaluating.
+The style specification governing tone, voice, audience, formatting conventions, and prohibited patterns. **Passed as an absolute file path.** Read the file at the provided path before evaluating. If no path is provided, or the path does not resolve to a readable file, halt and request before evaluating.
 
 ### 4. Document Architecture Section Spec (optional)
 
