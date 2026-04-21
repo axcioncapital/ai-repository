@@ -1568,3 +1568,39 @@ QC fixes:
 
 ### Open Questions
 None.
+
+## 2026-04-21 — Created prose-refinement-writer skill via /create-skill
+
+### Summary
+Created new shared skill `prose-refinement-writer` in response to operator feedback diagnosing two residual weaknesses in the current `produce-prose-draft` pipeline output — unclear logical relationships between adjacent sentences, and underdeveloped hardest claims in a paragraph. The skill applies a targeted refinement pass addressing both while preserving voice and actively avoiding AI-register smoothing patterns. Session ran the full /create-skill pipeline including plan QC, cold evaluator (0 Critical / 2 Major / 6 Minor), workspace QC→Triage auto-loop, and post-edit QC (PASS). First real `/create-skill` invocation since the 2026-04-18 ai-resource-builder relocations — pipeline executed cleanly.
+
+### Files Created
+- `ai-resources/skills/prose-refinement-writer/SKILL.md` — 273 lines. Addresses both weaknesses with preserve list, Fix 1 (logical-linkage), Fix 2 (claim-development), worked examples, paired quotability test, delivery-shape spec, Runtime Recommendations (Opus tier).
+- `ai-resources/inbox/archive/prose-refinement-writer-brief.md` — resource brief consumed by /create-skill; archived post-commit. Contains operator's verbatim refinement-writer instruction as the skill's source material.
+
+### Files Modified
+None outside the created files.
+
+### Decisions Made
+- **Target artifact (operator-directed):** new shared skill in `ai-resources/skills/`, not an update to existing ai-prose-decontamination / decision-to-prose-writer / evidence-prose-fixer / document-optimizer. None absorbs the scope (logical-linkage + claim-depth gaps at sentence level).
+- **Pipeline wiring deferred to follow-up session (operator-directed):** skill's position in `produce-prose-draft.md` (post-decontamination / pre-decontamination / reorganize decontamination) held as an open question for the follow-up, does not affect skill content.
+- **Plan revisions after QC+triage cascade:** dropped example-input fixture (File Write Discipline + inbox-lifecycle + evaluator doesn't ingest fixtures); stripped interpretive Document 1 diagnoses from plan Context; added document-optimizer to adjacency analysis; corrected claim that /create-skill auto-archives briefs; flagged /request-skill bypass as deliberate deviation.
+- **Default resolutions during SKILL.md write (Claude-defaulted, flagged to operator at Step 6):**
+  - Self-validation loop: external reviewer approach (single pass + change log), not internal revise-test-revert. Matches QC Independence Rule.
+  - Size-of-change cap: judgment latitude per operator instruction's phrasing, no hard abort at four sentences.
+- **Cold evaluator fixes applied (auto-loop triage):**
+  - Fix #4 Major — added Runtime Recommendations section (Opus tier declared).
+  - Fix #5 Major — added Worked Examples section (3 examples: Fix 1 restructure, Fix 2 concrete-instance follow-up, change-log entry format).
+  - Fix #7 Minor — resolved "closed list below is non-exhaustive" contradiction → "illustrative, not exhaustive."
+  - Fix #6 Minor (auto-loop surfaced) — added mid-sentence marker vs. banned-opener demarcation to Fix 1 step 2; extended banned-opener prohibition to mid-sentence scaffolding.
+  - Fix #8 Minor (auto-loop surfaced) — added Delivery Shape subsection to Output Contract (two labeled message sections by default; `.changelog.md` sibling if caller specified file output).
+- **Parked minor findings:** #1 `disable-model-invocation`, #2 `allowed-tools`, #3 `paths` — frontmatter-conformance items triage-reviewer flagged for a batched pass across all skills rather than one-off on this skill.
+
+### Next Steps
+- Push commit `f719715`.
+- Follow-up session: wire `prose-refinement-writer` into `produce-prose-draft.md`. Operator chooses position (post/pre/reorganize relative to decontamination). Likely seam is a new phase between integration check (lines 119–162) and decontamination (line 165) — the "after decontamination" variant may reorder this depending on operator choice.
+- Batch frontmatter-conformance pass (findings #1, #2, #3) across all skills as a dedicated session rather than one-off edits.
+
+### Open Questions
+- Pipeline deployment position: post-decontamination / pre-decontamination / decontamination reorganized. Deferred to the wiring follow-up session.
+

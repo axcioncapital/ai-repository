@@ -223,3 +223,10 @@
 - **Decisions logged:** 1
 - **QC cycles:** 4 (1 plan-QC: revise → fixed; 3 post-edit QC per skill: all GO, one MEDIUM auto-fixed on Skill 2)
 - **Gates:** 6 (4 changed) — plan-approval:changed, qc-disposition:confirmed, qc-disposition:confirmed, qc-disposition:changed (Skill 2 framing-sentence fix), bright-line-review:changed (smoke-test skip option), bright-line-review:confirmed (commit)
+
+### 2026-04-21 — Created prose-refinement-writer skill via /create-skill
+- **Commands used:** /qc-pass, /triage (x2), /create-skill, /wrap-session
+- **Iterations:** plan 2 (v1 revise → v2 pass after QC+triage); skill 3 (draft-01 → draft-02 after Fix #4/#5/#7 → draft-03 after auto-loop Fix #6/#8 + regression fix)
+- **Decisions logged:** 1
+- **QC cycles:** 2 (1 plan-QC: revise → fixed → post-edit pass; 1 skill-QC: cold evaluator 2 Major + 6 Minor → auto-loop triage → post-edit pass)
+- **Gates:** 7 (3 changed) — ask-user-question:confirmed (target+scope), ask-user-question:changed (Document 1 shared, plan updated), plan-approval:changed (operator edited plan), qc-disposition:confirmed (Step 1 triage proceed), qc-disposition:changed (operator challenged missing post-edit QC, directed additional QC work), bright-line-review:confirmed (approved), bright-line-review:confirmed (commit)

@@ -342,3 +342,21 @@
   - Apply same pattern to remaining 5 oversized skills in a future session.
   - Empirical verification of ai-resource-builder relocations comes from the first real `/create-skill` or `/improve-skill` invocation (smoke test deliberately skipped).
   - If pure relocation proves insufficient for any skill (e.g., skill is genuinely all operational logic with no relocatable reference content), revisit per case — that's the real signal to use `/improve-skill`.
+
+## 2026-04-21 — prose-refinement-writer: new skill vs. update-existing, and scope placement
+
+- **Context:** operator diagnosed two residual weaknesses in current `produce-prose-draft` pipeline output (unclear logical relationships between adjacent sentences; underdeveloped hardest claims). Provided a full refinement-writer instruction. Target artifact was ambiguous — the feedback could have landed in any of four places.
+- **Decision (via AskUserQuestion gate):** create a new shared skill `prose-refinement-writer` in `ai-resources/skills/`. Not an update to ai-prose-decontamination (voice cleanup, different axis), decision-to-prose-writer (structural conversion, not refinement), evidence-prose-fixer (fidelity patches only), document-optimizer (word-level tightening), or a project-local artifact.
+- **Rationale:** the operator's two named weaknesses — sentence-to-sentence logical linkage and hardest-claim development — are a prose-quality axis none of the four adjacent skills operate on. Folding into an existing skill would either dilute that skill's scope or force the new work into a misfit frame. Applicability is cross-project (any prose workflow), so shared scope is correct.
+- **Alternatives considered:**
+  - Fold into `ai-prose-decontamination` (rejected — decontamination is voice cleanup; the refinement rules treat banned openers as constraints, not primary scope).
+  - Update `decision-to-prose-writer` to produce better initial output (rejected — converter runs on decision docs, not already-narrative prose; the weaknesses are an iteration problem, not a conversion problem).
+  - Update `context/prose-quality-standards.md` in the buy-side-service-plan project (rejected — operator scope is shared, not project-local).
+- **Pipeline wiring deferred:** position in `produce-prose-draft.md` (post/pre/reorganize relative to decontamination) held open for a follow-up session. Operator confirmed Document 1 is post-full-pipeline output but did not choose the wiring position. Skill content is wiring-independent.
+- **Within-skill design defaults (Claude-proposed, operator to review on first real invocation):**
+  - External QC rather than internal revise-test-revert loop (matches QC Independence Rule).
+  - Size-of-change cap as judgment latitude per operator instruction's phrasing, not a hard abort at four sentences.
+- **Process deviation flagged:** brief authored directly at workspace level rather than via `/request-skill` from a project session (no project session exists for this workspace-level request). Deliberate, documented in brief.
+- **Follow-up:**
+  - Pipeline wiring in a dedicated session.
+  - Batch frontmatter-conformance pass (`disable-model-invocation` / `allowed-tools` / `paths`) across all skills rather than one-off on this skill.
