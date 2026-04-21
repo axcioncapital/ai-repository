@@ -360,3 +360,30 @@
 - **Follow-up:**
   - Pipeline wiring in a dedicated session.
   - Batch frontmatter-conformance pass (`disable-model-invocation` / `allowed-tools` / `paths`) across all skills rather than one-off on this skill.
+
+## 2026-04-21 — produce-prose-draft refactor: path-based reference passing + governance carve-out
+
+- **Context:** 2026-04-21 usage-log entry (first work block's wrap) rated produce-prose-draft as Wasteful. Primary recommendation: stop inlining style-reference.md and prose-quality-standards.md; pass absolute paths. Estimated savings ~30–34K tokens/run, ~300K–700K over 10–20 runs. During planning, Explore surfaced that `ai-resources/workflows/research-workflow/CLAUDE.md` line 62 mandates content-passing — the recommendation directly conflicts with that rule.
+- **Decision:** Apply path-based passing for style-reference.md and prose-quality-standards.md only (operand artifacts stay content-passed). Update four skill input contracts. Add a narrow Context Isolation Rules carve-out to the workflow CLAUDE.md explicitly permitting path-passing for the two named large reference files, while preserving content-passing as the default for operand artifacts and skill content.
+- **Rationale:** The cost-saving recommendation is sound (~30K tokens/run) and the governance rule's intent (isolation) is preserved by explicitly scoping the exception to read-only reference material. The skill-contract update is necessary because three of four skills block on missing style-reference content. Command-first commit order chosen so that the intermediate-state failure mode is the familiar "missing content" flag (skill halts cleanly) rather than a new "missing path" error.
+- **Alternatives considered:**
+  - All inlined content converted to paths (rejected: operand artifacts changing hands would break the clean boundary; diminishing returns).
+  - Only prose-quality-standards converted (rejected: captures ~60% of savings at ~60% of work; style-reference is nearly as large).
+  - Skills accept path OR content during a transition window (rejected: added complexity for a refactor with no external callers).
+  - Keep the rule, skip the refactor (rejected: operator explicitly prioritized the token savings).
+- **Follow-up:**
+  - Smoke-test both `/produce-prose-draft` (measure token delta) and `/run-report` (surface run-report contract change; operator picks mitigation).
+  - Token-savings measurement: baseline is 2026-04-20 Wasteful entry; post-refactor usage-log entry is the comparison.
+
+## 2026-04-21 — Permission settings: fix nested .claude/** glob gap
+
+- **Context:** During refactor execution, harness permission prompts fired on edits to `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md` despite the operator having granted autonomy. Investigation showed `Write(ai-resources/**)` failed to match because most glob engines don't traverse dotfile path components (`.claude`) via `**` by default, and `Write(.claude/**)` only matches root-level `.claude/`. The nested `.claude/` in `ai-resources/workflows/research-workflow/` fell in the gap.
+- **Decision:** Add `Write(**/.claude/**)` / `Edit(**/.claude/**)` + bare-dir variants + an absolute-path catchall (`Write(/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/**)`) to both the workspace-level and ai-resources-level settings.json files. Leave intentionally scoped settings (obsidian-pe-kb/vault, nordic-pe-landscape-mapping-4-26/step-1-long-list) untouched.
+- **Rationale:** Belt-and-suspenders. `**/.claude/**` handles the dotfile glob gap; the absolute-path catchall bypasses any remaining glob quirks for paths inside the workspace tree. Other project-level settings already use bare `Edit`/`Write` with no path-scoping, so the fix isn't needed there. Intentionally scoped settings protect raw data (vault) and web-only scopes (step-1-long-list) — those stay as-is by design.
+- **Alternatives considered:**
+  - Convert all path-scoped permission lists to bare `Edit`/`Write` across the tree (rejected: would lose intentional data-safety scoping in vault and step-1-long-list).
+  - Add only the `**/.claude/**` patterns without absolute-path catchall (rejected: any other glob quirk we haven't identified would still bite).
+  - Leave the issue (rejected: operator explicitly demanded the fix).
+- **Follow-up:**
+  - Settings changes take effect on next Claude Code session restart.
+  - If prompts still fire in specific flows not caught by these patterns, add additional explicit rules per case.

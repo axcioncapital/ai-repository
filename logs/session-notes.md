@@ -1604,3 +1604,42 @@ None outside the created files.
 ### Open Questions
 - Pipeline deployment position: post-decontamination / pre-decontamination / decontamination reorganized. Deferred to the wiring follow-up session.
 
+## 2026-04-21 — Refactored produce-prose-draft to path-based reference passing + permissions fix
+
+### Summary
+Second work block of 2026-04-21. Acted on the 2026-04-21 `/usage-log.md` Wasteful entry's primary recommendation: converted `produce-prose-draft.md` Phases 2/3/4/5 from inlining `style-reference.md` and `prose-quality-standards.md` content into subagent briefs to passing absolute paths. Updated four skill input contracts accordingly and added a narrow Context Isolation Rules carve-out to `workflows/research-workflow/CLAUDE.md`. A separate task surfaced during the refactor: harness permission prompts fired on nested `.claude/` paths because `**` glob patterns don't match dotfile path components by default — fixed the glob gap in two settings.json files.
+
+### Files Created
+None.
+
+### Files Modified
+- `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md` — Phases 2/3/4/5 converted to absolute-path passing; added Phase 2 step 0 for path setup; renumbered phase steps.
+- `ai-resources/workflows/research-workflow/CLAUDE.md` — added carve-out to Context Isolation Rules for style-reference + prose-quality-standards path-passing.
+- `ai-resources/skills/chapter-prose-reviewer/SKILL.md` — Style Spec input contract now expects absolute path.
+- `ai-resources/skills/prose-compliance-qc/SKILL.md` — Style Spec contract now expects absolute path; updated "content is passed directly" statement.
+- `ai-resources/skills/ai-prose-decontamination/SKILL.md` — Style Reference (blocking) and Prose Quality Standards (recommended) contracts now expect absolute paths.
+- `ai-resources/skills/decision-to-prose-writer/SKILL.md` — Style Reference contract now expects absolute path.
+- `.claude/settings.json` (workspace) — added `Write(**/.claude/**)` / `Edit(**/.claude/**)` + bare-dir variants + absolute workspace-root catchall.
+- `ai-resources/.claude/settings.json` — same glob-gap fix + absolute workspace-root catchall.
+
+### Decisions Made
+- **Refactor scope (operator-directed via AskUserQuestion):** reference files only. Operand artifacts (source document, prose file) and skill content stay content-passed. Include skill contract updates.
+- **Governance carve-out (operator-directed via plan approval):** update research-workflow/CLAUDE.md Context Isolation Rules with a narrow exception for the two named reference files, explicitly preserving content-passing as the default for operand artifacts. Sign-off absorbed into plan approval per Autonomy Rule 8.
+- **Commit ordering:** two commits, command first (a746f65), skills second (08b901f). Default chosen in triage; the command-first order makes the intermediate-state failure benign (skills still expect content, receive a path string, halt cleanly). Reverse order would produce "skill expects path, receives content" which is a new unfamiliar error.
+- **Permissions fix (operator-directed):** eliminate nested-.claude/ permission prompts by adding `Write(**/.claude/**)`, `Edit(**/.claude/**)`, bare-dir variants, and absolute workspace-root catchalls. Applied to both workspace and ai-resources settings.json files. Vault-level and step-1-long-list settings left intentionally scoped for data safety.
+
+### QC fixes applied
+- Plan revise cycle after initial QC (HIGH: Context Isolation Rules conflict not surfaced; HIGH: Commit A leaves pipeline broken; MEDIUM×4). Auto-loop triage recommended: surface CLAUDE.md conflict with carve-out in same change set; reverse commit order; pre-execution Glob for deployed-copy path; correct "no behavioral change" claim for run-report.md; add Phase 4 coverage detail; specify absolute-path construction. Post-edit QC: PASS with 2 minor items applied (project_root provenance rewrite, verification grep-list alignment). Second post-edit QC: GO — auto-loop terminated.
+
+### Next Steps
+- Push all commits: `a746f65`, `08b901f`, `fabebae`, `1d2e4ed`, `fedf2e9` (plus earlier `f719715`, `f7ca018` from the first work block).
+- Smoke test `/produce-prose-draft` on next queued section. Measure token-usage delta against 2026-04-20 Wasteful entry — expected ~30K tokens/run reduction.
+- Smoke test `/run-report` single chapter — chapter-prose-reviewer contract change may surface blocking flag where previously suppressed. Operator decides: add style-ref path to run-report invocation, add "no style-ref → proceed with warning" carve-out to the skill, or restructure the chapter-prose-reviewer call.
+- Deferred follow-up: wire `prose-refinement-writer` (from first work block) into `produce-prose-draft.md`. Operator chooses position (post/pre/reorganize relative to decontamination).
+- Deferred follow-up: frontmatter-conformance batch (`disable-model-invocation` / `allowed-tools` / `paths`) across all skills as a dedicated pass.
+
+### Open Questions
+- `run-report.md` behavioral change disposition — smoke-test decision deferred.
+- Token-savings estimate grounding — ~30K figure assumes ~60% excerpting baseline; actual delta measured by post-smoke-test usage-log entry.
+
+

@@ -230,3 +230,10 @@
 - **Decisions logged:** 1
 - **QC cycles:** 2 (1 plan-QC: revise → fixed → post-edit pass; 1 skill-QC: cold evaluator 2 Major + 6 Minor → auto-loop triage → post-edit pass)
 - **Gates:** 7 (3 changed) — ask-user-question:confirmed (target+scope), ask-user-question:changed (Document 1 shared, plan updated), plan-approval:changed (operator edited plan), qc-disposition:confirmed (Step 1 triage proceed), qc-disposition:changed (operator challenged missing post-edit QC, directed additional QC work), bright-line-review:confirmed (approved), bright-line-review:confirmed (commit)
+
+### 2026-04-21 — Refactored produce-prose-draft to path-based reference passing + permissions fix
+- **Commands used:** /qc-pass (x2), /triage (x2), /wrap-session
+- **Iterations:** plan 2 (v1 revise → v2 pass after QC+triage+fixes); settings.json 2 (initial fix → expanded coverage after "every project" audit)
+- **Decisions logged:** 2 (produce-prose refactor scope + permissions fix)
+- **QC cycles:** 2 (1 plan-QC: REVISE → triage+fix → post-edit PASS-with-fixes → 2 minor fixes → second post-edit GO; 0 post-change QC on permissions fix — executed on operator-demanded urgency)
+- **Gates:** 6 (3 changed) — ask-user-question:confirmed (refactor scope+skill-edit inclusion), plan-approval:changed (operator edited plan after REVISE verdict), qc-disposition:confirmed (triage "Fix" posture applied), bright-line-review:confirmed (commit A + B approved), challenge-disposition:changed (operator demanded permissions fix "EVERY PROJECT" — expanded scope from single file to cross-tree audit), bright-line-review:confirmed (permissions commits)

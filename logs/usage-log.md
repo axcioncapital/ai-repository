@@ -31,3 +31,33 @@
 - Outline-first plan drafting before first QC: the plan needed a full rewrite after initial qc-reviewer (REVISE, 1 HIGH + 5 MEDIUM) — ~5–8k tokens saved per session by running a quick self-check against the QC rubric before spawning the external reviewer. Smaller than the primary because it only affects the plan artifact, not the skill artifact.
 - Pin the plan file content after first read instead of re-reading 3x (~85 lines × 2 redundant reads ≈ 1–2k tokens) and same for SKILL.md (~267 lines × 1 redundant read ≈ 2–3k tokens) — total ~3–5k/session. Smaller than the primary because re-reads are on small-to-mid files.
 - Consolidate small plan-file Edits into one batch after QC rather than iterative single-line Edits that get superseded by the wholesale rewrite — ~1–2k tokens saved per QC cycle. Smallest lever because each wasted Edit is cheap individually.
+
+### 2026-04-21 | Acceptable
+
+**Task:** Refactored produce-prose-draft.md Phases 2–5 to pass absolute paths instead of inlining two reference docs into subagent briefs; updated four skill input contracts and added a Context Isolation Rules carve-out. Separately audited settings.json files and fixed a nested-`.claude/**` glob gap firing permission prompts.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 15 |
+| Files read | 17 (re-reads: 2) |
+| Files written/edited | 12 |
+| Tool calls | ~51 |
+| Subagents | 5 |
+| Rework cycles | 2 |
+
+**Findings:**
+- Plan artifact required 1 full rewrite + 2 minor post-edit fixes after REVISE verdict surfaced 1 HIGH governance + 1 HIGH commit-window + 4 MEDIUM issues — spec gaps at plan-authoring time (Rework, Moderate).
+- Initial settings fix landed in workspace repo only; operator challenge ("fixed in EVERY project?") forced a second audit pass across all 10 settings.json files and a second commit to ai-resources — scope framed too narrowly on first pass (Rework, Moderate).
+- produce-prose-draft.md (208 lines) read 2–3x across Phase 2/3/4/5 checks via partial reads — acceptable for a multi-phase edit but near the threshold (Re-reads, Minor).
+- 7 project settings.json files read via batched Bash cat (~400 lines) during audit — broad context load, only 2 files ultimately edited (Context bloat, Minor).
+- Permission prompt fired on `.claude/commands/produce-prose-draft.md` edit despite autonomy grant; narrated as if Claude was asking — auto-memory note existed but did not change behavior (Tool overhead, Minor).
+- Rating represents improvement vs prior entry (2026-04-21 Wasteful, 6 rework cycles, 7 subagents) — fewer subagents, fewer rework loops, tighter scope.
+
+**Recommendation:** When authoring plans that span multiple artifacts + harness config, run the `qc-reviewer` subagent on the plan draft BEFORE ExitPlanMode — not after operator challenge. Would have caught both the governance/commit-window gaps and the narrow-scope settings framing before any execution cost.
+
+**Estimated savings:** Plan rework cycle (rewrite + 2 post-edit fixes + second QC subagent pass) ≈ 6–8k tokens per avoided rework. At ~1 planning session per working block, projects to ~60–150k tokens over 10–20 sessions.
+
+**Additional levers (ROI-ranked):**
+- Pin produce-prose-draft.md once at session start (208 lines × 2–3 reads = ~4–6k redundant tokens). Bigger than the typical re-read lever because this is a central command file touched across 4 phases — any multi-phase edit session will re-encounter it. Projects to ~40–80k over 10–20 sessions.
+- Scope harness-config audits to a single subagent brief that enumerates ALL candidate files upfront rather than iterating after operator challenge (~3–5k tokens per audit by avoiding the second round). Smaller than the primary because harness-config audits are less frequent than planning sessions.
+- Batch the four skill-contract edits into one Read + one Edit per file pattern (already mostly done this session, but one-file-at-a-time drift cost ~1–2k) — smallest lever, included for completeness since the pattern is reusable across future multi-skill contract updates.
