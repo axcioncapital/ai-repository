@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Run the full repo due diligence pipeline: audit the workspace, compare to the previous audit, triage findings, and fix what's approved. Optionally continue into a deep operational assessment.
 
 Input: $ARGUMENTS (optional) — depth control:

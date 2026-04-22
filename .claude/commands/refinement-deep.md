@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Run a deep review of the work you just produced: QC + refinement in parallel, then triage the combined findings.
 
 ## Why this command?

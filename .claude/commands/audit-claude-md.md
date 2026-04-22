@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Audit the always-loaded CLAUDE.md files for token cost, redundancy, contradiction, staleness, misplacement, and clarity. Produces a findings report saved to `ai-resources/audits/`. Diagnostic-only — the command does not edit CLAUDE.md. Edits happen in a separate operator-directed turn after review.
 
 Input: $ARGUMENTS (optional) — scope selector:

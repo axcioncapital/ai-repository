@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Run the improvement analyst to review this session's friction and suggest workflow improvements.
 
 ## Instructions

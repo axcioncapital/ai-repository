@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Run the token-usage efficiency audit against the repo. Produces a prioritized optimization plan saved to `ai-resources/audits/`. Diagnostic-only — all fixes happen in a separate session.
 
 Input: $ARGUMENTS (optional) — scope selector:

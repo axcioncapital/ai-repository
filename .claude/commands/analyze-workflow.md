@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Analyze a workflow's deployed infrastructure end-to-end: inventory all commands, agents, hooks, and skills, trace the pipeline, and produce a prioritized findings report.
 
 Input: $ARGUMENTS — workflow path (required), optional depth flag.

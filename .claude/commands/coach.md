@@ -1,3 +1,7 @@
+---
+model: opus
+---
+
 Run the collaboration coach to analyze operator-AI collaboration patterns across sessions.
 
 ## Instructions
