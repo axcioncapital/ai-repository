@@ -41,3 +41,24 @@
   - Commit the edit to ai-resources or project-planning as a "snapshot" note (rejected: puts the authoritative vault config in a non-canonical location; worse than leaving on-disk).
 - **Follow-up:**
   - Operator decides between (a) and (b). Either path resolves the persistence concern.
+
+## 2026-04-22 — SC-04 resolved: commit edit + seed template (both)
+
+- **Context:** Prior session's wrap note flagged two mutually-exclusive fix options for the vault `settings.json` persistence risk — (a) update bootstrap template so `additionalDirectories` seeds at vault creation, or (b) narrow gitignore so the file tracks in git.
+- **Decision:** Do both, but reframed. Phase 1 exploration proved the premise of option (b) was wrong — the file is already tracked (gitignore negation at `projects/obsidian-pe-kb/.gitignore:4`). The on-disk edit just needed committing. The canonical "template" is the tech spec at `pipeline/technical-spec.md` §4; that got the `additionalDirectories` seed plus a rationale entry.
+- **Rationale:** Committing the existing edit fixes the immediate persistence risk. Updating the tech spec fixes the future-re-bootstrap risk. Orthogonal fixes; no reason to pick one.
+- **Alternatives considered:**
+  - Narrow gitignore (rejected: unnecessary — negation already works).
+  - Build a new bootstrap seeder script (rejected: overbuilt; tech spec is the source of truth for this project, no shared template to centralize).
+- **Follow-up:** None. Both edits committed in obsidian-pe-kb `3b148e3`.
+
+## 2026-04-22 — SC-02 reframed from unverifiable baseline to full-inventory task
+
+- **Context:** Setup scan at `reports/setup-improvement-scan-2026-04-21.md:50–58` claimed 6 hooks were deployed 2026-03-28 and remain unvalidated. Prior session could not verify the 6-hook list in git history and deferred the item.
+- **Decision:** Reframe from "validate the specific 6 hooks from 2026-03-28" to "inventory every currently deployed hook (29 found) and verify each fires correctly." Log as `logged (pending)` in `improvement-log.md` for a future dedicated maintenance session.
+- **Rationale:** Can't validate an unknowable baseline. The broader inventory is actionable — 29 hooks found, each with an identifiable trigger type, testable in a spawned session. Logging direct to the improvement-log (bypassing `/improve`) because `/improve` chains off `friction-log.md` and there is no matching friction entry; this is a scan-originated finding.
+- **Alternatives considered:**
+  - Invoke `/improve` (rejected: the command's Step 1 requires friction-log context which doesn't exist for this item).
+  - Execute the 29-hook inventory in this same session (rejected: ~1 hour of scope creep; no active friction driving urgency).
+  - Dismiss entirely (rejected: 29 unvalidated hooks is real latent risk; logging preserves the action).
+- **Follow-up:** Pending session — inventory all 29 hooks, verify each fires; consider building `/validate-hooks` if the work benefits from reuse.

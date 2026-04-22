@@ -391,3 +391,29 @@ Added a preflight step to `/wrap-session` so it asks the operator up front wheth
 
 ### Open Questions
 - None.
+
+## 2026-04-22 — SC-04 + SC-02 closeout
+
+### Summary
+Closed out the two deferred carry-over items from the 2026-04-21 setup-scan fix session. SC-04 was reframed after Phase 1 exploration corrected two false premises: the vault `settings.json` is already tracked (gitignore line 4 negates line 3), and the "bootstrap template" is the tech spec itself. The fix is two small orthogonal edits — commit the on-disk settings.json change and seed `additionalDirectories` into the canonical JSON template in `pipeline/technical-spec.md` §4. SC-02's unverifiable "6 hooks deployed 2026-03-28" baseline was reframed as a broader 29-hook inventory task and logged pending in `improvement-log.md`.
+
+### Files Created
+- None
+
+### Files Modified
+- `projects/obsidian-pe-kb/pipeline/technical-spec.md` — inserted `"additionalDirectories": ["../../../"]` into the §4 JSON template; added a corresponding rationale bullet at the top of "Rationale per rule". Committed in obsidian-pe-kb `3b148e3`.
+- `projects/obsidian-pe-kb/vault/.claude/settings.json` — previously modified on disk (already tracked via gitignore negation), now committed in obsidian-pe-kb `3b148e3`.
+- `ai-resources/logs/improvement-log.md` — appended `2026-04-22 — Hook inventory + validation (SC-02 reframe)` entry, status `logged (pending)`. Commit swept up 4 already-archived 2026-04-18 entries that were sitting unstaged (HEAVY hook, Stop-hook telemetry, project CLAUDE.md template, Agent Tier Table) — verified all 4 present in `improvement-log-archive.md`; no data loss. Committed in ai-resources `df1bcbf`.
+- `ai-resources/logs/session-notes.md` — this entry.
+
+### Decisions Made
+- **SC-04 approach: both edits, not either/or.** Original framing presented two mutually-exclusive options (update template OR narrow gitignore). Phase 1 exploration proved the gitignore already allows the file (negation at line 4) and the tech spec is the canonical template. Fix applied: commit the current edit + update the tech spec. No gitignore change.
+- **SC-02 approach: reframe + direct log-append.** Original scan framing ("validate the 6 hooks deployed 2026-03-28") is unactionable because the baseline is unverifiable. Reframed to inventory all 29 currently deployed hooks. Logged directly to `improvement-log.md` (not via `/improve`) because `/improve` chains off `friction-log.md` and this item has no matching friction entry.
+
+### Next Steps
+- Push commits: obsidian-pe-kb `3b148e3`, ai-resources `df1bcbf`.
+- Future session: execute the hook-inventory task per the SC-02 entry — estimated ~1 hour; consider whether to build `/validate-hooks` as a reusable skill or do a one-off spot-check.
+- SC-01 validation remains deferred to the next real `/produce-prose-draft` session on Doc 2 (unchanged from prior session's next-steps).
+
+### Open Questions
+- None.
