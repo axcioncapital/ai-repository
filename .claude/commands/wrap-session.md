@@ -5,6 +5,15 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
 **Do NOT run git commands or bash commands to discover files.** You already know what was produced from conversation context. Auto-commits track file changes separately.
 
 0. As your first action, run `touch /tmp/claude-wrap-session-done` via Bash. This suppresses the session-end hook's "Session ended without /wrap-session" auto-append while this command runs, preventing a file-modification race on `logs/session-notes.md`. The hook deletes the lockfile after reading it, so no cleanup is needed.
+
+**Preflight — operator preferences.** Before doing anything else, ask the operator in a single prompt and **wait for the answer**:
+
+> Wrap-session preflight — run these optional passes?
+> 1. Session telemetry (usage-analysis) — y/n
+> 2. Coaching data capture — y/n
+
+Accept shorthand: "yy" / "yes both" / "both" = both yes; "nn" / "skip both" = both no; "y/n" or "1y 2n" = per-item. Record the two answers and use them to gate Step 6 (coaching) and Step 13 (telemetry). Do not assume defaults — if the operator's reply is ambiguous, re-ask before proceeding. Note skipped passes in chat as "Skipped per preflight" when you reach the corresponding step.
+
 1. Read `/logs/session-notes.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Session Notes` as the header. **Format guard:** If the file exists but has no `# Session Notes` header, prepend it. If the last non-empty line is a partial block (unclosed heading, unterminated list), append a blank line before the new entry.
 2. Read `/logs/decisions.md` (last 5 lines only — to find the append point). If the file doesn't exist, create it with `# Decision Journal` as the header.
 3. Using conversation context and the operator's summary, append a session note to `/logs/session-notes.md` with:
@@ -17,7 +26,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
    - `### Open Questions` — blockers or unresolved items; write "None" if clean
 4. If operator decisions with analytical or scoping judgment were made, append to `/logs/decisions.md` with: date, context, decision, rationale, alternatives considered. Skip this if all decisions were routine (operator-directed text edits, QC auto-fixes).
 5. If the operator didn't mention decisions but significant ones occurred in the session, list them and ask: "Should I log any of these to the decision journal?"
-6. **Coaching data capture.** After writing the session note, auto-append a session profile entry to `/logs/coaching-data.md`. Derive all fields from the session note you just wrote — no extra operator input needed:
+6. **Coaching data capture.** If the operator declined coaching in the preflight, skip this step and note "Coaching capture skipped per preflight" in chat. Otherwise, after writing the session note, auto-append a session profile entry to `/logs/coaching-data.md`. Derive all fields from the session note you just wrote — no extra operator input needed:
    ```
    ### {YYYY-MM-DD} — {session title}
    - **Commands used:** {slash commands triggered this session, from conversation context}
@@ -46,7 +55,7 @@ Wrap the current session. The operator's wrap-up context follows this prompt: $A
     - Archive triggered: script prints `Auto-archived <file> → <archive-file> (archived N entries, kept M)`. Read the printed archive filename and add it to the session note's `### Files Modified` list so it gets staged explicitly in the commit step below.
     - Failure: script prints `ARCHIVE FAILED for <file>` and exits non-zero. Surface the failure to the operator, do NOT attempt to rerun, proceed with the rest of the wrap.
 
-13. **Session telemetry.** Run the usage analysis inline before committing — do NOT defer to the operator. Execute the full `/usage-analysis` flow (build session summary, read existing `logs/usage-log.md` if it exists, delegate to the `session-usage-analyzer` subagent per `ai-resources/skills/session-usage-analyzer/SKILL.md`, write the returned entry to the log). For trivial sessions (single-file edit, one-question read, aborted session), skip with a one-line note in chat ("Telemetry skipped — trivial session") and proceed. Rationale: R14 telemetry baseline depends on consistent capture; inlining the analysis prevents the common failure mode where the operator forgets to invoke it post-wrap and the session drops out of the record.
+13. **Session telemetry.** If the operator declined telemetry in the preflight, skip this step with a one-line note in chat ("Telemetry skipped per preflight") and proceed to the commit step. Otherwise, run the usage analysis inline before committing. Execute the full `/usage-analysis` flow (build session summary, read existing `logs/usage-log.md` if it exists, delegate to the `session-usage-analyzer` subagent per `ai-resources/skills/session-usage-analyzer/SKILL.md`, write the returned entry to the log). For trivial sessions (single-file edit, one-question read, aborted session), skip with a one-line note in chat ("Telemetry skipped — trivial session") and proceed. Rationale: R14 telemetry baseline depends on consistent capture; inlining the analysis prevents the common failure mode where the operator forgets to invoke it post-wrap and the session drops out of the record.
 
 After updating logs and writing the telemetry entry, stage and commit changes. **Stage by explicit file paths**, not directory wildcards — directory-level `git add` silently sweeps uncommitted files from concurrent sessions. Enumerate from the Files Created / Files Modified sections just written to the session note, plus always-present wrap-touched files:
 - Always-staged (if modified this session): `logs/session-notes.md`, `logs/decisions.md`, `logs/coaching-data.md`, `logs/improvement-log.md`, `logs/improvement-log-archive.md`, `logs/innovation-registry.md`, `logs/usage-log.md`
