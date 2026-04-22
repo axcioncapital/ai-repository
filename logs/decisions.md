@@ -62,3 +62,23 @@
   - Execute the 29-hook inventory in this same session (rejected: ~1 hour of scope creep; no active friction driving urgency).
   - Dismiss entirely (rejected: 29 unvalidated hooks is real latent risk; logging preserves the action).
 - **Follow-up:** Pending session — inventory all 29 hooks, verify each fires; consider building `/validate-hooks` if the work benefits from reuse.
+
+### 2026-04-22 — Delete `/new-project` Stages 2 and 2.5 outright (no fallback)
+
+- **Context:** `/new-project` previously generated the context pack, project plan, and technical spec via internal Stages 1/2/2.5. The operator now produces those artifacts upstream in the `projects/project-planning/` workspace via `/plan-draft` / `/plan-refine` / `/plan-evaluate` (and spec cycle). The two workflows were producing duplicate artifacts with drift risk.
+- **Decision:** Delete `pipeline-stage-2.md` and `pipeline-stage-2-5.md` outright. Replace with discovery-based retrieval from `projects/project-planning/output/{name}/`. Do not retain a fallback path for projects without pre-existing planning artifacts — `/new-project` now requires the planning workflow to run first.
+- **Rationale:** Operator explicitly chose outright deletion over conditional fallback. "A dormant fallback path rots and drifts" — keeping Stage 2/2.5 behind a discovery check would mean maintaining two code paths, one of which would rarely execute and therefore get stale. The planning workspace is now the system of record; any new project requiring Claude Code setup should go through it first.
+- **Alternatives considered:**
+  - Keep Stage 2/2.5 as conditional fallback (rejected — maintenance burden for rarely-exercised path).
+  - Leave Stage 2/2.5 active, add planning-workspace as optional seed (rejected — doesn't eliminate duplication).
+- **Follow-up:** Legacy in-flight pipelines with Stage 2/2.5 in their `pipeline-state.md` require manual migration — operator resets the state file or re-runs `/new-project` from scratch. No auto-migration implemented; documented in Continuation section.
+
+### 2026-04-22 — Defer Obsidian infrastructure layout enforcement
+
+- **Context:** Operator's original prompt included an item to instruct `/new-project` to follow the `buy-side-service-plans/wiki/` "Obsidian infrastructure" layout for new projects so Claude retrieves existing material in a predictable structure. During clarification, the operator deferred the item entirely: "defer the obsidian layout for later when I have a better plan for it."
+- **Decision:** Out of scope for this change. Documented as deferred in the plan's Context section and session note.
+- **Rationale:** The operator doesn't yet have a clear layout spec. Codifying a template now risks enforcing the wrong convention and forcing retroactive migration later. Better to execute the smaller, well-scoped retrieval change first and re-plan the layout enforcement when the operator has a target layout in mind.
+- **Alternatives considered:**
+  - Codify the existing `buy-side-service-plans/wiki/` layout as a provisional template (rejected — operator flagged the wiki reference doesn't yet exist at the assumed path and the layout isn't fixed yet).
+  - Design an Obsidian-style layout from scratch based on Obsidian conventions (rejected — premature without concrete project experience to validate against).
+- **Follow-up:** Separate session when operator has a target layout. Likely scope: define a layout template, extend `/new-project` to scaffold new projects per the layout, decide whether to audit/retrofit existing projects.

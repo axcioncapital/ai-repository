@@ -68,3 +68,6 @@
 | 2026-04-21 | agent | .claude/agents/improvement-analyst.md | graduated | ai-resources/.claude/agents/improvement-analyst.md (already canonical) |
 | 2026-04-22 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/commands/wrap-session.md | triaged:project-specific | — (workspace-level harness file, not shared resource) |
 | 2026-04-22 | agent | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/agents/qc-reviewer.md | triaged:project-specific | — (symlink to ai-resources canonical; workspace entry covers symlink metadata) |
+| 2026-04-22 | agent | .claude/agents/pipeline-stage-3b.md | triaged:graduate | already canonical in ai-resources |
+| 2026-04-22 | command | .claude/commands/friday-checkup.md | triaged:graduate | already canonical in ai-resources |
+| 2026-04-22 | hook | .claude/hooks/friday-checkup-reminder.sh | detected | — |
