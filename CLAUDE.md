@@ -12,7 +12,8 @@ Other directories:
 - `docs/` — Process documentation (session rituals, etc.)
 - `scripts/` — Utility scripts for repo maintenance
 - `style-references/` — Style reference materials consumed by formatting and prose-compliance skills
-- `usage/` — Session telemetry (`usage-log.md`) written by `/usage-analysis`; baseline for token audits
+
+Session telemetry (`usage-log.md`) is written by `/usage-analysis` into each consuming project's `logs/` directory (alongside `decisions.md`, `friction-log.md`, etc.) — this repo itself does not host a canonical usage log.
 
 These resources operate across a multi-tool ecosystem — not just Claude. Skills may reference or interact with GPT-5 (via API/CustomGPT), Perplexity (via API), Notion, and NotebookLM. Do not design resources that assume a single-tool environment.
 
@@ -42,9 +43,13 @@ Existing implementations: `token-audit-auditor`, `token-audit-auditor-mechanical
 
 ## Session Telemetry
 
-Run `/usage-analysis` at the end of every substantive session. Output goes to `usage/usage-log.md` and is the baseline that future token audits measure against — without the data, R14 (telemetry) can't detect whether R1–R13 optimizations moved the needle.
+Run `/usage-analysis` at the end of every substantive session. Output goes to `logs/usage-log.md` and is the baseline that future token audits measure against — without the data, R14 (telemetry) can't detect whether R1–R13 optimizations moved the needle.
 
 `/wrap-session` prompts for this automatically. If the session was trivial (single-file edit, one-question read), dismiss with one letter; don't skip by default.
+
+## Maintenance Cadence
+
+Run `/friday-checkup` each Friday before starting next week's work. Auto-detects tier (weekly / monthly / quarterly), asks which projects are active, runs the tier's audits across `ai-resources/`, workspace root, and named projects, and writes a consolidated review-only report to `ai-resources/audits/friday-checkup-YYYY-MM-DD.md`. Full mechanics: `.claude/commands/friday-checkup.md`.
 
 ## General Session Rules
 
