@@ -70,4 +70,4 @@
 | 2026-04-22 | agent | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/agents/qc-reviewer.md | triaged:project-specific | — (symlink to ai-resources canonical; workspace entry covers symlink metadata) |
 | 2026-04-22 | agent | .claude/agents/pipeline-stage-3b.md | triaged:graduate | already canonical in ai-resources |
 | 2026-04-22 | command | .claude/commands/friday-checkup.md | triaged:graduate | already canonical in ai-resources |
-| 2026-04-22 | hook | .claude/hooks/friday-checkup-reminder.sh | detected | — |
+| 2026-04-22 | hook | .claude/hooks/friday-checkup-reminder.sh | triaged:graduate | already canonical in ai-resources — paired with /friday-checkup |

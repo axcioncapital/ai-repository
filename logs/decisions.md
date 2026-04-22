@@ -82,3 +82,26 @@
   - Codify the existing `buy-side-service-plans/wiki/` layout as a provisional template (rejected — operator flagged the wiki reference doesn't yet exist at the assumed path and the layout isn't fixed yet).
   - Design an Obsidian-style layout from scratch based on Obsidian conventions (rejected — premature without concrete project experience to validate against).
 - **Follow-up:** Separate session when operator has a target layout. Likely scope: define a layout template, extend `/new-project` to scaffold new projects per the layout, decide whether to audit/retrofit existing projects.
+
+### 2026-04-22 — Quarterly tier of `/friday-checkup` dropped from auto-run
+
+- **Context:** Initial design called for three auto-run tiers (weekly / monthly / quarterly). Quarterly was to add `/repo-dd deep` per scope and `/analyze-workflow` per workflow on top of the monthly base.
+- **Decision:** Drop the quarterly tier from auto-run entirely. On quarterly Fridays the orchestrator runs only the monthly auto-run set; `/repo-dd deep` per scope and `/analyze-workflow` per workflow are printed as an "Operator follow-ups" checklist in the consolidated report.
+- **Rationale:**
+  - Plan QC identified that invoking the `repo-dd-auditor` subagent directly (to avoid `/repo-dd`'s interactive triage gates) produces standard-tier factual-audit output only, not deep-tier data — silently downgrading the quarterly audit while labeling it as deep.
+  - Monthly + quarterly runtime with 2–3 active projects estimates 3–5 hours, beyond one session's capacity and crosses `[COST]` / context-limit guardrails without a checkpoint mechanism.
+  - The `workflows/` scope was silently added for the quarterly `/analyze-workflow` step without operator confirmation, violating the Assumptions Gate rule.
+- **Alternatives considered:**
+  - Keep the quarterly auto-run but spec the full `/repo-dd deep` pipeline correctly and design multi-session execution (rejected — high complexity, real-hour cost to the operator on every quarterly Friday, `workflows/` scope still needs operator sign-off each quarter).
+  - Split into two separate commands — `/friday-checkup` (weekly+monthly) and `/quarterly-checkup` (heavy, acknowledged multi-session) (rejected as premature until the weekly cadence proves sticky; easier to add later than to remove).
+- **Follow-up:** If the weekly cadence proves sticky and the operator wants quarterly automation too, revisit whether a dedicated `/quarterly-checkup` command with explicit multi-session scaffolding is worth building.
+
+### 2026-04-22 — Friday reminder via SessionStart hook, not scheduled remote agent
+
+- **Context:** Operator wanted the `/friday-checkup` cadence to be reminded automatically rather than relying on manual recall. Two options presented: (A) scheduled remote agent firing Friday 09:00 with a push notification; (B) SessionStart hook that fires when a Claude Code session opens, prints a one-line reminder on Fridays when no checkup report exists yet for today.
+- **Decision:** Option B — SessionStart hook.
+- **Rationale:** A push notification at a fixed hour is easy to dismiss and doesn't align with the operator's actual sit-down moment. A SessionStart reminder only fires when the operator is already at the terminal — exactly when they could act on it — and is silent once the day's checkup has run. Also simpler to maintain: no external scheduled agent to manage or monitor for failure.
+- **Alternatives considered:**
+  - Option A: Scheduled remote agent via `schedule` skill (rejected for the reasons above).
+  - Modify `/prime` instead of adding a hook (rejected: `/prime` requires explicit operator invocation and would miss sessions where the operator skips it).
+- **Follow-up:** Monitor whether the reminder actually fires and whether it's useful. If the operator dismisses it reliably without running the checkup, revisit the approach.

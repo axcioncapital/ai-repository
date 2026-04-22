@@ -2,166 +2,6 @@
 
 > Archive: [session-notes-archive-2026-04.md](session-notes-archive-2026-04.md)
 
-## 2026-04-18 (token-audit R3+R4+R5+R11 bundle) — `/cleanup-worktree` structural improvements
-
-### Summary
-
-Applied the `/cleanup-worktree` bundle from the 2026-04-18 ai-resources token audit via `/improve-skill worktree-cleanup-investigator`. R3 (on-demand reference loading), R4 (subagent path-passing), R5 (subagent write-to-disk + 20-line summary), R11 (compact breakpoints + quick-tier 2nd-QC skip). Independent evaluation subagent (fresh context, 8-layer + 19-check convention gate) returned 0 Critical / 0 Major / 5 Minor; all 5 minors swept in the same commit. Also fixed a doc drift in `ai-resources/CLAUDE.md` where Session Telemetry pointed at `logs/usage-log.md` but the `/usage-analysis` command writes to `usage/usage-log.md` (chose update-pointer over move-file to preserve the existing log history).
-
-### Files Created
-
-None.
-
-### Files Modified
-
-- `ai-resources/skills/worktree-cleanup-investigator/SKILL.md` — R3 conditional-load triggers sharpened; R11 bias-counter language (Second QC pass) calibrated to dual-condition quick-tier skip; validation loop, failure behavior, and "revision-introduces-new-bugs trap" updated; workflow-ordinal vs. command/section-number cross-reference note added; example plan-filename aligned with command convention.
-- `ai-resources/skills/worktree-cleanup-investigator/references/execution-protocol.md` — § 3 (first QC) and § 4 (triage) rewritten for R4 path-passing + R5 write-to-disk/20-line summary; § 6 (second QC) rewritten for R11 quick-tier skip with explicit dual-condition gate (zero hard gates AND zero new file-content claims); Plan schema § 8 updated to require per-edit "new file-content claim" annotation (gates the quick-tier skip).
-- `ai-resources/.claude/commands/cleanup-worktree.md` — Step 3 drops bulk-load of references; Steps 6 / 7 / 9 use PLAN_PATH / QC_REPORT_PATH / FIRST_QC_REPORT_PATH and write-to-disk contract; pre-plan and post-triage `▸ /compact` markers added; Step 9 quick-tier branch added; intro paragraph + bias-counter bullet (3) re-calibrated; numbering regressions from edits fixed monotonically through Step 33.
-- `ai-resources/CLAUDE.md` — Session Telemetry `logs/usage-log.md` pointer updated to `usage/usage-log.md` to match command reality.
-- `ai-resources/logs/session-notes.md` — this entry.
-- `ai-resources/logs/coaching-data.md` — session profile entry.
-- `ai-resources/logs/decisions.md` — R11 quick-tier calibration and R5 scope extension logged.
-- `ai-resources/usage/usage-log.md` — telemetry entry for this session.
-
-### Decisions Made
-
-- **R11 quick-tier 2nd-QC skip calibrated, not removed.** Dual condition: zero hard gates in Section 4 AND zero new file-content claims in revision. Logged to decisions.md.
-- **R5 (QC write-to-disk) scope extended to triage subagent by symmetry.** Original audit brief named only QC passes; extended to all 3 subagents (QC1 + Triage + QC2) for uniform contract. Logged to decisions.md.
-- **Usage-log pointer drift resolved by updating CLAUDE.md, not moving the file.** Preserves existing log history. Logged to decisions.md.
-- **QC fixes (applied by main agent, not operator-directed):** 3 regressions from Step 2 edits caught by post-edit QC regression check — duplicate ordinal 27 in command renumbered monotonically through Step 33; intro "mandatory plan mode, two independent QC subagents" qualified with quick-tier; bias-counter bullet (3) qualified likewise. 3 Minor evaluation findings swept as polish (stale parenthetical, example filename, workflow-ordinal cross-reference note).
-
-### QC Cycles
-
-1 (independent evaluation subagent, fresh context, 8-layer + 19-check framework): 0 Critical / 0 Major / 5 Minor. Post-edit regression check (main-agent) caught 3 additional sites that needed quick-tier qualification. All resolved; all 5 Minors swept in the same commit.
-
-### Commits Landed
-
-- ai-resources `f2cfc28` — `update: worktree-cleanup-investigator — R3+R4+R5+R11 bundle from 2026-04-18 token audit`
-- ai-resources `b66e5ee` — `fix: CLAUDE.md — /usage-analysis writes to usage/, not logs/`
-
-Both **pushed** to origin/main at operator request.
-
-### Next Steps
-
-- Carried from prior sessions (none advanced this session): `/audit-repo` sub-auditor coverage vs repo-review-brief; Sonnet model retrofit on 4 existing projects; agent tier retrofit for pipeline stages; `/prime` Step 2 innovation-registry grep fix.
-- **Validate R3+R4+R5+R11 end-to-end via one real `/cleanup-worktree` invocation.** Current state is spec-only; the audit explicitly flagged R3 as medium risk pending test invocation.
-- **Remaining token-audit recommendations:** R6 (DD-report triage-extraction — already applied per innovation-registry), R7 (deep-tier log sweep — already applied), R8 (compress 2 largest skills — deferred), R9 (user-home effort/thinking cap), R10 (compaction + session-boundary rules in ai-resources CLAUDE.md — partially applied), R12 (repo-dd-auditor Opus → Sonnet — needs its own validation session).
-
-### Open Questions
-
-None.
-
-## 2026-04-18 (late evening) — /repo-dd on ai-resources (standard depth) — 5 triaged fixes applied
-
-### Summary
-
-Ran `/repo-dd` factual audit on the ai-resources repo. 12 findings extracted; triage-reviewer subagent recommended 5 as Do, 7 as Park. Applied all 5 Do items: created two missing log files referenced by `/note` and `/coach`, resolved a CLAUDE.md contradiction between "show diff before committing" (Git Rules) and "commit directly, no permission" (Commit Rules), fixed `audit-repo` command's `reference/skills/...` path that only resolves in deployed projects (now uses fallback resolution), and added the `usage/` directory to the CLAUDE.md "What This Repo Contains" list. Committed as `5f4223e`, pushed.
-
-### Files Created
-
-- `audits/repo-due-diligence-2026-04-18-ai-resources.md` — factual audit report (19 findings across 3 clean checks, 6 discrepancies, 5 missing items, 5 violations)
-- `audits/working/dd-extract.md` — structured triage extract (12 findings, severities)
-- `logs/workflow-observations.md` — placeholder log file for `/note` command
-- `logs/coaching-log.md` — placeholder log file for `/coach` command
-
-### Files Modified
-
-- `CLAUDE.md` (ai-resources) — added `usage/` to "What This Repo Contains"; removed "Always show me the diff before committing" from Git Rules (contradicted Commit Rules "commit directly, no permission")
-- `.claude/commands/audit-repo.md` — SKILL_DIR resolution now tries `reference/skills/...` (deployed layout) then `skills/...` (ai-resources layout); previously broken when command runs in ai-resources itself
-
-### Decisions Made
-
-All decisions routine / operator-delegated to triage-reviewer recommendation ("proceed per your recommendation"). No analytical or scoping judgment — not logged to decisions.md.
-
-### Next Steps
-
-- 7 parked findings remain (CATALOG.md staleness, repo-health-analyzer non-standard structure, retrofit Failure Behavior into 40 pre-template skills, line-count overflow in 8 skills, command opening-pattern standardization, CATALOG.md location, CLAUDE.md unreferenced sections). Address in dedicated sessions when the judgment calls are ready, or defer.
-- Push the innovation-registry + cleanup-worktree files that were pre-existing unstaged changes from prior sessions (not part of this audit commit).
-- Consider `/improve` — 2 friction events logged today before this session.
-
-### Open Questions
-
-None.
-
-## 2026-04-18 — /improve applied two Prime command fixes
-
-### Summary
-Ran `/improve` on the session's friction log. The improvement-analyst surfaced two findings, both scoped to `.claude/commands/prime.md`. Operator directed "fix" — both applied and logged to improvement-log.md.
-
-### Files Created
-None.
-
-### Files Modified
-- `.claude/commands/prime.md` — Step 2 rewritten for pipe-delimited table grep pattern; new Step 4a live `git status` verification; new `**Working tree:**` line in Step 5 output.
-- `logs/improvement-log.md` — two `applied` entries appended.
-
-### Decisions Made
-- Fix 2 adapted from analyst proposal: the env snapshot doesn't currently render to a line in Prime's Step 5 output, so instead of prefixing a nonexistent line with a freshness caveat, added Step 4a (live `git status --short` + `git diff --stat HEAD`) and a new `**Working tree:**` output line. Same intent, cleaner shape.
-
-### Next Steps
-- Verify the Prime fixes on next `/prime` invocation — confirm innovation count reflects the 4 `detected` rows and working-tree line renders correctly.
-- 4 `detected` innovations remain in registry (from prior session: audit-repo, cleanup-worktree commands, check-stop-reminders.sh, check-heavy-tool.sh hooks) — triage below.
-
-### Open Questions
-None.
-
-## 2026-04-18 — Tier 3 token-audit hardening: [HEAVY] PreToolUse hook + Stop-hook telemetry check
-
-### Summary
-
-Closed the two automation gaps left from the 2026-04-18 token audits' Tier 3 (behavioral) findings. Promoted the `[HEAVY]` self-enforcement flag (workspace CLAUDE.md → Session Guardrails) to a real PreToolUse hook with exempt-command bypass, and extended the existing Stop hook with a usage-log freshness check so `/usage-analysis` is reminded automatically when stale. QC review (REVISE) caused two scope changes: dropped the `pipeline-stage-4` tier flip (bright-line rule supersedes shortcut), switched Fix 2 from a new UserPromptSubmit hook to extending the existing Stop hook (simpler).
-
-**Concurrency note:** a concurrent session ran `/improve` and wrapped while this session was active (entry above this one). That wrap detected my new hook files but didn't triage them. I'm staging only the files this session created/modified per the concurrent-session rule.
-
-### Files Created
-- `ai-resources/.claude/hooks/check-heavy-tool.sh` — PreToolUse hook (Read/Grep/Bash matcher). Python-backed. Heuristics + exempt-command bypass via transcript JSONL parse. Non-blocking output via `hookSpecificOutput.additionalContext`.
-- `ai-resources/.claude/hooks/check-stop-reminders.sh` — replaces inline Stop-hook command. Combines innovation-registry detected-count + `usage/usage-log.md` today's-entry presence into one `systemMessage`.
-- `/Users/patrik.lindeberg/.claude/plans/confirm-to-me-that-hashed-puppy.md` — plan file (out-of-repo, not committed).
-
-### Files Modified
-- `ai-resources/.claude/settings.json` — added `hooks.PreToolUse` block (matcher `Read|Grep|Bash`); replaced inline `Stop` command with script invocation.
-- `ai-resources/logs/improvement-log.md` — appended two closeout entries (`[HEAVY]` hook + Stop-hook telemetry).
-
-### Decisions Made
-- **Drop pipeline-stage-4 tier flip from this batch.** QC flagged that workspace CLAUDE.md → "Applying Audit Recommendations" requires top-3 affected-commands check + smoke test, with explicit "do not skip even when low risk." The plan's "rollback is one line" argument doesn't satisfy the bright-line. Belongs in a dedicated session.
-- **Switch Fix 2 from UserPromptSubmit hook to Stop-hook augmentation.** QC surfaced this as a simpler alternative — Stop fires at the natural reminder point, no new hook event. Logic combined into `check-stop-reminders.sh`.
-
-QC fixes (applied per reviewer's REVISE list, no operator decision needed): added exemption mechanism to heavy-hook v1; dropped `path` condition from Grep trigger (false-positive magnet); added binary-extension carve-out to Read trigger; specified exact hook JSON shapes; specified `bash <path>` invocation pattern.
-
-### Next Steps
-- **`pipeline-stage-4` tier flip — separate session.** Run "Applying Audit Recommendations" properly: trace the top-3 commands that delegate to pipeline-stage-4 (in practice: `/new-project` Stage 4 only, via `project-implementer` skill), confirm Sonnet handles the implementation work. Then flip `model: inherit` → `model: sonnet` and update Agent Tier Table in workspace CLAUDE.md.
-- **Heavy-hook iteration.** Hook is live in this repo. Watch for false-positive patterns over the next few sessions; tune triggers (likely candidates: tighten Bash `find` regex, add more binary extensions, possibly carve-outs for routine `git status`/`git diff`).
-- **Compress 8 oversize skills (>300 lines)** — deferred from the original Fix selection; multi-session effort, run per-skill via `/improve-skill`.
-
-### Open Questions
-None.
-
-## 2026-04-18 — /improve-skill pipeline tune-up + skill-pipeline model tiers
-
-### Summary
-Audited `/improve-skill` and the `ai-resource-builder` SKILL.md against workspace CLAUDE.md canonical rules (QC Independence, Post-edit QC, Model Tier, Subagent Contracts). Fixed four real gaps: missing post-edit QC subagent, no model tier declared, SKILL.md <-> command divergence on iteration step, and implicit breaking-change detection. Then extended the model-tier fix to sibling commands `/create-skill` and `/migrate-skill`, which were in the same undeclared state.
-
-### Files Created
-None.
-
-### Files Modified
-- `ai-resources/.claude/commands/improve-skill.md` — added `model: opus` frontmatter; inserted Step 5e post-edit QC (fresh-context subagent reviewing the fixed state + fix ledger, with skip carve-out for single-edit/formatting-only passes); cited the four breaking-change triggers in Step 1; surfaces post-edit QC verdict in Step 7 results.
-- `ai-resources/.claude/commands/create-skill.md` — added `model: opus` frontmatter (was undeclared).
-- `ai-resources/.claude/commands/migrate-skill.md` — added `model: opus` frontmatter (was undeclared).
-- `ai-resources/skills/ai-resource-builder/SKILL.md` — Improve Workflow Step 5 language now matches the pipeline's autonomous-apply behavior (reconciling stale "user picks numbers" wording).
-
-### Decisions Made
-- **Sonnet → Opus for `/improve-skill`.** Initial call was Sonnet (framed as orchestrator). Operator pushed back ("is sonnet safe move?") and I re-evaluated: Step 1 triage, Step 3 iteration generation, Step 5a-c severity classification + fix application + regression check, and Step 6 feedback-resolution rating are all judgment work — Opus tier per the workspace CLAUDE.md tier table. Flipped to Opus. Same reasoning applied to create-skill and migrate-skill.
-- **Skip plan QC subagent pass.** The Step 1 triage output is conversational, not a formal plan artifact — the CLAUDE.md Plan QC rule targets execution plans of the type produced by pipeline commands, not triage summaries. Not acted on.
-- **Shallow-evaluation flag stays non-blocking.** Current behavior (flag in Step 7) is correct; blocking would create friction on legitimately clean skills.
-
-### Next Steps
-- Push commit `ce310e5` when ready.
-- Follow-up audit candidate: scan remaining `ai-resources/.claude/commands/` for commands missing `model:` frontmatter. Deferred — not all commands need the same tier; requires per-command judgment.
-
-### Open Questions
-None.
-
 ## 2026-04-18 — pipeline-stage-4 tier retrofit (inherit → sonnet)
 
 ### Summary
@@ -477,6 +317,49 @@ QC cycle notes (auto-loop applied, not listed as separate decisions): plan-level
   - Active repo-org agent: defer until 2–3 `/audit-repo` runs surface recurring org findings.
   - Active execution workflow: defer until Spec D exists as a manual.
 - **Obsidian-layout planning** remains deferred per operator — re-plan when they have a clearer picture.
+
+### Open Questions
+
+- None.
+
+## 2026-04-22 — /friday-checkup — tiered weekly maintenance cadence + Friday reminder hook
+
+### Summary
+
+Planned and built `/friday-checkup`, a tiered weekly maintenance orchestrator that runs the right subset of existing audits across `ai-resources/`, workspace root, and operator-selected active projects, then writes a single consolidated review-only report. Tier is auto-detected from the date (weekly / monthly / quarterly). Plan QC caught structural problems with an auto-run quarterly tier (silent data-tier downgrade, 3–5h runtime) and the design pivoted to quarterly-as-operator-follow-ups. Also added a SessionStart hook that reminds to run `/friday-checkup` on Fridays when today's report doesn't yet exist.
+
+### Files Created
+
+- `ai-resources/.claude/commands/friday-checkup.md` — orchestrator command (~180 lines). Detects tier, asks for active projects, runs tier's checks per scope, writes consolidated report at `ai-resources/audits/friday-checkup-YYYY-MM-DD.md`.
+- `ai-resources/.claude/hooks/friday-checkup-reminder.sh` — SessionStart hook script. On Fridays, emits a one-line `systemMessage` reminder if today's consolidated report doesn't exist.
+
+### Files Modified
+
+- `ai-resources/CLAUDE.md` — added a 5-line "Maintenance Cadence" pointer section.
+- `ai-resources/.claude/settings.json` — wired the SessionStart hook into the existing hooks block.
+- `ai-resources/logs/session-notes-archive-2026-04.md` — auto-archived via `check-archive.sh` at wrap (5 entries archived, 10 kept).
+
+### Decisions Made
+
+Scoping and design (logged to decisions.md):
+- `/friday-checkup` shape: slash command orchestrator (not a passive checklist doc).
+- Cadence tiers: weekly (every Fri) / monthly (first Fri of month) / quarterly (first Fri of Q1–Q4).
+- Scope: `ai-resources/` + workspace root + active projects selected interactively each run.
+- Findings handling: review-only; no auto-fix. Fixes happen in normal sessions next week.
+- Quarterly tier dropped from auto-run after QC — now surfaced as an operator follow-up checklist only.
+- Runtime guardrail: estimates >45 min require the phrase `proceed with long run`.
+- Reminder mechanism: SessionStart hook firing on Fridays when today's report missing (over scheduled remote agent).
+
+QC fixes applied:
+- Interface-table corrections for `/improve` and `/coach` (they write to `{scope}/logs/` not `ai-resources/logs/`); added `/coach` <5-sessions skip logic.
+- Specified `/audit-repo` snapshot mechanism concretely (Step 5a copies the per-scope report to `ai-resources/audits/repo-health-{scope-slug}-YYYY-MM-DD.md`).
+- Added "Commit behavior" section — the orchestrator does not commit; operator reviews at session wrap.
+
+### Next Steps
+
+- `git push` both commits (`ffc9b2d`, `d456c20`).
+- Dry-run `/friday-checkup weekly` against ai-resources scope only, to verify tier-detection, `/audit-repo` snapshot copy, and `/coach` skip-logic before next Friday.
+- Next actual Friday: confirm SessionStart hook fires (will require a new session) and run the full weekly tier end-to-end.
 
 ### Open Questions
 
