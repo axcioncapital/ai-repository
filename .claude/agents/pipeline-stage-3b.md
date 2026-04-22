@@ -15,9 +15,9 @@ You are executing Stage 3b of the /new-project pipeline.
 ## Input
 
 Read these artifacts from the pipeline directory:
-- `project-plan.md` (from Stage 2) — required
-- `repo-snapshot.md` (from Stage 3a) — required
-- `technical-spec.md` (from Stage 2.5) — optional, only present if Stage 2.5 was not skipped
+- `project-plan.md` — required (copied from `projects/project-planning/output/{name}/` by the orchestrator)
+- `repo-snapshot.md` — required (from Stage 3a)
+- `technical-spec.md` — optional (copied from `projects/project-planning/output/{name}/` if a spec was approved there; absent for simple projects)
 
 Also read `decisions.md` from the pipeline directory to incorporate any decisions made in earlier stages.
 

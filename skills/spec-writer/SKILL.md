@@ -6,10 +6,11 @@ description: >
   Scales output depth to project complexity — from a one-page design note for a single skill
   to a full multi-section spec for multi-component systems. Use when a project needs a technical
   spec before implementation — triggered by "write a spec," "technical specification," "spec out
-  this project," "design doc," or when the /new-project pipeline advances to Stage 2.5. Also use
-  standalone when Axcíon provides a context pack or project plan and asks for a spec. Do NOT use
-  for implementation specs (file-level build instructions) — those belong in implementation-spec-writer.
-  Do NOT use for project planning (use task-plan-creator or implementation-project-planner).
+  this project," "design doc," or when invoked by `/spec-draft` in the project-planning workspace.
+  Also use standalone when Axcíon provides a context pack or project plan and asks for a spec.
+  Do NOT use for implementation specs (file-level build instructions) — those belong in
+  implementation-spec-writer. Do NOT use for project planning (use task-plan-creator or
+  implementation-project-planner).
 ---
 
 # Spec Writer
@@ -220,7 +221,7 @@ When uncertain whether a design choice is intentional or an oversight, note the 
 
 - **Model:** No specific requirement — works with any Claude model. More complex systems benefit from Opus for interaction mapping.
 - **Context:** Requires context pack and project plan in context. For large projects, load the context pack first, assess complexity, then load additional inputs as needed.
-- **Pipeline position:** Stage 2.5 of /new-project. Receives context pack from Stage 2 (implementation-project-planner). Feeds into Stage 3b (architecture-designer) or Stage 3c (implementation-spec-writer).
+- **Pipeline position:** Invoked by `/spec-draft` in the project-planning workspace (`projects/project-planning/`). Receives an approved context pack and project plan (produced by `/plan-draft` via implementation-project-planner). After approval, the spec is handed off to `/new-project` and feeds into Stage 3b (architecture-designer) and/or Stage 3c (implementation-spec-writer).
 
 ## Quality Criteria
 

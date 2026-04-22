@@ -1,6 +1,6 @@
 # /new-project — Project Pipeline Orchestrator
 
-You are the orchestrator for Axcíon's project pipeline. This pipeline takes a user-provided context pack and produces a fully configured Claude Code setup through a series of staged gates.
+You are the orchestrator for Axcíon's project pipeline. This pipeline discovers approved planning artifacts (context pack, project plan, optional technical spec) from the `projects/project-planning/` workspace and produces a fully configured Claude Code setup through a series of staged gates, starting at Stage 3a (Repo Snapshot).
 
 ## Scope Validation
 
@@ -15,19 +15,17 @@ This pipeline is for **any Axcíon project that requires Claude Code** — wheth
 ## Pre-Flight Validation
 
 Before starting the pipeline, verify all required agent files exist in `ai-resources/.claude/agents/`:
-- `pipeline-stage-2.md`, `pipeline-stage-2-5.md`, `pipeline-stage-3a.md`, `pipeline-stage-3b.md`, `pipeline-stage-3c.md`, `pipeline-stage-4.md`, `pipeline-stage-5.md`, `session-guide-generator.md`
+- `pipeline-stage-3a.md`, `pipeline-stage-3b.md`, `pipeline-stage-3c.md`, `pipeline-stage-4.md`, `pipeline-stage-5.md`, `session-guide-generator.md`
 
 Check with: `ls ai-resources/.claude/agents/pipeline-stage-*.md ai-resources/.claude/agents/session-guide-generator.md 2>&1`
 
 If ANY file is missing, list all missing files and stop. Do not start the pipeline.
 
-## Context Pack Requirement
+## Planning Artifact Requirement
 
-The user must provide a context pack before the pipeline can start. The context pack can be:
-- A file path to an existing context pack (e.g., `context-pack.md`)
-- Pasted directly into the conversation
+Planning artifacts (context pack, project plan, optional technical spec) are produced upstream in the `projects/project-planning/` workspace via `/plan-draft` → `/plan-refine` → `/plan-evaluate` (and the equivalent spec cycle). The `/new-project` pipeline consumes approved artifacts from `projects/project-planning/output/{project-name}/` — it does not accept ad-hoc context packs pasted into the conversation.
 
-**If no context pack is provided, stop and ask for one.** Do not proceed without it.
+**If the planning artifacts do not exist for a given project name, stop and direct the operator to run the planning workflow first.** See First Run step 3 below for the exact abort message.
 
 ## First Run vs. Continuation
 
@@ -39,15 +37,79 @@ The user must provide a context pack before the pipeline can start. The context 
 
 ### First Run
 
-1. **Ask for the project name.** Use lowercase-with-hyphens format (e.g., `context-aware-skill-router`).
+1. **Ask for the project name.** Use lowercase-with-hyphens format (e.g., `context-aware-skill-router`). The name must match the directory name in `projects/project-planning/output/`.
 
-2. **Ask for the GitHub repository link.** The user should provide the URL of the project's GitHub repo (e.g., `https://github.com/axcion-ai/project-name`).
+2. **Locate the planning workspace.** Walk upward from the current working directory until an ancestor contains `projects/project-planning/`. Use the absolute path — Claude Code resolves paths relative to session CWD, which varies. The walk idiom mirrors the one used to locate `ai-resources/` in post-pipeline enrichment (see step 3 further down).
 
-3. **Create the project directory** at `projects/{project-name}/` and the pipeline artifact subdirectory at `projects/{project-name}/pipeline/`.
+   ```bash
+   d="$(pwd)"
+   PLANNING_WORKSPACE=""
+   while [ "$d" != "/" ]; do
+     if [ -d "$d/projects/project-planning" ]; then PLANNING_WORKSPACE="$d"; break; fi
+     d=$(dirname "$d")
+   done
+   [ -n "$PLANNING_WORKSPACE" ] || { echo "ERROR: projects/project-planning/ not found in any ancestor of $(pwd). Cannot locate planning artifacts."; exit 1; }
+   ```
 
-4. **Copy the user's context pack** to `projects/{project-name}/pipeline/context-pack.md`.
+3. **Verify the planning output directory exists** at `$PLANNING_WORKSPACE/projects/project-planning/output/{project-name}/`. If not, stop with:
 
-5. **Create `projects/{project-name}/pipeline/decisions.md`** with this template:
+   > "No planning artifacts found at `projects/project-planning/output/{project-name}/`. Run `/plan-draft`, `/plan-refine`, `/plan-evaluate` (and optionally the spec cycle via `/spec-draft`, `/spec-refine`, `/spec-evaluate`) in the project-planning workspace first, then re-run `/new-project`."
+
+4. **Discover artifacts** inside `$PLANNING_WORKSPACE/projects/project-planning/output/{project-name}/`:
+
+   ```bash
+   SRC="$PLANNING_WORKSPACE/projects/project-planning/output/{project-name}"
+
+   # Context pack — required
+   [ -f "$SRC/context-pack.md" ] || { echo "ERROR: $SRC/context-pack.md not found. Cannot proceed."; exit 1; }
+
+   # Latest project-plan — required. sort -V handles v10+ correctly (ls -v is GNU-only, not portable to macOS BSD).
+   LATEST_PLAN=$(ls "$SRC"/project-plan-v*.md 2>/dev/null | sort -V | tail -n 1)
+   [ -n "$LATEST_PLAN" ] || { echo "ERROR: No project-plan-v*.md in $SRC. Cannot proceed."; exit 1; }
+
+   # Latest tech-spec — optional
+   LATEST_SPEC=$(ls "$SRC"/tech-spec-v*.md 2>/dev/null | sort -V | tail -n 1)
+
+   # QC verdicts — advisory. Match both double-bold (**PASS**) and single-bold (PASS-WITH-FINDINGS) forms.
+   if [ -f "$SRC/plan-qc-verdict.md" ]; then
+     grep -qE "^\*\*Verdict:\*\*\s+\**PASS" "$SRC/plan-qc-verdict.md" || echo "WARN: plan-qc-verdict.md does not show PASS — proceeding anyway; confirm v{n} is the approved version."
+   else
+     echo "WARN: plan-qc-verdict.md missing — proceeding anyway; confirm the project plan is approved."
+   fi
+   if [ -n "$LATEST_SPEC" ] && [ -f "$SRC/spec-qc-verdict.md" ]; then
+     grep -qE "^\*\*Verdict:\*\*\s+\**PASS" "$SRC/spec-qc-verdict.md" || echo "WARN: spec-qc-verdict.md does not show PASS — proceeding anyway; confirm v{n} is the approved version."
+   fi
+   ```
+
+   QC verdict checks are advisory-only: if a verdict is missing or non-PASS, emit a warning and continue. Hard-blocking on a missing verdict file (e.g., operator deleted it while iterating) would create false-abort friction; the operator gate-keeps the planning workflow itself.
+
+5. **Ask for the GitHub repository link.** The user should provide the URL of the project's GitHub repo (e.g., `https://github.com/axcion-ai/project-name`).
+
+6. **Create the project directory** at `projects/{project-name}/` and the pipeline artifact subdirectory at `projects/{project-name}/pipeline/`.
+
+7. **Copy the discovered artifacts** into the target pipeline directory at canonical names (downstream stages read canonical paths):
+
+   ```bash
+   cp "$SRC/context-pack.md"   "projects/{project-name}/pipeline/context-pack.md"
+   cp "$LATEST_PLAN"            "projects/{project-name}/pipeline/project-plan.md"
+   [ -n "$LATEST_SPEC" ] && cp "$LATEST_SPEC" "projects/{project-name}/pipeline/technical-spec.md"
+   ```
+
+8. **Write `projects/{project-name}/pipeline/sources.md`** to record provenance (satisfies the workspace "legitimate copying" exception: downstream tool requires canonical path, source recorded):
+
+   ```markdown
+   # Pipeline Input Sources — {project-name}
+
+   | Canonical path | Source path | Source version | Copied on |
+   |----------------|-------------|----------------|-----------|
+   | pipeline/context-pack.md | {abs-source-path}/context-pack.md | — | {YYYY-MM-DD} |
+   | pipeline/project-plan.md | {abs-source-path}/project-plan-v{n}.md | v{n} | {YYYY-MM-DD} |
+   | pipeline/technical-spec.md | {abs-source-path}/tech-spec-v{n}.md | v{n} | {YYYY-MM-DD} |
+   ```
+
+   Omit the `technical-spec.md` row if no tech spec was discovered.
+
+9. **Create `projects/{project-name}/pipeline/decisions.md`** with this template:
 
 ```markdown
 # Decisions — {project-name}
@@ -56,19 +118,18 @@ The user must provide a context pack before the pipeline can start. The context 
 |---|-------|----------|-----------|------------|
 ```
 
-6. **Create `projects/{project-name}/pipeline/pipeline-state.md`** to track pipeline progress:
+10. **Create `projects/{project-name}/pipeline/pipeline-state.md`** to track pipeline progress:
 
 ```markdown
 # Pipeline State — {project-name}
 
 ## Metadata
 - **GitHub:** {github-url}
+- **Planning source:** projects/project-planning/output/{project-name}/
 
 | Stage | Status | Artifact |
 |-------|--------|----------|
-| 2 — Project Plan | in_progress | — |
-| 2.5 — Technical Spec | pending | — |
-| 3a — Repo Snapshot | pending | — |
+| 3a — Repo Snapshot | in_progress | — |
 | 3b — Architecture Design | pending | — |
 | 3c — Implementation Spec | pending | — |
 | 4 — Implementation | pending | — |
@@ -76,9 +137,9 @@ The user must provide a context pack before the pipeline can start. The context 
 | 6 — Session Guide | pending | — |
 ```
 
-7. **Tell the user** what was created and that Stage 2 is starting.
+11. **Announce what was discovered and copied.** Include: source directory, picked versions (e.g., `project-plan-v3.md`), whether a tech spec was found, any QC-verdict warnings. State that Stage 3a is starting. No separate confirmation gate before copy — the announcement names every file, `sources.md` records provenance, and any wrong picks are reversible via the existing `ABORT` gate.
 
-8. **Spawn the Stage 2 subagent** (`pipeline-stage-2`) with the context pack as input. Include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
+12. **Spawn the Stage 3a subagent** (`pipeline-stage-3a`). Include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
 
 ### Continuation
 
@@ -87,7 +148,9 @@ The user must provide a context pack before the pipeline can start. The context 
 3. Announce: "Resuming pipeline at [stage name]. Last completed: [previous stage]."
 4. Spawn the corresponding stage subagent. Include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
 
-**Agent name mapping:** Stages 2–5 use the `pipeline-stage-{N}` naming convention. Stage 6 (Session Guide) uses the `session-guide-generator` agent instead.
+**Agent name mapping:** Stages 3a–5 use the `pipeline-stage-{N}` naming convention. Stage 6 (Session Guide) uses the `session-guide-generator` agent instead.
+
+**Legacy pipeline-state migration.** If a pipeline-state.md still lists Stage 2 or 2.5 as `in_progress` or `pending` (from before this change), stop and tell the operator they have two options: (a) manually edit the state file to remove those rows and set Stage 3a to `in_progress` (confirming the project's plan and tech spec exist in `projects/project-planning/output/{name}/`), or (b) abandon the in-progress pipeline and re-run `/new-project` from scratch. Do not auto-migrate.
 
 ## Gate Protocol
 
@@ -96,7 +159,7 @@ After each stage subagent completes:
 1. Update `pipeline-state.md`: set the current stage to `completed` and record the artifact path.
 2. Wait for the user's command:
    - **`NEXT`** → Set the next stage to `in_progress` in `pipeline-state.md`. Spawn the next stage subagent.
-   - **`SKIP`** → Valid after Stage 2 (skips Stage 2.5 — marks it `skipped` in `pipeline-state.md`, sets Stage 3a to `in_progress`) and after Stage 5 (skips Stage 6 — marks it `skipped`, announces pipeline complete). Not valid at other stages. Stage 2's complexity assessment informs whether skipping 2.5 is advisable.
+   - **`SKIP`** → Valid after Stage 5 only (skips Stage 6 — marks it `skipped`, announces pipeline complete). Not valid at other stages.
    - **`ABORT`** → Mark all remaining `pending` stages as `cancelled` in `pipeline-state.md`. Announce abort. Do not delete project artifacts.
 
 ## Post-Stage 5 Behavior
@@ -409,5 +472,5 @@ Report what was created: manifest path, settings.json modifications (permissions
 - Never modify decisions.md without user confirmation
 - Always announce which stage is running and what it expects as input
 - When spawning any subagent, always include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
-- The `pipeline/pipeline-state.md` file is the source of truth for pipeline progress — always read it before taking action, always update it after state changes. All pipeline artifacts (context-pack, project-plan, architecture, specs, logs, test-results) live in `pipeline/`. Only the project's working files live at the project root.
+- The `pipeline/pipeline-state.md` file is the source of truth for pipeline progress — always read it before taking action, always update it after state changes. Pipeline artifacts live in `pipeline/`: `context-pack.md`, `project-plan.md`, and (optionally) `technical-spec.md` are **discovered inputs** copied from `projects/project-planning/output/{name}/` at First Run; `repo-snapshot.md`, `architecture.md`, `implementation-spec.md`, `implementation-log.md`, and `test-results.md` are **pipeline-generated outputs**. Provenance for the discovered inputs is recorded in `pipeline/sources.md`. Only the project's working files live at the project root.
 - If the project involves creating new skills, inform the user that skill creation must use the `/create-skill` command from ai-resources. Ensure ai-resources is connected via `--add-dir` so the command is available.

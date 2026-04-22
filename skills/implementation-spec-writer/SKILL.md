@@ -41,9 +41,9 @@ Required inputs:
 - **Repo snapshot** (`repo-snapshot.md` from Stage 3a)
 
 Optional inputs:
-- **Technical spec** (`technical-spec.md` from Stage 2.5) — for component behavior details
+- **Technical spec** (`technical-spec.md` — copied into `pipeline/` by `/new-project` from the project-planning workspace) — for component behavior details
 - **Decisions log** (`decisions.md`) — for constraints from earlier stages
-- **Project plan** (`project-plan.md` from Stage 2) — for context on requirements
+- **Project plan** (`project-plan.md` — copied into `pipeline/` by `/new-project` from the project-planning workspace) — for context on requirements
 
 The repo snapshot provides the current filesystem state. The architecture document provides the target state. The implementation spec bridges the gap.
 

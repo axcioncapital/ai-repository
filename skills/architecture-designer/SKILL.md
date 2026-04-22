@@ -38,11 +38,11 @@ description: >
 ## Input Expectation
 
 Required inputs:
-- **Project plan** (`project-plan.md` from Stage 2)
+- **Project plan** (`project-plan.md` — copied into `pipeline/` by `/new-project` from the project-planning workspace)
 - **Repo snapshot** (`repo-snapshot.md` from Stage 3a)
 
 Optional inputs:
-- **Technical spec** (`technical-spec.md` from Stage 2.5) — present for complex projects, absent for simple ones
+- **Technical spec** (`technical-spec.md` — copied into `pipeline/` by `/new-project` from the project-planning workspace; present for complex projects, absent for simple ones)
 - **Project baseline template** (`templates/project-baseline/manifest.md` in ai-resources) — read this when designing a new project setup to understand what baseline components and optional modules are available before designing custom components
 
 If the technical spec exists, it is the primary design reference. If absent, the project plan provides the design context.

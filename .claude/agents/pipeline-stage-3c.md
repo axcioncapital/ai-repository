@@ -15,11 +15,11 @@ You are executing Stage 3c of the /new-project pipeline.
 ## Input
 
 Read these artifacts from the pipeline directory:
-- `architecture.md` (from Stage 3b) — required
-- `repo-snapshot.md` (from Stage 3a) — required
-- `technical-spec.md` (from Stage 2.5) — optional
+- `architecture.md` — required (from Stage 3b)
+- `repo-snapshot.md` — required (from Stage 3a)
+- `technical-spec.md` — optional (copied from `projects/project-planning/output/{name}/` if a spec was approved; absent for simple projects)
 - `decisions.md` — for constraints from earlier stages
-- `project-plan.md` (from Stage 2) — for additional context
+- `project-plan.md` — for additional context (copied from `projects/project-planning/output/{name}/` by the orchestrator)
 
 If the required files don't exist or are empty, stop and report the error to the user.
 

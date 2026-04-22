@@ -17,8 +17,6 @@ Every agent must declare `model:` explicitly in frontmatter — no implicit inhe
 | dd-log-sweep-agent | haiku | Mechanical log scan for repo-dd. Correct. |
 | execution-agent | sonnet | API-call dispatcher. Correct. |
 | improvement-analyst | opus | Judgment (friction-pattern analysis). Correct. |
-| pipeline-stage-2 | opus | Analytical (project-plan creation). Retrofitted from inherit. |
-| pipeline-stage-2-5 | opus | Analytical (technical spec). Retrofitted from inherit. |
 | pipeline-stage-3a | sonnet | Structured inventory scan. Correct. |
 | pipeline-stage-3b | opus | Architectural design. Correct. |
 | pipeline-stage-3c | opus | Analytical (implementation spec). Retrofitted from inherit. |

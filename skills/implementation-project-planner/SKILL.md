@@ -4,10 +4,10 @@ description: >
   Creates implementation project plans for Claude Code infrastructure projects. Takes an
   approved context pack and produces a plan specifically shaped for Claude Code implementation —
   covering component architecture, build staging, integration considerations, and risk assessment.
-  Use when the /new-project pipeline advances to Stage 2, or when the user says "plan a Claude
-  Code project," "plan this implementation," or provides a context pack expecting a Claude Code
-  implementation plan. Do NOT use for research project planning (use task-plan-creator), general
-  task planning, or non-Claude-Code projects.
+  Use when invoked by `/plan-draft` in the project-planning workspace, or when the user says
+  "plan a Claude Code project," "plan this implementation," or provides a context pack expecting
+  a Claude Code implementation plan. Do NOT use for research project planning (use
+  task-plan-creator), general task planning, or non-Claude-Code projects.
 ---
 
 # Implementation Project Planner
@@ -35,7 +35,7 @@ description: >
 
 ## Input Expectation
 
-The primary input is an **approved context pack** (output of Stage 1). The context pack provides:
+The primary input is an **approved context pack** (provided by the operator via the project-planning workspace). The context pack provides:
 - What the project aims to achieve
 - What's in and out of scope
 - Success criteria
@@ -109,22 +109,22 @@ Common risks to check:
 
 ### 7. Complexity Assessment
 
-Explicit assessment of whether this project needs a Technical Specification (Stage 2.5):
+Explicit assessment of whether this project needs a **Technical Specification** produced via the `/spec-draft` → `/spec-refine` → `/spec-evaluate` cycle in the project-planning workspace:
 
-**Indicators that Stage 2.5 is needed:**
+**Indicators that a technical spec is needed:**
 - More than 5 new components
 - Components with complex interaction patterns
 - Design tradeoffs that need explicit resolution
 - Error handling requirements beyond simple pass/fail
 - Multiple valid architectural approaches that need evaluation
 
-**Indicators that Stage 2.5 can be skipped:**
+**Indicators that a technical spec can be skipped:**
 - Fewer than 3 new components
 - Components are independent (minimal interaction)
 - Design is straightforward with one obvious approach
 - Similar to existing components in the repo
 
-State your recommendation with reasoning. The user makes the final call.
+State your recommendation with reasoning. The user makes the final call. If a spec is warranted, the operator runs the spec cycle in the project-planning workspace before handing off to `/new-project`; if skipped, `/new-project` proceeds with only the context pack and project plan as input.
 
 ### 8. Open Questions
 
@@ -169,7 +169,7 @@ Produce the full Implementation Project Plan following the structure above. Focu
 Present the draft plan. Specifically ask:
 - "Does the component inventory match your expectations? Anything missing or unnecessary?"
 - "Does the build staging order make sense?"
-- "Do you agree with the Stage 2.5 complexity assessment?"
+- "Do you agree with the complexity assessment — should we run the spec cycle, or skip it?"
 
 Incorporate feedback and finalize.
 
@@ -188,7 +188,7 @@ Incorporate feedback and finalize.
 
 - **Model:** No specific requirement — works with any Claude model.
 - **Context:** Requires the context pack in context. If repo scanning is needed (Step 2), the repo should be accessible via --add-dir.
-- **Pipeline position:** Stage 2 of /new-project. Receives context pack from Stage 1. Feeds into Stage 2.5 (spec-writer, if complexity warrants) or Stage 3a (repo snapshot).
+- **Pipeline position:** Invoked by `/plan-draft` in the project-planning workspace (`projects/project-planning/`). Receives an approved context pack; produces a project plan that is either (a) fed into the spec cycle (`/spec-draft` → `/spec-refine` → `/spec-evaluate`) if complexity warrants, or (b) handed off to `/new-project` for implementation starting at Stage 3a (repo snapshot).
 
 ## Quality Criteria
 
