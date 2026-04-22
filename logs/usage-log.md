@@ -2,6 +2,35 @@
 
 <!-- entries below -->
 
+### 2026-04-22 | Acceptable
+
+**Task:** Implemented 6 of 7 P0+P1 improvements from the 2026-04-21 setup-improvement-scan across three nested git repos, with one deferral (SC-02, unverifiable baseline) and one mid-execution adaptation (1→3 commits after nested-repo discovery).
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 13 |
+| Files read | ~21 (re-reads: 0) |
+| Files written/edited | 15 |
+| Tool calls | ~60 total |
+| Subagents | 4 |
+| Rework cycles | 1 (partial — caught pre-commit) |
+
+**Findings:**
+- Context bloat (Moderate): ~1,660 lines of working-notes + report files read upfront before plan-mode exploration — `setup-scan-bssp-archives-b-2026-04-21.md` (602 lines), plus four other scan/report files (248–280 lines each) all loaded in full. Validate whether full reads were needed or section-targeted reads would have sufficed.
+- Rework (Minor, sub-moderate): 1 partial correction to produce-formatting.md Phase 3 subagent brief caught at verification before commit — not a completed-output rework cycle, but the plan's exploration missed the Phase 3 pass-list gap.
+- Planning gap (Moderate, classified as Context bloat): Plan assumed single-repo commit scope; nested-repo boundaries (workspace / ai-resources / bssp) not verified during exploration, forcing mid-execution restructure from 1 to 3 commits.
+- Trend vs. last 3 entries (Efficient / Acceptable / Wasteful): stable — matches the prior Acceptable entry (multi-phase edit with a structural gap), not a regression toward the Wasteful rework-heavy session.
+
+**Recommendation:** When the task input is a scan/audit report, read the executive summary + prioritized-items section first, then selectively load working-notes only for items the executor will act on — avoid full-read of all working-notes files upfront.
+
+**Estimated savings:** ~1,100 lines × ~12 tokens/line = ~13k tokens avoidable per scan-driven session (assuming ~33% of the 1,660 lines read were genuinely load-bearing for the 7 items acted on). Over a 10–20 session horizon of similar scan-driven implementation work: ~130k–260k tokens.
+
+**Additional levers (ROI-ranked):**
+- Verify repo boundaries during Phase 1 exploration (cheap `git rev-parse --show-toplevel` per target directory, ~200 tokens) to prevent commit-phase restructuring. Smaller than primary (single-digit k tokens saved per occurrence) but cheaper to implement — pure process addition.
+- Single-Explore-agent consolidation where SC-items share file scope: the 3 parallel Explore agents returned 300–500 lines each (~1.2k–1.5k lines total); if two of the three could have been merged by scope (e.g., commands + CLAUDE.md share the workspace dir), estimated ~4–6k tokens saved. Smaller than primary because parallel Explore is a deliberate speed/coverage tradeoff, not waste.
+- Defer SC-02-style items at scan-triage time, not implementation time: the git-history search for the 2026-03-28 baseline was sunk cost by the time deferral was decided. Adding a "verify baseline exists" gate to scan output would prevent ~1–2k tokens of dead-end verification per unverifiable item. Smaller than primary because the scan itself would need the gate logic added.
+- No fourth lever — remaining inefficiencies are below the material-waste threshold.
+
 ### 2026-04-21 | Efficient
 
 **Task:** Created `/recommend` slash command as operator-facing counterpart to `/clarify`. Single 15-line prompt-only command file, plan-mode-gated with qc-reviewer validation.

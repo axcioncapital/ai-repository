@@ -133,3 +133,17 @@ Suggested three-session sequence:
   - `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/CLAUDE.md` — new Git Rules subsection on concurrent-session staging discipline
 - **Dependency:** None. Can be implemented standalone; fits the Prevention Session sequence as a small bundle with the existing Session 2 (templates) or Session 3 (detection).
 - **Risk:** Low. Structural fix is a 2-line change. Durable rule adds ~5 lines to workspace CLAUDE.md. Neither touches active-workflow code.
+
+### 2026-04-18 — Prime Step 2 innovation-registry grep pattern
+- **Status:** applied
+- **Verified:** 2026-04-22 — confirmed via setup-scan-2026-04-21 report ("Considered and rejected" section) which verified the fix against current `.claude/commands/prime.md` lines 8–9 (pipe-delimited grep pattern present)
+- **Category:** command
+- **Friction source:** friction-log.md session 2026-04-18 entry 1 — registry with 5 `detected` rows reported 0 at Prime
+- **What changed:** `.claude/commands/prime.md` Step 2 rewritten to specify the pipe-delimited table format and correct grep pattern (`^\|[^|]*\|[^|]*\|[^|]*\| detected \|`); explicit note not to use list/YAML/JSON patterns.
+
+### 2026-04-18 — Prime git-status freshness check
+- **Status:** applied
+- **Verified:** 2026-04-22 — confirmed via setup-scan-2026-04-21 report which verified the fix against current `.claude/commands/prime.md` line 20 (git-status freshness check) and line 36 (new working-tree output block)
+- **Category:** command
+- **Friction source:** friction-log.md session 2026-04-18 entry 2 — Prime reported phantom loose ends from stale env snapshot (files already committed)
+- **What changed:** `.claude/commands/prime.md` gains Step 4a (live `git status --short` + `git diff --stat HEAD` verification when env snapshot is non-empty) and a new `**Working tree:**` line in the Step 5 output block.

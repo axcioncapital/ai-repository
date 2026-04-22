@@ -63,3 +63,8 @@
 | 2026-04-18 | command | .claude/commands/create-skill.md | triaged:project-specific | — (already canonical in ai-resources) |
 | 2026-04-18 | command | .claude/commands/migrate-skill.md | triaged:project-specific | — (already canonical in ai-resources) |
 | 2026-04-18 | agent | .claude/agents/pipeline-stage-4.md | triaged:project-specific | — |
+| 2026-04-21 | command | .claude/commands/recommend.md | graduated | ai-resources/.claude/commands/recommend.md (already canonical, created there) |
+| 2026-04-21 | command | .claude/commands/resolve-improvements.md | triaged:graduate-candidate | — (new command from 2026-04-21; operator decides graduate timing) |
+| 2026-04-21 | agent | .claude/agents/improvement-analyst.md | graduated | ai-resources/.claude/agents/improvement-analyst.md (already canonical) |
+| 2026-04-22 | command | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/commands/wrap-session.md | triaged:project-specific | — (workspace-level harness file, not shared resource) |
+| 2026-04-22 | agent | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/agents/qc-reviewer.md | triaged:project-specific | — (symlink to ai-resources canonical; workspace entry covers symlink metadata) |

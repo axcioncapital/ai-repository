@@ -244,3 +244,10 @@
 - **Decisions logged:** 0
 - **QC cycles:** 1 (plan-QC: PARTIAL → 2 substantive fixes (guardrail list + verification gaps) applied to plan → operator approved without second QC)
 - **Gates:** 5 (2 changed) — ask-user-question:confirmed (5 clarifying answers resolved), plan-approval:confirmed (proceed), challenge-disposition:changed (operator expanded scope with discoverability-hint requirement mid-session), challenge-disposition:changed (operator ruled out /clarify amendment, deferred hint placement), bright-line-review:confirmed (commit 6bccafc)
+
+### 2026-04-22 — Implement P0+P1 improvements from 2026-04-21 setup scan
+- **Commands used:** /wrap-session (plus plan-mode workflow)
+- **Iterations:** 0 (single-pass execution from approved plan)
+- **Decisions logged:** 2 (SC-02 deferral rationale; vault settings.json gitignore flag)
+- **QC cycles:** 0 (textual edits only, verified structurally via grep/jq per plan's verification section)
+- **Gates:** 2 (0 changed) — ask-user-question:confirmed (2 clarifying answers on "fix" intent + scope), plan-approval:confirmed (All P0 + P1 scope approved)

@@ -328,3 +328,43 @@ None.
 
 ### Open Questions
 - Placement of the `/recommend` discoverability hint (CLAUDE.md rule, command-internal "when to use" section, or a docs entry).
+
+## 2026-04-22 — Implement P0+P1 improvements from 2026-04-21 setup scan
+
+### Summary
+Executed six of seven P0+P1 improvements identified in the 2026-04-21 setup-improvement scan (SC-01, SC-03, SC-04, SC-06, SC-08, SC-10). SC-02 deferred because the scan's "6 hooks deployed 2026-03-28" baseline could not be located in git history — recommend raising via `/improve`. Phase 1 exploration also corrected SC-01's scope: `produce-prose-draft.md` was already refactored (commit `852c5a6`, 2026-04-21); the residual inline pattern lived only in `produce-formatting.md`. Changes landed across three nested git repos (workspace, ai-resources, bssp) in three commits. One surprise discovery: `projects/obsidian-pe-kb/vault/.claude/settings.json` is gitignored by both vault and obsidian-pe-kb parent repos — the SC-04 edit exists on disk but is not version-controlled.
+
+### Files Created
+- None (all edits to existing files).
+
+### Files Modified
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/CLAUDE.md` — added Assumptions Gate section (SC-08), extended Plan-QC bullet with threshold + pre-QC self-check bullet (SC-10).
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/agents/qc-reviewer.md` — added 6th evaluation dimension (Sibling Redundancy) for SC-08. File is a symlink to `ai-resources/.claude/agents/qc-reviewer.md`; the content change lives in ai-resources repo.
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/commands/wrap-session.md` — added step 0 touch of `/tmp/claude-wrap-session-done` (SC-03).
+- `ai-resources/.claude/commands/create-skill.md` — added QC→Triage Auto-Loop preamble to Step 4 (SC-06).
+- `ai-resources/.claude/commands/wrap-session.md` — added step 0 lockfile touch (SC-03).
+- `ai-resources/workflows/research-workflow/.claude/commands/produce-formatting.md` — SC-01: replaced style-reference content-passing with absolute-path passing in Phase 2 + Phase 3 subagent briefs; matches the pattern already in `produce-prose-draft.md`.
+- `ai-resources/workflows/research-workflow/.claude/commands/wrap-session.md` — added step 0 lockfile touch (SC-03) so new projects deployed from this template inherit the fix.
+- `projects/buy-side-service-plan/.claude/commands/wrap-session.md` — added step 0 lockfile touch (SC-03).
+- `projects/obsidian-pe-kb/vault/.claude/settings.json` — added `"additionalDirectories": ["../../../"]` (SC-04). **Not committed** — file is gitignored by both vault and obsidian-pe-kb repos.
+- `ai-resources/logs/decisions.md` — trimmed by archive script to keep 3 most recent entries.
+- `ai-resources/logs/decisions-archive-2026-04.md` — auto-created by archive script (check-archive.sh) with 4 older April entries.
+
+### Decisions Made
+- **SC-02 deferred, not implemented.** The scan claimed 6 hooks were deployed 2026-03-28 and remain unvalidated. Phase 1 exploration could not locate a 2026-03-28 hook deployment in git history; current hooks exist and appear functional. Validating "hooks of unknown provenance" is not actionable without the original list. Recommendation: raise via `/improve` for operator triage — either identify the original list from external notes or reframe as "inventory + spot-check all current hooks."
+- **SC-04 commit-status anomaly flagged.** The vault settings.json edit applied on disk. Both vault repo and obsidian-pe-kb parent ignore the file (`.gitignore:vault/` in parent; `.gitignore:.claude/settings.json` equivalent in vault). Intended behavior unclear: either (a) the vault settings file is meant to be local-only and the seeding mechanism should include `additionalDirectories` in its template, or (b) the gitignore entry is incorrect and should be removed so config lands in version control. Flagged for operator decision.
+- **Plan-mode scope discipline.** Phase 1 exploration (three parallel Explore agents) surfaced two stale items in the scan before implementation, narrowing SC-01 from "sweep all produce-* and run-* commands" to a single file and recommending SC-02 deferral. Plan adjustments kept scope at ≤8 file changes, one commit (actual outcome: 9 files, 3 commits due to nested-repo discovery).
+
+### Next Steps
+- Push commits when ready:
+  - Workspace `c77e422` — Assumptions Gate + Plan-QC threshold + workspace wrap-session step 0.
+  - ai-resources `240493a` — SC-01, SC-06, SC-08 sibling-redundancy, SC-03 (ai-resources + research-workflow).
+  - bssp `c6efa8f` — SC-03 bssp project.
+- **Decide SC-04 commit question.** Either add `additionalDirectories` to whatever template seeds the vault's `.claude/settings.json`, or remove the `.gitignore` entry so the config file gets tracked by git. Until resolved, the current on-disk edit will be lost if the vault is re-bootstrapped.
+- **Raise SC-02 via `/improve`** so the scan's deferred item gets triaged rather than forgotten.
+- **SC-01 validation** deferred to the next real `/produce-prose-draft` session on Doc 2 (per the 2026-04-21 scan's own recommendation — natural validation point).
+- **P2 items from the scan remain open:** SC-05, SC-09, SC-11, SC-12, SC-13, SC-14, SC-15, SC-16. Address individually when cost/benefit warrants.
+
+### Open Questions
+- Vault settings.json: should it be tracked in git, or is local-only by design? (Blocks reliable SC-04 persistence across vault re-bootstraps.)
+- SC-02 original baseline: do you have external notes naming the 6 hooks deployed 2026-03-28, or should it be reframed as a broader hook-inventory task?
