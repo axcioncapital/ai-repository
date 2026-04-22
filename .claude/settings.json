@@ -1,6 +1,9 @@
 {
   "permissions": {
     "allow": [
+      "Edit",
+      "Write",
+      "MultiEdit",
       "Edit(.claude/**)",
       "Write(.claude/**)",
       "Edit(**/.claude/**)",
