@@ -1,48 +1,38 @@
-# /session-guide — Session Guide Generator
+# /session-guide — Progress View Generator
 
-Generate a step-by-step execution guide for running a configured project across multiple Claude Code sessions. The guide includes per-session objectives, commands, checkpoints, troubleshooting, and feedback tips.
+Produce a state-aware, Notion-ready view of where the operator is in the current project and what they should do next. Runs at any point during execution — read current state from disk, surface the next session(s), and write a clean markdown file the operator can copy-paste into Notion.
 
-## Artifact Discovery
+This is **not** a full project playbook. Playbooks live in the project plan; this command renders a view onto that plan scoped to whatever the operator needs right now.
 
-Before generating, identify the project's key documents:
+## Step 1: Locate the project
 
-1. **Read CLAUDE.md** in the current working directory (if it exists). This often describes the project structure, references key files, and explains what's been built.
+The command runs in the current working directory. The project directory is the CWD unless the operator has invoked the command from a parent workspace — in that case, ask which project (present the directories under `projects/` and let them pick).
 
-2. **Scan for project artifacts.** Look for markdown files that could serve as project specs, plans, or architecture docs. Check the CWD root and common locations like `docs/`, `projects/`, `specs/`. Look for files with names suggesting project documentation — specs, plans, briefs, architecture docs, readmes.
+## Step 2: Ask for scope
 
-3. **Present what you found** and ask the user to confirm:
-   - "I found these documents: {list with brief description of each}. Which one is the **main project spec or plan**? Any others I should read as reference?"
-   - The user's answer identifies the primary input and any supporting docs.
+Ask the operator one question before spawning the agent:
 
-4. **If nothing useful is found**, ask the user to either point to the relevant files or describe the project:
-   - What does this project deliver?
-   - What Claude Code components are involved? (skills, commands, agents)
-   - What does success look like?
-   - What's already configured?
+> "What scope? (1) Next session only. (2) Next N sessions — I'll ask how many. (3) Rest of current phase. (4) Full remainder."
 
-## Scope Selection
+Default to option (1) if the operator presses enter without choosing. If they pick (2), ask "How many?" and accept an integer. If the integer exceeds the remaining session count, the skill collapses to whatever's left — no error.
 
-Before generating, ask the user what they want a session guide for:
+Map the operator's answer to one of: `next-session`, `next-N` (with integer), `phase`, `full`.
 
-1. **Full project** — cover the entire execution arc from setup to final QC
-2. **Specific phase or section** — e.g., "just the batch processing part" or "only the pilot and validation"
+## Step 3: Spawn the agent
 
-Present the project's natural phases (derived from the identified documents) and let the user choose. Example:
+Spawn the `session-guide-generator` agent with a minimal prompt:
 
-> "This project has these phases: Setup → Pilot → Batch Processing (×12) → Final QC. Want a guide for the full arc, or just a specific phase?"
+- Project directory path.
+- Scope selection (e.g., `scope=next-session`, `scope=next-3`, `scope=phase`, `scope=full`).
 
-## Existing Guide Detection
+The agent handles everything else: state detection, plan reading, rendering, file write, and completion checks. Do not pass conversation history, reasoning, or extra context — the agent's contract is self-contained.
 
-If `session-guide.md` already exists in the project directory, note this and let the agent handle versioning (overwrite vs. version).
+## Step 4: Report back
 
-## Execution
+When the agent returns, relay its summary to the operator: file path, scope, session count, current phase, and any state-detection caveats. Do not echo the rendered guide into chat — the operator reads the file directly.
 
-Spawn the `session-guide-generator` agent with:
-- "Project directory: {project-path}/"
-- The confirmed artifact paths: "Primary document: {path}. Reference docs: {paths}."
-- The user's scope selection (full or specific phases)
-- If no documents were found: the user's project description instead
+## Notes
 
-## Output
-
-The session guide will be saved to `{project-directory}/session-guide.md` (or versioned filename). Present it in chat for the user to review.
+- **Output file is overwritten on each run.** Repeat invocations always replace the file with a fresh render. No versioning, no timestamped append. The local file is a current-state render; Notion is the distribution surface.
+- **No plan = brief fallback.** If no project plan exists, the agent produces a short kickoff-orientation output pointing the operator to `/new-project`. It does not generate a full playbook.
+- **Optional Pipeline Stage 6.** The same agent is used by `/new-project` at Stage 6. No changes needed to `/new-project` — state detection at project kickoff (all pending) naturally produces a `scope=full` kickoff view.
