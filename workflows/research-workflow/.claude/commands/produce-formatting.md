@@ -33,12 +33,12 @@ Merged formatting, H3 placement, and H3 refinement in a single sonnet agent. KEE
 1. Read the prose file located in Phase 1
 2. Read `/ai-resources/skills/prose-formatter/SKILL.md`
 3. Read `/ai-resources/skills/h3-title-pass/SKILL.md`
-4. Read the style reference at `{prose_output_dir}/style-reference.md`
+4. Resolve the absolute path to the style reference: `{prose_output_dir_abs}/style-reference.md` (do NOT read it into main-agent context — subagents read reference files directly per the research-workflow CLAUDE.md "Context Isolation Rules" exception for large read-only references)
 5. Launch a general-purpose sub-agent with `model: "sonnet"`. Pass it:
    - The prose-formatter skill content
    - The h3-title-pass skill content
    - The prose file content
-   - The style reference content
+   - The absolute path to the style reference: `{prose_output_dir_abs}/style-reference.md` — the subagent reads it directly before applying the skills
    - Output path: same file (overwrite — override the prose-formatter skill's versioning default; intermediate files are not needed)
    - Task: Execute in this order as a single continuous pass:
      0. **Run the Mechanical Triggers pre-scan per the prose-formatter skill.** Scan the full document for the five mandatory triggers (5+ parallel items in prose; category comparison across repeated dimensions; subsection with multiple internal blocks; bold on labels but not on named frameworks; paragraph carrying framework + exceptions + implications). Record which triggers fire and at which locations. Produce the trigger-hit list — it feeds Steps 1–3 and is returned to the main agent. Trigger hits are MANDATORY decisions, not interpretive calls; when a trigger fires, the mapped operation applies and the "when uncertain, defer" fallback does NOT override it.
@@ -65,7 +65,7 @@ Merged two-stage QC. One qc-reviewer subagent runs both checks in explicit seque
 2. Read `/ai-resources/skills/formatting-qc/SKILL.md`
 3. Read `/ai-resources/skills/document-integration-qc/SKILL.md`
 4. Read the architecture at `{prose_output_dir}/architecture.md` (if exists) — provides document structure context for completeness checks
-5. Read the style reference at `{prose_output_dir}/style-reference.md`
+5. Resolve the absolute path to the style reference: `{prose_output_dir_abs}/style-reference.md` (do NOT read it into main-agent context — the qc-reviewer subagent reads it directly)
 6. Collect from Phase 2: the formatting change log and any deferred/flagged items
 7. Gather any cross-section integration findings carried forward from `/produce-prose-draft` Phase 4 (if available in the session context)
 8. Launch a qc-reviewer sub-agent. Pass it:
@@ -77,6 +77,7 @@ Merged two-stage QC. One qc-reviewer subagent runs both checks in explicit seque
    - Cross-section integration findings from `/produce-prose-draft` Phase 4 (if available)
    - Module identifier: "{section ID} — {section title}" and position in the document (e.g., "Section 2.4 of 9 in Part 2"). Derive position from the architecture's processing order if available, otherwise from section numbering.
    - The architecture content (if exists)
+   - The absolute path to the style reference: `{prose_output_dir_abs}/style-reference.md` — the subagent reads it directly before running formatting-qc
    - **Two-stage execution instructions (critical — execute strictly in this order):**
      - **STAGE 1 — Formatting QC:** Run all five checks per the formatting-qc skill (Formatting Integrity, Visual Rhythm, Standalone Coherence, Footnote Integrity, Mechanical Trigger Compliance). Produce a Stage 1 findings list with severity ratings. For mechanical formatting fixes (broken list structure, missing table caption, orphaned sentence fragment, spacing errors): apply them directly to the prose file and record in a "Stage 1 fixes applied" log. For fixes that affect standalone coherence (missing orientation, vague cross-references) or Mechanical Trigger Compliance findings (named framework in prose, category comparison without table, bold class inconsistency, multi-block subsection, multi-job paragraph): flag them as bright-line candidates and do NOT apply — these are substantive formatting decisions that should surface to the operator rather than auto-apply. Write the post-fix prose to the output path.
      - **STAGE 2 — Editorial Integration QC:** Only begin after Stage 1 is complete and the post-fix prose is written. Read the post-fix prose. Run all four check categories per the document-integration-qc skill (Narrative Structure, Consistency, Redundancy & Contradiction, Completeness). Draft transition passages where transitions are weak. **Do NOT re-flag any item from the Stage 1 findings, Stage 1 fixes applied log, the Phase 2 deferred items list, or the cross-section integration findings.** Focus redundancy/contradiction checks on issues internal to this module only. The `RELEASE ARTIFACT` protocol in the document-integration-qc skill is overridden — produce the full QC report directly.

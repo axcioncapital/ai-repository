@@ -42,6 +42,9 @@ What could go wrong if this is executed or accepted as-is? Consider:
 ### 5. Simpler Alternative
 Is there a meaningfully simpler way to achieve the same result? Only flag if the simplification is substantial, not cosmetic.
 
+### 6. Sibling Redundancy
+For artifacts that belong to a multi-document set (parts of a report, siblings in a series, chapters within a larger work), does this artifact earn its existence against its siblings? If substantial content restates what a sibling already covers, flag as a scope concern, not a style concern.
+
 ## Context Gathering
 
 You may read files from the workspace to verify your assessment:

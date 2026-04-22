@@ -47,6 +47,8 @@ Capture the subagent's evaluation report.
 
 ## Step 4: Auto-Fix (Severity-Calibrated Iteration)
 
+The workspace `CLAUDE.md` "QC → Triage Auto-Loop" rule (5-step loop with 2-pass cap) governs what follows. Step 3's evaluator surfaces findings; 4a–4c implement the auto-loop's triage → fix → post-edit QC sequence. Do not skip to post-edit QC without running triage.
+
 ### 4a: Triage
 
 Before fixing anything, classify every issue from the evaluation report:
