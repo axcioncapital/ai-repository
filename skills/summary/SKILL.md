@@ -271,7 +271,7 @@ Two risks deserve particular attention. First, Spanish data-residency regulation
 Board approved Iberia entry 2026-02-14. €4.5M year-one capex; month-9 go/no-go review. Maria Silva leads (reports to CEO; dotted line to CFO Torben Jensen on capex draws). Supersedes the 2024 Italy-first proposal (deferred at Q4 2025 strategy offsite). Outgrowth of the 2025 European expansion study.
 
 ### Go-to-market
-Madrid office first; H2 2026 staffing 12 FTEs (4 commercial, 3 product, 3 ops, 2 compliance). Lisbon overflow from month 7. Pre-GA soft pilot: ≤20 existing Spanish-subsidiary accounts. Pricing 8% below UK benchmark per March 2026 Kantar study.
+Madrid office first (per the team sizing study). H2 2026 staffing 12 FTEs (4 commercial, 3 product, 3 ops, 2 compliance). Lisbon overflow from month 7. Pre-GA soft pilot: ≤20 existing Spanish-subsidiary accounts. Pricing 8% below UK benchmark per March 2026 Kantar study.
 
 ### Risks
 - Spanish data residency may force local-cloud deployment, adding €600k–€900k capex (Legal, 2026-04-01).
