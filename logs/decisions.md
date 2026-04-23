@@ -105,3 +105,45 @@
   - Option A: Scheduled remote agent via `schedule` skill (rejected for the reasons above).
   - Modify `/prime` instead of adding a hook (rejected: `/prime` requires explicit operator invocation and would miss sessions where the operator skips it).
 - **Follow-up:** Monitor whether the reminder actually fires and whether it's useful. If the operator dismisses it reliably without running the checkup, revisit the approach.
+
+## 2026-04-23 — Session-guide output file: overwrite, not versioned
+
+- **Context:** Rewriting `/session-guide` from up-front playbook generator to state-aware progress view. Operator will invoke it many times per project as state evolves. Three options for repeat-run file behavior were presented via AskUserQuestion (per Assumptions Gate): versioned files (v2, v3...), timestamped append to single file, overwrite.
+- **Decision:** Overwrite on each run — no versioning, no timestamped history.
+- **Rationale:** Notion is the distribution surface and retains its own history. Local file is a current-state render, not an archival artifact. Overwrite is the cleanest paste workflow (grab the whole file, drop it in Notion).
+- **Alternatives considered:**
+  - Versioned files: strictly matches workspace "create a new version file rather than overwriting" convention, but produces file clutter and burden to track which is current. Rejected.
+  - Timestamped append: preserves local history inline, but each paste requires selecting the top block; file grows over time. Rejected for paste ergonomics.
+- **Follow-up:** Documented as exception to the versioning convention in both the plan and the rewritten skill (the convention is phrased around iterating on a single artifact, not repeatedly regenerating a view from current state).
+
+## 2026-04-23 — bypassPermissions as default mode
+
+- **Context:** After completing the session-guide rewrite, operator ran `/fewer-permission-prompts` expecting to reduce permission-prompt friction. The skill's scan (Bash + MCP) found everything high-volume was already auto-allowed or on the allowlist. Clarification revealed the prompts the operator wants to eliminate are for *any* tool call that the harness would ask about — including `python3` heredocs, complex Bash pipelines, and Edit/Write on paths outside the existing globs. Operator directive: "don't want any fucking prompts."
+- **Decision:** Set `permissions.defaultMode: "bypassPermissions"` in both `ai-resources/.claude/settings.json` and workspace-root `.claude/settings.json`. Every tool call auto-approves; `deny` list still blocks destructive operations.
+- **Rationale:** The `/fewer-permission-prompts` skill's allowlist approach is narrow by design (refuses to allowlist interpreters, heredocs, etc. for security reasons). Operator's workflow priority is zero friction over fine-grained safety gating. `defaultMode: "bypassPermissions"` achieves that cleanly while retaining the `deny` floor (rm -rf, git push, git reset --hard, git checkout blocked unconditionally at workspace root).
+- **Alternatives considered:**
+  - Broad Bash wildcards (e.g., `Bash(python3:*)`): explicitly forbidden by the fewer-permission-prompts skill's safety rules — same blast radius as bypassPermissions but without the `deny` safety floor being visible in one place.
+  - `defaultMode: "acceptEdits"`: only auto-approves file edits, not Bash. Wouldn't cover the python3/pipeline cases that prompted this.
+  - Narrowly allowlisting python3/find/xargs: skill's rules prohibit interpreter allowlisting; would also require discovering and allowlisting each new pattern.
+- **Security tradeoff accepted:** Prompt injection in tool results now runs with zero friction. System-wide file read/write (subject to OS user permissions). The `deny` list is the only backstop for destructive git/rm operations.
+- **Follow-up:** If prompts still fire in sessions from `projects/*/` subdirectories, propagate the setting there. Workspace-root change is uncommitted pending operator decision on whether to persist via commit.
+
+## 2026-04-23 — /summary skill: faithful-compression philosophy (Option A)
+
+**Context:** Building a new `/summary` skill for stakeholder-facing document summarization. Operator asked whether the proposed format (TL;DR + source-structure-mirrored body) mirrored Howard Marks or Ray Dalio, surfacing a real design fork.
+
+**Decision:** Option A — faithful compression. The summary preserves the source author's structure and all load-bearing claims; drops only rhetorical scaffolding. No editorial voice, no analytical reframing, no restructuring into a principle hierarchy.
+
+**Rationale:**
+1. The source document already did the thinking. Imposing a Marks or Dalio lens over the author's considered work second-guesses it and layers Claude's interpretation on top.
+2. Stakeholders acting on the summary (e.g., Daniel receiving a 10-page plan digest) need access to the plan's actual decisions, numbers, and commitments — not a Claude-generated reframe.
+3. Structure preservation gives round-trip traceability ("what does Section 4 actually say" lets the reader open the source and find it).
+4. Operator's own wording — "information packed, **precise**" — signals fidelity over interpretation.
+5. Marks/Dalio-style digests require summarizer authority; a Claude-generated version reads as generic AI synthesis with pretensions.
+
+**Alternatives considered:**
+- **Option B (Marks-style editorial digest):** one central thesis + developed prose argument. Rejected as wrong job for the stated use case.
+- **Option C (Dalio-style principle extraction):** hierarchical distillation to principles + mechanisms. Rejected because most strategy/plan/proposal documents are not principle systems and force-fitting the schema distorts content.
+- **`--style` flag covering all three:** rejected as scope creep. Skills that do three things do none well. If an editorial-digest need emerges, build a separate `/memo-from-document` skill.
+
+**Implication:** The skill's fidelity rules (must-survive / can-drop / must-not-introduce) are load-bearing. Future `/improve-skill` work should preserve the faithful-compression contract; interpretive extensions belong in a separate skill.
