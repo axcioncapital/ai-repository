@@ -285,3 +285,32 @@
 - Manual slash command at session open (e.g., `/classify`) — rejected: same forget-problem as manual `/model sonnet`.
 
 **Implication:** Marker file at `/tmp/claude-model-classifier/$CLAUDE_SESSION_ID` prevents re-firing within a session. Scope is workspace-level, so the behavior applies uniformly across every Axcíon project.
+
+## 2026-04-24 — /permission-sweep command shape and canonical template additions
+
+**Context.** Operator reported recurring Edit/Delete permission prompts resisting six reactive patch commits since 2026-04-20 and asked for a durable diagnostic + remediation command with scope across all projects. Multiple design decisions had to be made during construction.
+
+**Decisions:**
+
+1. **Command name `/permission-sweep` (not `/diagnose-permissions`, `/permission-audit`, `/fix-permissions`).**
+   Rationale: "audit" is overloaded (3+ existing /audit-* commands). "Sweep" signals a durable-cleanup pass reaching every file and pairs naturally with the already-listed `/fewer-permission-prompts` — structural vs. empirical division of labor reads off the names.
+   Alternatives considered: `/diagnose-permissions` (too narrow — command also remediates), `/fix-permissions` (too narrow the other way — skips the diagnostic framing), `/permission-audit` (collides with naming convention).
+
+2. **Single command with three phases (diagnose → approval → remediate), not two separate commands.**
+   Rationale: Autonomy Rules pause-trigger #8 requires operator approval for harness-config changes, so diagnose/remediate cannot run headless as a chain anyway. Splitting into `/diagnose-permissions` + `/fix-permissions` forces the operator (non-developer) to remember the pairing. One command, one mental model.
+   Alternatives considered: two separate commands (rejected — mental-model cost), pure SessionStart hook with auto-heal (rejected — violates pause-trigger #8), single monolithic subagent doing both (rejected — violates Subagent Contract and approval gate).
+
+3. **Subagent does diagnosis only; remediation stays in main session via surgical jq merges.**
+   Rationale: Subagent Contract requires a short summary return from file-scanning audits; remediation needs the pause-trigger #8 approval gate in main session; mixing both in a subagent would require the agent to re-prompt the operator, which is not a supported pattern.
+
+4. **`Bash(rm *)` added to canonical project template allow list.**
+   Rationale: Operator explicitly reported Delete/Remove prompts as one of the two failure modes. Narrow `rm` allows surfaces the Delete path without widening the truly dangerous case; `Bash(rm -rf *)` stays on deny. Tradeoff judged acceptable.
+   Alternatives considered: leaving rm out entirely (rejected — Delete prompts persist), broad `Bash(*)` only without narrow rm (rejected — some harness checks match narrow tool-path patterns specifically).
+
+5. **Sanity hook NOT added to `ai-resources/.claude/settings.json`.**
+   Rationale: ai-resources already has `defaultMode: bypassPermissions`, so the hook would pass silently. Operator rejected the addition as noise. Hook remains in place for project-level wiring (where it catches the actual failure mode).
+
+6. **Composes with `/fewer-permission-prompts` rather than replacing it.**
+   Rationale: `/permission-sweep` fixes structural causes (deterministic rulebook, 13 rules); `/fewer-permission-prompts` fixes empirical causes (transcript-driven). Different detection modes. Bolting structural analysis onto a transcript scanner would bloat a tightly-scoped skill. Order of use: run `/permission-sweep` first; run `/fewer-permission-prompts` after if specific tool calls still prompt.
+
+**Implication.** Prevention is wired into both `/new-project` (canonical template emitted per project at creation) and `/friday-checkup` (weekly `--dry-run` catches drift within a week). The operator should no longer hit this recurring pattern — baseline is durable.
