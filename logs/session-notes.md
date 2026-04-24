@@ -410,3 +410,57 @@ None. Permission-sweep is ready to run.
 
 ## 2026-04-24 — Fix working tree (cleanup pass)
 
+## 2026-04-24 — Commission v4 Batch 1 — /risk-check command + agent + audit-discipline + workspace CLAUDE.md edit
+
+Plan: `/Users/patrik.lindeberg/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md`
+Scope: Batch 1 only (not Batches 2–5).
+
+### Summary
+
+Built `/risk-check` as a pre-execution gate for structural change classes (hook edits, permission changes, cross-cutting CLAUDE.md edits, new commands/skills, new symlinks, automation with shared-state effects). The command takes a free-text change description, delegates to an Opus subagent (`risk-check-reviewer`) with fresh context, and produces a verdict — GO / PROCEED-WITH-CAUTION / RECONSIDER — across five risk dimensions (usage cost, permissions surface, blast radius, reversibility, hidden coupling). Landed the authoritative class list and verdict semantics in `docs/audit-discipline.md`, and added a new pause-trigger #9 to workspace `CLAUDE.md` Autonomy Rules. QC cycle: REVISE → 3 Do fixes applied (OMIT-contract validation, `AI_RESOURCES` path ordering, mitigation-count alignment) → post-edit QC GO. Functional verification ran on a synthetic PreToolUse logging hook, producing PROCEED-WITH-CAUTION with three paired mitigations.
+
+### Files Created
+
+- `ai-resources/.claude/commands/risk-check.md` — the `/risk-check` command (Opus); 6 steps, 21 items; input validation → path setup → subagent spawn → structural validation (enforces OMIT contract + `max(1, NUM_HIGH)` mitigation count per verdict) → operator summary → no-auto-commit semantics
+- `ai-resources/.claude/agents/risk-check-reviewer.md` — supporting subagent (Opus); 9 steps; evaluates 5 dimensions with heuristic Low/Medium/High thresholds; synthesizes verdict; writes structured report; returns ≤20-line summary with `REPORT:` last-line marker
+- `ai-resources/audits/risk-checks/2026-04-24-add-a-new-pretooluse-hook-that-logs-every-write-tool.md` — dogfood report from functional verification (PROCEED-WITH-CAUTION; 3 Medium dimensions; 3 paired mitigations)
+
+### Files Modified
+
+- `ai-resources/docs/audit-discipline.md` — added `## Risk-check change classes` section (authoritative class list + verdict semantics + invocation semantics + overlap with top-3 analysis); extended the "When to read this file" line
+- `CLAUDE.md` (workspace root, separate repo) — added pause-trigger #9 to `## Autonomy Rules` listing the risk-check change classes and verdict honor rule; explicit note that #8 and #9 can both apply to audit-derived permission changes
+- `ai-resources/logs/session-notes.md` — this entry
+
+### Decisions Made
+
+Pre-execution (operator-confirmed at batch opening):
+- Assumption sign-offs per plan handoff notes: accepted defaults for `/friday-act` name, `audits/risk-checks/` subdirectory, change classes list, coaching-log untouched
+
+Design (during build):
+- Subagent-writes-report pattern (main session reads returned summary + validates structure) — matches ai-resources CLAUDE.md Subagent Contracts convention
+- Command does NOT auto-commit the report — operator bundles it with the change commit if wanted. Separates the pre-execution gate from the change itself.
+- No auto-firing hook for `/risk-check` (no SessionStart / Stop / PreToolUse). Operator-invoked or inline-invoked by other commands (e.g., `/friday-act` in Batch 2). Rationale: auto-firing would over-escalate on ordinary edits.
+
+Harness-level configuration (pause-trigger #8 gate — completed):
+- Top-3-commands-affected analysis for workspace `CLAUDE.md` edit: `/create-skill`, `/new-project`, `/friday-checkup` (+`/friday-act` when Batch 2 lands). None blocked or degraded — edit is additive.
+
+QC-driven fixes (routine auto-loop, applied after triage):
+- Enforce OMIT contract in command Step 4 (verdict GO → neither optional section has content; PROCEED-WITH-CAUTION → no Recommended redesign; RECONSIDER → no Mitigations)
+- Resolve `AI_RESOURCES` path-ordering (moved path extraction from Step 1 to Step 2 after `AI_RESOURCES` is defined)
+- Mitigation-count alignment: command now requires `max(1, NUM_HIGH)` mitigation bullets for PROCEED-WITH-CAUTION, mirroring the agent's "≥1 per High dimension" generation rule
+- Park: agent's unused `Bash` tool grant (low consequence); slug-truncation edge case documentation (fallback already works)
+
+Commit split:
+- Two commits — `ai-resources` (`178f127`) and workspace parent (`03ec193`) — because the batch spans two repos. Each commit references the other in its body. Plan's "one commit per batch" adjusted to "one commit per batch per repo."
+
+### Next Steps
+
+- **Push** `ai-resources` `178f127` and workspace parent `03ec193` (both on `main`) — requires operator approval.
+- **Batch 2** in a fresh session: `/friday-act` command + tier-differentiated `/friday-checkup` output (weekly tactical / monthly policy / quarterly architectural). Plan handoff notes say this is the largest batch — full session on its own. Inline `/risk-check` invocation on risky fixes is the primary dogfood hook.
+- **First real `/risk-check` invocation** in a new session will resolve the named `risk-check-reviewer` subagent_type directly (agent registration happens at session start; this session used `general-purpose` with the agent body inlined for verification).
+- **Pacing:** plan handoff says don't attempt more than 2 batches per session. Batch 2 alone is a full session.
+
+### Open Questions
+
+- None. Remaining batches (2–5) have their own sign-off gates at the top of each batch per plan handoff notes.
+

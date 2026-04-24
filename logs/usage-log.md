@@ -4,6 +4,35 @@
 
 ### 2026-04-24 | Acceptable
 
+**Task:** Executed Batch 1 of Commission v4 — built `/risk-check` command + `risk-check-reviewer` Opus subagent as a pre-execution gate, added class list + pause-trigger #9 across `docs/audit-discipline.md` and workspace CLAUDE.md. One QC → triage → fix → post-edit QC cycle; committed to two repos.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~20 |
+| Files read | ~18 (re-reads: 4 on session-notes.md, 3 on innovation-registry.md, 2 on decisions.md/coaching-data.md/improvement-log.md + settings.json across locations) |
+| Files written/edited | 9 (2 new commands/agents, 1 subagent-authored audit, 6 edits) |
+| Tool calls | ~50 |
+| Subagents | 4 |
+| Rework cycles | 1 (risk-check.md structural rewrite post-QC) |
+
+**Findings:**
+- risk-check.md rewritten via full Write (~122 lines) after QC REVISE when the 3 Do items were structural (path ordering, new subsections, item renumbering) — justified choice but pays full payload twice (initial + rewrite). (Rework, Moderate)
+- risk-check-reviewer.md agent body (~215 lines / ~5k tokens) inlined into a `general-purpose` subagent prompt because new agents don't hot-register mid-session — significant one-off prompt duplication unique to creation-session dogfooding. (Tool overhead, Moderate)
+- session-notes.md read 4x due to concurrent-session edits invalidating the file between Edit attempts — externally caused, but the re-reads still consume budget. (Re-reads, Moderate)
+- innovation-registry.md touched 3x via separate bash grep + head + grep calls when a single Read would have sufficed for an ~80-line ledger — same tail-before-read anti-pattern noted in the prior entry. (Tool overhead, Minor)
+- Stable relative to last 3 entries (Acceptable / Acceptable / Acceptable) — no regression, and the rework-via-full-Write pattern persists for the third session running, indicating a durable sub-pattern worth addressing structurally.
+
+**Recommendation:** For creation-session dogfooding of new agents, skip the mid-session inline-body workaround — either run the new agent at the top of the next session (free registration, zero inlined-prompt tokens) or invoke it via a minimal stub brief that references the agent file path rather than pasting its full body. The ~5k-token prompt-duplication cost is the largest single avoidable item in this session.
+
+**Estimated savings:** ~5k tokens per creation-session-with-dogfood by deferring the first real invocation to the next session (one ~215-line agent body × ~23 tokens/line ≈ 5k tokens saved). Over 10–20 agent-creation sessions: ~50–100k tokens, assuming half of new agents get dogfooded same-session today.
+
+**Additional levers (ROI-ranked):**
+- Avoid the double-Write-on-QC-rework pattern by writing risk-check.md initial draft to ~90% completeness with QC-anticipated structure already in place, then using targeted Edits for Do items — saves ~122 lines × ~20 tokens/line ≈ 2.5k tokens per rework cycle. Smaller than primary because rework is conditional on QC REVISE; primary is deterministic per creation session.
+- Collapse innovation-registry / decisions / coaching-data / improvement-log wrap-step reads into a single orchestrated read pass rather than 4 separate tail/grep/read sequences — ~1–2k tokens per wrap across those ledger files. Smaller than primary because each individual file is small, but recurs every session.
+- When concurrent-session activity is disclosed at session start, write session-notes.md entries as append-only EOF edits from the outset rather than attempting chronological insertion — avoids the 2–3 extra Reads caused by concurrent-edit races. ~1k tokens per affected session; smaller than primary because it only applies when a concurrent session is active.
+
+### 2026-04-24 | Acceptable
+
 **Task:** Planning-only session — iterated a 5-batch implementation plan for weekly Friday repo maintenance cadence through /clarify → /recommend → /qc-pass → /triage → post-edit /qc-pass. Plan file lives outside the repo; no code changes committed.
 
 | Metric | Value |

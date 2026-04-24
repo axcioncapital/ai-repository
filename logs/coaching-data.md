@@ -265,3 +265,10 @@
 - **Decisions logged:** 2 (commission v4 scoping; seven axes → /friday-act output not coaching-log)
 - **QC cycles:** 2 (first /qc-pass returned REVISE with 6 findings → /triage returned 7 Do + 9 Park → operator directed "proceed + add parked 2, 3, 6" → 10 items applied → post-edit /qc-pass returned GO with 5 minor findings → operator chose option b inline fixes → 2 items applied)
 - **Gates:** 3 (3 changed) — qc-disposition:changed (post-first-QC: operator added parked 2/3/6 to triage Do-list), qc-disposition:changed (post-second-QC: operator chose option b to apply 2 inline fixes), plan-approval:changed (first ExitPlanMode rejected with session-handoff question → handoff notes added → second ExitPlanMode approved)
+
+### 2026-04-24 — Commission v4 Batch 1 — /risk-check command + agent
+- **Commands used:** /prime, /risk-check (synthetic dogfood via Skill), /wrap-session
+- **Iterations:** 1 (risk-check.md draft → QC REVISE → post-QC rewrite)
+- **Decisions logged:** 0 (all session decisions were routine — assumption sign-offs and QC-triage auto-loop fixes)
+- **QC cycles:** 1 (REVISE → triage 3 Do / 2 Park → fixes applied → post-edit GO with Notes only → triage skipped)
+- **Gates:** 3 (3 confirmed) — plan-approval:confirmed (batch-opening assumption sign-offs, 4 items), bright-line-review:confirmed (top-3-commands-affected analysis for workspace CLAUDE.md edit per pause-trigger #8), bright-line-review:confirmed (operator flagged "absolutely no permission prompts allowed"; evidence from settings + successful in-session writes confirmed no prompts would fire, operator proceeded)

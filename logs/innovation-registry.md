@@ -79,5 +79,5 @@
 | 2026-04-24 | command | .claude/commands/permission-sweep.md | graduated | ai-resources/.claude/commands/permission-sweep.md (already canonical — workspace copy is a symlink) |
 | 2026-04-24 | hook | .claude/hooks/check-permission-sanity.sh | triaged:project-specific | — (workspace-root infrastructure) |
 | 2026-04-24 | hook | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/hooks/model-classifier.sh | triaged:project-specific | — (workspace-level UserPromptSubmit hook; first-prompt model-tier recommendation) |
-| 2026-04-24 | command | .claude/commands/risk-check.md | detected | — |
-| 2026-04-24 | agent | .claude/agents/risk-check-reviewer.md | detected | — |
+| 2026-04-24 | command | .claude/commands/risk-check.md | triaged:project-specific | — (already in ai-resources canonical location; no graduation needed) |
+| 2026-04-24 | agent | .claude/agents/risk-check-reviewer.md | triaged:project-specific | — (paired with /risk-check command; already canonical) |
