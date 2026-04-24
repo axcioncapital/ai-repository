@@ -32,7 +32,7 @@ Input: `$ARGUMENTS` (optional) — `weekly` | `monthly` | `quarterly` to overrid
    Tier: {TIER}  ({auto-detected | operator-override})
 
    Auto-run checks:
-     Weekly:  /audit-repo, /improve, /coach (if ≥5 sessions)
+     Weekly:  /audit-repo, /improve, /coach (if ≥5 sessions), /permission-sweep --dry-run
      Monthly: + /audit-claude-md, /token-audit
      Quarterly: (same auto-run as monthly)
 
@@ -75,6 +75,7 @@ Input: `$ARGUMENTS` (optional) — `weekly` | `monthly` | `quarterly` to overrid
     - `/audit-repo` = 1 min per scope (ai-resources + active projects; skip workspace)
     - `/improve` = 5 min per scope
     - `/coach` = 15 min per scope (skipped ones count 0)
+    - `/permission-sweep --dry-run` = 2 min per scope (ai-resources + workspace + active projects)
     - `/audit-claude-md` = 10 min per scope (workspace + active projects)
     - `/token-audit` = 30 min per scope (ai-resources + workspace + active projects)
 12. Display the estimate: `"Estimated runtime: ~{N} min"`.
@@ -139,6 +140,16 @@ For each scope:
 
 Record the produced audit report path in `RESULTS`.
 
+**F. `/permission-sweep --dry-run` — all tiers, once per checkup run**
+
+Permission-sweep scans every settings file in the workspace in one pass — it is **not** per-scope. Invoke it exactly once regardless of how many scopes are selected.
+
+1. `cd "{WORKSPACE_ROOT}"` (the workspace root, not a scope path).
+2. Verify `ai-resources/.claude/agents/permission-sweep-auditor.md` exists. If missing, record `skipped: permission-sweep-auditor not deployed` and continue.
+3. Invoke `/permission-sweep --dry-run`.
+4. The command writes the consolidated dry-run report to `ai-resources/audits/permission-sweep-{TODAY}.md` (same dated path regardless of scope).
+5. Record the report path in `RESULTS` under a synthetic scope label `permission-sweep (workspace-wide)`.
+
 ---
 
 ### Step 6: Compile Follow-Ups
@@ -185,7 +196,7 @@ Record the produced audit report path in `RESULTS`.
     - {every path recorded in RESULTS}
     ```
 
-16. To extract findings: Read each sub-report produced in Step 5 (the snapshot audit-repo files, the audit-claude-md reports, the token-audit reports). For each, look for sections titled `HIGH`, `CRITICAL`, `Top findings`, or the report's executive summary. Pull headline items; do not re-evaluate severity. If a report uses numeric scoring (e.g. repo-health RED/YELLOW/GREEN), surface RED findings only.
+16. To extract findings: Read each sub-report produced in Step 5 (the snapshot audit-repo files, the audit-claude-md reports, the token-audit reports, the permission-sweep report). For each, look for sections titled `HIGH`, `CRITICAL`, `Top findings`, or the report's executive summary. Pull headline items; do not re-evaluate severity. If a report uses numeric scoring (e.g. repo-health RED/YELLOW/GREEN), surface RED findings only. For the permission-sweep dry-run, surface all CRITICAL findings (the primary signal of live permission-prompt issues) and HIGH findings in aggregate (e.g., "5 HIGH gaps across 3 projects — see report").
 
 ---
 
