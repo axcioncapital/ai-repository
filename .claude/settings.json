@@ -46,8 +46,17 @@
       "Bash(cp:*)"
     ],
     "deny": [
-      "Read(archive/**)"
-    ]
+      "Read(archive/**)",
+      "Read(audits/working/**)",
+      "Read(logs/*-archive-*.md)",
+      "Read(inbox/archive/**)",
+      "Read(**/deprecated/**)",
+      "Read(**/old/**)"
+    ],
+    "defaultMode": "bypassPermissions"
+  },
+  "env": {
+    "MAX_THINKING_TOKENS": "10000"
   },
   "hooks": {
     "PreToolUse": [
