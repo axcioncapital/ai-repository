@@ -4,6 +4,35 @@
 
 ### 2026-04-24 | Acceptable
 
+**Task:** Planning-only session — iterated a 5-batch implementation plan for weekly Friday repo maintenance cadence through /clarify → /recommend → /qc-pass → /triage → post-edit /qc-pass. Plan file lives outside the repo; no code changes committed.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~15 |
+| Files read | 8 (re-reads: 1) |
+| Files written/edited | 5 |
+| Tool calls | ~44 |
+| Subagents | 5 |
+| Rework cycles | 2 |
+
+**Findings:**
+- Plan file rewritten via full Write twice (~300 lines each) when the second rewrite could have been done via surgical Edits — batch renumbering from merging Batches 2+3 drove the choice, but a full rewrite re-pays the entire file payload on the second write. (Rework, Moderate)
+- innovation-registry.md read twice (Bash tail ~15 lines, then full Read of all 78 lines) after an Edit attempt required fresh content — classic tail-before-read anti-pattern where the tail output was discarded. (Re-reads, Minor)
+- Five subagents spawned for a single planning artifact (2 Explore + 3 QC/triage) — protocol-compliant under the QC → Triage Auto-Loop, but the two Explore passes could arguably have been merged into one brief covering both Friday cadence and audit-command substrate. (Tool overhead, Moderate)
+- ExitPlanMode rejected once because handoff notes were missing — one wasted plan-mode cycle that a self-check against the /recommend checklist would have caught before the first submission. (Rework, Minor)
+- Stable relative to last 3 entries (Acceptable / Acceptable / Efficient) — same moderate-rework pattern as 2026-04-22, no regression.
+
+**Recommendation:** When a plan file needs >2 non-adjacent changes including renumbering, prefer a single full rewrite via Write over mixing Write+Edit; when changes are <5 and localized, stay on Edit. The middle ground — first full rewrite then another batch of Edits on the same artifact — is the waste shape to avoid.
+
+**Estimated savings:** ~2–3k tokens per planning session by avoiding the second full-rewrite Write (the v2→v3 inline edits could have stayed pure Edit). ~20–60k tokens over 10–20 plan-heavy sessions.
+
+**Additional levers (ROI-ranked):**
+- Merge the two Explore subagents into one combined brief covering cadence + audit-substrate discovery — subagent briefs and returned findings (~1300 words combined) would drop to a single ~800-word synthesis. ~3–5k tokens per multi-domain planning session; bigger than primary because subagent invocation overhead dominates full-rewrite cost.
+- Read innovation-registry.md (and similarly sized ledger files ≤100 lines) once in full rather than tail-then-Read — Bash tail for files under ~200 lines is almost never worth it. ~500–1k tokens per affected session; smaller than primary because ledger files are small.
+- Add a self-check gate before ExitPlanMode that verifies handoff notes, concurrent-session disclosure, and approval-readiness — prevents one-turn rejection cycles. ~300–800 tokens per avoided rejection; smaller than primary but reduces interactional friction.
+
+### 2026-04-24 | Acceptable
+
 **Task:** Ran /friday-checkup monthly-tier audit scoped to ai-resources (narrowed from 4 scopes). Executed /audit-repo, /improve, /coach, /token-audit in sequence; produced consolidated checkup report plus 11-section token-audit report.
 
 | Metric | Value |

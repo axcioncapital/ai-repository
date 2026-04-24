@@ -73,3 +73,5 @@
 | 2026-04-22 | hook | .claude/hooks/friday-checkup-reminder.sh | triaged:graduate | already canonical in ai-resources — paired with /friday-checkup |
 | 2026-04-22 | command | .claude/commands/session-guide.md | triaged:graduate | already canonical in ai-resources — fully rewritten 2026-04-23 |
 | 2026-04-23 | command | .claude/commands/summary.md | triaged:graduate | already canonical in ai-resources — created directly via /create-skill |
+| 2026-04-24 | command | .claude/commands/audit-critical-resources.md | triaged:graduate | — (run `/graduate-resource audit-critical-resources` to move to ai-resources) |
+| 2026-04-24 | agent | .claude/agents/critical-resource-auditor.md | triaged:graduate | — (paired with audit-critical-resources command; graduates together) |

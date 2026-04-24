@@ -258,3 +258,10 @@
 - **Decisions logged:** 0
 - **QC cycles:** 0
 - **Gates:** 3 (2 changed) — tier-selection:changed (auto-detected weekly → operator-overrode to monthly), scope-selection:changed (initial 4-scope selection → narrowed to ai-resources after 233-min runtime estimate), runtime-threshold:confirmed (typed `proceed with long run`)
+
+### 2026-04-24 — Repo maintenance cadence — commission v4 review + 5-batch plan
+- **Commands used:** /clarify, /recommend, /qc-pass (2x), /triage, ExitPlanMode, /wrap-session
+- **Iterations:** 3 (plan file draft-01 initial → draft-02 after triaged QC fixes → draft-03 after inline post-edit fixes + handoff notes)
+- **Decisions logged:** 2 (commission v4 scoping; seven axes → /friday-act output not coaching-log)
+- **QC cycles:** 2 (first /qc-pass returned REVISE with 6 findings → /triage returned 7 Do + 9 Park → operator directed "proceed + add parked 2, 3, 6" → 10 items applied → post-edit /qc-pass returned GO with 5 minor findings → operator chose option b inline fixes → 2 items applied)
+- **Gates:** 3 (3 changed) — qc-disposition:changed (post-first-QC: operator added parked 2/3/6 to triage Do-list), qc-disposition:changed (post-second-QC: operator chose option b to apply 2 inline fixes), plan-approval:changed (first ExitPlanMode rejected with session-handoff question → handoff notes added → second ExitPlanMode approved)
