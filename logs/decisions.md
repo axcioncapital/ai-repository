@@ -176,3 +176,88 @@
 - **Widen to everything, including workflow commands:** maximum consistency in one pass. Rejected: larger change surface, harder to validate, and workflow commands have their own handoff contracts (`cleanup-worktree` uses PLAN_PATH + request + snapshot + criteria — not a trivial remap).
 
 **Implication:** Follow-up session needs to migrate `refinement-deep.md`, `cleanup-worktree.md`, and the three workflow commands to the 4-input contract. Legacy fallback keeps these working in the meantime but the "derived" scope annotation in their QC output should be the signal that migration is due. No urgency — scope derivation works.
+
+## 2026-04-24 — H2 deny-scope: conservative (known-stale patterns) over aggressive (broad parent dirs)
+
+**Context:** Acting on Friday-checkup HIGH finding H2 — expand `Read(pattern)` deny coverage in `ai-resources/.claude/settings.json`. The token-audit's Implementation field recommended `Read(audits/**)`, `Read(reports/**)`, `Read(logs/*-archive-*.md)`, `Read(inbox/archive/**)`, `Read(**/deprecated/**)`, `Read(**/old/**)`.
+
+**Decision:** Conservative subset — added `Read(audits/working/**)`, `Read(logs/*-archive-*.md)`, `Read(inbox/archive/**)`, `Read(**/deprecated/**)`, `Read(**/old/**)`. Deliberately excluded `Read(audits/**)` and `Read(reports/**)`.
+
+**Rationale:** `bypassPermissions` is on, but `deny` rules still block — they cannot be bypassed. Adding `Read(audits/**)` would block reading today's friday-checkup report in review sessions; adding `Read(reports/**)` would block the canonical `reports/repo-health-report.md`. Both are active workflow files the operator touches routinely. The conservative set targets known-stale patterns (scratch dirs, archives, deprecated/old conventions) that never need direct reading — same defensive value without the workflow friction.
+
+**Alternatives considered:**
+- **Full token-audit recommendation (aggressive):** rejected — friction against canonical reports outweighs protection from broad-Glob pulls, especially since those pulls are rare.
+- **No deny additions:** rejected — leaves large-file stores (`audits/working/` scratch notes, archived session notes, fulfilled briefs) unprotected against accidental pulls.
+- **Narrow glob patterns by date** (e.g., `Read(audits/*-2026-*.md)`): rejected — blocks today's dated reports too; no clean way to match "historical dated" without also matching current dated.
+
+**Follow-up:** If broad-Glob pulls of prior audit reports become a felt problem, revisit with a narrower pattern or a time-based exclusion rule. Operator can tune later.
+
+## 2026-04-24 — qc-reviewer agent granted Write tool access (prerequisite for H1 refactor)
+
+**Context:** H1 refactor of the research-workflow prose sub-pipeline needed subagents in produce-prose-draft Phase 3 and produce-formatting Phase 3 to write structured findings to disk per the Subagent Contracts codified in `ai-resources/CLAUDE.md`. Both phases use `qc-reviewer` as the subagent type — whose tools list was `Read, Glob, Grep`. No `Write`, so the output-to-disk pattern was blocked.
+
+**Decision:** Add `Write` to the `qc-reviewer` frontmatter tools list. Single-line additive change.
+
+**Rationale:** `qc-reviewer` is designed for fresh-context independence with no memory of the creation session. Adding Write does not change that — the subagent only exercises Write when the brief explicitly asks for it, and the main session routes Phase 3's write-to-path instruction through the brief. Existing callers (via `/qc-pass`, `/refinement-pass`, `refinement-deep`, `cleanup-worktree`) return findings inline and are unaffected. The alternative — switching these two Phase 3 invocations to `general-purpose` subagent type (which has all tools) — would have lost the explicit qc-reviewer typing and required rewriting the independence framing inline in each brief.
+
+**Alternatives considered:**
+- **Switch to general-purpose subagent** for the two Phase 3 spots: rejected — heavier command files, loses the "independent evaluator" typing semantics.
+- **Have main session write the findings file** after qc-reviewer returns inline: rejected — the findings still pass through main-session context for one turn before being persisted and compacted. Partial benefit only.
+
+**Implication:** qc-reviewer is now a canonical subagent-to-disk-capable reviewer. Future workflow designs that need independent review + persistent findings have a canonical pattern to follow.
+
+## 2026-04-24 — Commission v4 (repo maintenance cadence) scoped as intent, parallel structures cut
+
+**Context:** Operator supplied a "v4 commission" context-pack specifying a weekly Friday maintenance cadence: two-session structure, three tiers, three durability mechanisms, maintenance ledger with aging, risk-analysis command, symlink policy, deterministic-vs-interpretation split, seven autonomy axes, Stage 1 repo architecture. Operator framed it as "intent, not a set plan — review what we should implement, then your own plan."
+
+**Decision:** Accept commission as intent only. Cut or downscope commission asks that duplicate existing infrastructure (`/friday-checkup`, `friday-checkup-reminder.sh`, `improvement-log.md`, `/triage`, `/coach`, `audit-discipline.md`, symlink policy in `docs/ai-resource-creation.md` + `auto-sync-shared.sh`). Keep commission hard constraints intact (Session 1/2 boundary, risk-analysis-first sequencing, Stage 2 out of scope, PROCEED-WITH-CAUTION requires mitigation). Final plan: 5 batches (not 6 — merged Batch 2+3 for shared data contract), scoped to 8 genuine gaps.
+
+**Rationale:** Commission's "ledger as distinct artifact" duplicates `improvement-log.md`'s existing Status+Verified+archive schema. "Three durability mechanisms" is already partially present via the reminder hook; adding parallel systems for stale-state and recovery creates maintenance surface without additional robustness. "Deterministic-vs-interpretation split" is already honored by repo conventions (hooks + scripts + subagent tiering) — it's a discipline, not a deliverable. Faithful implementation would contradict operator's stated preference (memory: "prefers automated infrastructure over manual disciplines") and inflate operator load instead of reducing it. The commission's own "Epistemic Discipline" section says to "inspect the repo, not defer or fabricate" — which is what this downscoping does.
+
+**Alternatives considered:**
+- **Faithful literal implementation.** Rejected: creates 5+ parallel structures duplicating existing infrastructure; commission itself is labeled as intent.
+- **Full rewrite of /friday-checkup + replace infrastructure wholesale.** Rejected: destroys working infrastructure; commission's quality criteria #1 ("Patrik can execute the first real Friday session") is already achievable today with /friday-checkup.
+- **Minimal implementation (risk-check + /friday-act only, everything else cut).** Rejected: commission's durability and architecture substrate concerns are real gaps, not imaginary ones; cutting too much leaves the cadence fragile.
+
+**Implication:** Five batches to execute across future sessions, one commit per batch. Plan file at `/Users/patrik.lindeberg/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md` is the execution spec. Handoff notes in the plan specify assumption sign-offs, decision gates, dogfood ordering for `/risk-check`, and realistic pacing (no more than 2 batches per session).
+
+## 2026-04-24 — Seven autonomy axes land in `/friday-act` output, not coaching-log
+
+**Context:** Commission v4 specifies seven autonomy calibration axes (Guardrails / Optimization / Autonomy / Capability / Reliability / Observability / Operator load) to be "set by Session 2 for the following week." Existing `coaching-log.md` already rates five session-pattern dimensions (Iteration Efficiency, Decision Patterns, QC Disposition, Delegation Effectiveness, Workflow Evolution) with trend arrows.
+
+**Decision:** Track the seven axes as weekly forward-looking posture targets (tighten / hold / loosen + one-line rationale) appended to `logs/maintenance-observations.md` within the `/friday-act` Step 6 closeout. Coaching-log stays at its current five dimensions — untouched. Default posture for any axis is `hold`; only explicitly-changed targets require a rationale line (operator can fast-skip to avoid seven mandatory prompts every Friday).
+
+**Rationale:** The two systems have different time orientation and different verbs. Coaching-log is backward-looking session ratings (how did this session perform on dimension X?). Commission's axes are forward-looking posture targets (what should Autonomy look like next week?). Merging them into coaching-log would either (a) break trend-arrow history on the five existing dimensions by forcing a schema replacement, or (b) mix two conceptually distinct things in one rating slot. Neither is an improvement. Placing axes in the `/friday-act` output keeps them adjacent to the Friday decision context that actually sets them, and preserves coaching-log's integrity.
+
+**Alternatives considered:**
+- **Extend coaching-log schema to seven axes by replacement.** Rejected: breaks five-dimension trend comparability; mixes backward/forward orientation.
+- **Extend coaching-log to twelve dimensions (5 existing + 7 commission).** Rejected: heavy schema; two conceptually distinct systems in one file masks purpose.
+- **Create a net-new `autonomy-axes.md` tracking file.** Rejected: commission's framing is Session-2-sets-targets-for-following-week; natural home is the Session 2 artifact, not a parallel file that inflates log surface.
+
+**Implication:** `/friday-act` Step 6 (to be built in Batch 2) is the enforcement point for this schema. `/coach` command and `coaching-log.md` are explicitly not modified — listed in the plan's "Not modified (despite commission language)" section. Axis set itself is subject to revision at first quarterly retrospective per commission.
+
+## 2026-04-24 — /audit-critical-resources design decisions
+
+**Context:** Built new slash command auditing user-nominated critical resources across seven quality dimensions, producing a fix-session-ready markdown report. Three load-bearing design choices surfaced during plan mode.
+
+**Decision 1 — Input format:** manifest file (`audits/critical-resources-manifest.md`) read when invoked without args; inline args override.
+
+- Alternatives considered: (a) inline `$ARGUMENTS` only, matching context pack assumption [A6]; (b) auto-discovery via a `CRITICAL=true` frontmatter marker on resources.
+- Rationale: 15+ resources in the critical set → inline args would be long every invocation; auto-discovery requires marker adoption on every file first. Manifest is the lightest reusable-state option.
+
+**Decision 2 — Overlap policy:** all 7 dimensions run independently; no delegation to `/token-audit`, `/audit-claude-md`, or `/repo-dd` for overlapping dimensions.
+
+- Alternatives considered: (a) delegate Brokenness + Token/efficiency to existing audits and only run the 5 novel dimensions; (b) narrow to 5 truly novel dimensions permanently.
+- Rationale: fix session benefits from a single self-contained report; cross-referencing multiple audits defeats the "paste the report into a fresh session" use case. Acknowledged cost: Brokenness + Token checks duplicate work done elsewhere.
+
+**Decision 3 — Parallelism:** one subagent per resource running all 7 dimensions; cross-resource synthesis in the main session reading each working-notes file's `## Synthesis Input Block`.
+
+- Alternatives considered: (a) one subagent per dimension spanning all resources; (b) hybrid (preflight + 3 bundled subagents + synthesis).
+- Rationale: per-resource parallelism scales naturally with critical-set size; each subagent handles its resource end-to-end; a single synthesis pass is simpler than reconciling per-dimension outputs.
+
+**Decision 4 — Interpretation of "associated skills are also critical":** scoped to skills the designated commands reference directly by path (3 skills: `session-usage-analyzer`, `ai-resource-builder`, `worktree-cleanup-investigator`).
+
+- Alternatives considered: (a) include subagents spawned by critical commands; (b) include other commands invoked by critical commands transitively.
+- Rationale: narrow-scope interpretation is conservative and auditable; transitive inclusions risk sweeping in too much for the initial audit. Operator was informed of the exclusions and can extend explicitly.
+
+**Implication:** first run of `/audit-critical-resources` will audit 15 resources. If the critical set grows, the plan's existing `--full-repo-context` flag provides an escape hatch for reverse-reference checks without a manifest edit.

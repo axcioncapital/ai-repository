@@ -384,3 +384,134 @@ QC-fix items applied (triaged "Do"):
 ### Open Questions
 
 - None.
+
+## 2026-04-24 — Act on Friday-checkup HIGH findings (H2 + M1 + H1)
+
+### Summary
+
+Addressed three of the Friday-checkup report's prioritized items this session: H2 (expand `Read(pattern)` deny coverage), M1 (set `MAX_THINKING_TOKENS=10000`), and H1 (rework three research-workflow prose-pipeline subagent returns to output-to-disk per the Subagent Contracts). Plan was reviewed at ExitPlanMode after two self-check fixes (qc-reviewer Write-tool prerequisite, `mkdir -p` ownership). Ran the full QC → Triage Auto-Loop on Part B: first qc-reviewer pass GO-with-minor-items → triage promoted 3 Do items → fixes applied → second qc-reviewer pass REVISE on two stale step-number back-references I missed → mechanical fix applied (QC-skip criteria met). Two commits landed: `1df2a1c` (Part A settings) and `556313e` (Part B H1 refactor). Both pre-push. H3 (skill splits), M2, M3, and LOW items deferred per operator direction.
+
+### Files Created
+
+- None. Plan at `~/.claude/plans/snuggly-popping-allen.md` (outside repo; user-level plans dir).
+
+### Files Modified
+
+- `ai-resources/.claude/settings.json` — expanded `deny` list with 5 new patterns (`Read(audits/working/**)`, `Read(logs/*-archive-*.md)`, `Read(inbox/archive/**)`, `Read(**/deprecated/**)`, `Read(**/old/**)`); added `env.MAX_THINKING_TOKENS=10000`. Conservative scope — deliberately did NOT add broad `Read(audits/**)` or `Read(reports/**)` which would block reading today's canonical reports. (Operator also added explicit `Edit/Write(.claude/settings.json)` and `Edit/Write(**/.claude/settings.json)` allow rules mid-session after a harness prompt fired on the first settings edit despite `bypassPermissions` being on.)
+- `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md` — Phase 2 step 0: added `mkdir -p "{prose_output_dir_abs}/working"`. Phase 3 step 5 subagent task: output-to-disk pattern (writes unified findings to `working/phase-3-qc-{section}.md`) + ≤20-line structured return spec. Phase 3 step 6 fix-agent handoff: receives working-file path instead of inline findings. Phase 3 step 7 handoff note: summary + absolute working-file path, full findings stay on disk. Phase 6 step 2: reads working file before operator surfacing.
+- `ai-resources/workflows/research-workflow/.claude/commands/produce-formatting.md` — Phase 2 step 5 (renumbered from initial `4a`): added `mkdir -p` call. Phase 2 subagent: output-to-disk (writes to `working/formatting-phase-2-{section}.md`) + ≤20-line return. Phase 3 subagent: output-to-disk (writes to `working/formatting-phase-3-qc-{section}.md`), now reads Phase 2 working file by path for deferred-items context. Phase 4 steps 2–3: reads both working files before operator surfacing.
+- `ai-resources/.claude/agents/qc-reviewer.md` — added `Write` tool to frontmatter tools list (between `Read` and `Glob`). Prerequisite for H1 — qc-reviewer is used in both produce-* Phase 3 contexts and needed disk-write capability to comply with the Subagent Contracts output-to-disk rule. Additive change; existing callers (via `/qc-pass`, `/refinement-pass`) unaffected unless brief explicitly asks for a write.
+- `ai-resources/logs/session-notes.md` — this entry.
+
+### Decisions Made
+
+- **H2 scope narrowed from token-audit's aggressive recommendation.** Audit recommended `Read(audits/**)` and `Read(reports/**)` broadly. Chose conservative additions that protect known-stale patterns (`audits/working/**`, `logs/*-archive-*.md`, `inbox/archive/**`, `**/deprecated/**`, `**/old/**`) without blocking canonical reports the operator needs to read during review sessions. See decisions.md.
+- **`qc-reviewer` Write tool grant.** Caught during plan self-check: Phase 3 subagents are `qc-reviewer` type, which previously had `Read/Glob/Grep` only — no disk-write capability. Required a frontmatter addition to enable the H1 refactor. Blast radius: additive, no existing caller exercises Write unless asked.
+- **mkdir responsibility assigned to main session.** `Write` tool doesn't auto-create parent directories; qc-reviewer has Write but not Bash. Placing `mkdir -p` in the main session's Phase 2 (both commands) inverts the responsibility pattern from `token-audit-auditor` but provides a cleaner split.
+- **20-line subagent return cap (down from 30).** Post-QC triage promoted this per the CLAUDE.md Subagent Contracts "Tighter cap (20 lines) when per-unit invocations proliferate (one subagent per workflow, per chapter, per file)" rule. Per-section invocation counts as per-chapter.
+
+QC-fix items applied (triaged "Do", not separate decisions):
+- Renumbered produce-formatting Phase 2 mkdir step from `4a` to `5` (and shifted subsequent steps), matching the clean-integer convention used in produce-prose-draft Phase 2 step 0.
+- Normalized `{prose_output_dir}` → `{prose_output_dir_abs}` in the produce-prose-draft Phase 3 handoff-note path reference.
+- Tightened the 30-line cap to 20 lines across all three subagent return specs.
+- Second-pass QC-revise fix: updated two stale `step 4a` back-references in produce-formatting.md lines 50 and 95 to `step 5` (missed by the initial renumber).
+
+### Next Steps
+
+- **Push** the two commits from this session (`1df2a1c` settings, `556313e` H1 refactor), plus the carryover `/summary` skill commits from 2026-04-23 (`9f62fe6`, `7463f44`). Operator confirmation required per Autonomy Rules pause-trigger #2.
+- **Validate H1 on a real chapter.** The refactor is template-only. On the next real `/produce-prose-draft` or `/produce-formatting` invocation, confirm: (a) `{prose_output_dir}/working/` dir created; (b) subagent writes structured findings file; (c) return summary ≤20 lines; (d) Phase 4 / Phase 6 reads successfully surface the findings to operator.
+- **Propagate H1 to deployed project workflows via `/sync-workflow`** when the operator decides — standard workflow-template update pattern.
+- **H3 skill splits** (`ai-resource-builder` 401L / 3 modes, `answer-spec-generator` 485L / 5 modes, plus `research-plan-creator` 464L, `evidence-to-report-writer` 332L, `workflow-evaluator` 316L, `ai-prose-decontamination` 314L) — staged across future sessions. Recommend starting with the two multi-mode skills where the per-invocation bloat is highest.
+- **M2** (orchestrator compression for `new-project.md` 476L, `deploy-workflow.md` 321L via protocol-file pattern) and **M3** (`/clear` guidance between produce-* commands) — deferred.
+- **`/audit-claude-md` spec gap** from the Friday-checkup's "Plan QC gap" note: ai-resources-only runs currently skip the ai-resources CLAUDE.md. Revise the monthly branch so ai-resources-only runs still audit it directly.
+- **`/cleanup-worktree`** — working tree still has ~30 dirty entries from last two sessions' audit artifacts (friday-checkup report, repo-health snapshots, token-audit report, working notes, plus some agent/command edits from today's /qc-pass session). Run after reviewing these artifacts.
+- **Carryover from 2026-04-23:** first real test of `/summary` on an actual long document.
+
+### Open Questions
+
+- None.
+
+## 2026-04-24 — Repo maintenance cadence — commission v4 review + 5-batch plan
+
+### Summary
+
+Reviewed operator-supplied v4 commission for a "durable weekly Friday repo maintenance cadence." Core finding: the commission substantially underestimates existing repo infrastructure (`/friday-checkup`, reminder hook, `improvement-log.md`, `/triage`, `/coach`, `audit-discipline.md`, symlink policy) — faithful implementation would create parallel structures. Pared the commission to eight genuine gaps and drafted a 5-batch implementation plan sequenced per the commission's own risk-analysis-first constraint. Plan ran through /qc-pass → /triage (7 Do + 3 parked items applied) → post-edit /qc-pass (GO with minor findings) → inline fixes before approval.
+
+### Files Created
+
+- `/Users/patrik.lindeberg/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md` — approved implementation plan (outside repo; input for future execution sessions). Contains Part A critique, 5-batch build plan, Critical Files list, 10 flagged assumptions, 5 Decision Gates, Verification per batch, Skipping list, Handoff notes for fresh sessions.
+
+### Files Modified
+
+- None in repo. Planning-only session — plan file lives at `~/.claude/plans/`, outside the repo.
+
+### Decisions Made
+
+Strategic / scoping (material):
+- **Commission ≠ set plan.** Treated commission as intent; cut parallel-structure asks; reused existing infrastructure aggressively.
+- **Merge original Batches 2 + 3** (`/friday-act` + tier-differentiated output) due to shared data contract. Plan now has 5 batches, not 6.
+- **Seven autonomy axes → `/friday-act` output, not coaching-log.** Commission's axes are forward-looking weekly targets; coaching-log is backward-looking session ratings. Different purpose — kept separate.
+- **Freshness derived from `audits/friday-checkup-*.md` listing, not a parallel stamp file.** Single source of truth; applies plan's own "don't parallel existing infrastructure" argument.
+
+Design (architectural):
+- **`/risk-check` as new slash command** (not hook, not `/triage` extension). Operator-invoked manually or inline-invoked by other commands; no auto-invocation hook.
+- **Stage 1 repo architecture = static `docs/repo-architecture.md` + `/route-change` command** (not an agent, not auto-wired into `/create-skill`).
+- **`/route-change` auto-wire into `/create-skill` = OFF until proven useful** (preserves existing pipeline; change only if Batches 1–4 show misplaced resources).
+
+Process:
+- **QC → triage auto-loop applied fully.** First QC returned REVISE with 6 findings; triage returned 7 Do / 9 Park; operator directed "proceed per triage + add parked 2/3/6"; post-edit QC returned GO with minor findings; operator chose option (b) inline fixes; plan approved post-handoff-notes.
+- **Commit discipline: one commit per batch, 5 commits total.** Each internally coherent, independently revertible.
+
+### Next Steps
+
+- **Open fresh session to execute Batch 1** (`/risk-check` + `risk-check-reviewer` agent + `docs/audit-discipline.md` edit + workspace `CLAUDE.md` edit). Full session on its own — new command + new agent + decision gate for top-3-commands-affected analysis before landing CLAUDE.md edit.
+- **Session opening ritual:** `/prime` → read plan file → confirm Batch 1 assumption sign-offs (assumptions 1, 3, 4, 9) → begin deliverables.
+- **Pacing:** plan's Handoff notes specify don't attempt more than 2 batches per session. Batch 1 alone is a full session; Batches 2 and 5 are comparable.
+- **Dogfood ordering:** `/risk-check` doesn't exist during Batch 1 — can't self-invoke. Real dogfood starts Batch 2.
+
+### Open Questions
+
+- None. Plan explicitly flags 10 assumptions and 5 decision gates for operator sign-off at batch opening; those are expected prompts, not blockers.
+
+## 2026-04-24 — Built /audit-critical-resources command + subagent
+
+### Summary
+
+Developed a new slash command `/audit-critical-resources` and its `critical-resource-auditor` subagent from a context pack the operator provided. The command audits user-nominated resources (skills, commands, agents, CLAUDE.md) across seven quality dimensions — brokenness, currency vs. Anthropic docs, architectural fit, token/efficiency, guardrail integrity, cross-resource consistency, epistemic hygiene — and produces a fix-session-ready markdown report. Went through plan mode with two QC/triage cycles on the plan, then post-build QC/triage on the built files. Operator then designated 12 commands and 3 directly-referenced skills as the initial critical set; populated the manifest accordingly.
+
+### Files Created
+
+- `.claude/commands/audit-critical-resources.md` — orchestrator command; manifest-driven with args override, `--dry-run` and `--full-repo-context` flags, 10-step procedure from preflight through commit
+- `.claude/agents/critical-resource-auditor.md` — Opus subagent; audits one resource across all 7 dimensions; writes full findings to working-notes with Synthesis Input Block for main-session cross-resource pass; returns ≤30-line summary ending with `WORKING_NOTES: <path>` marker
+- `audits/critical-resources-manifest.md` — initial designation: 12 commands (`/prime`, `/wrap-session`, `/create-skill`, `/improve-skill`, `/friday-checkup`, `/friction-log`, `/qc-pass`, `/refinement-pass`, `/cleanup-worktree`, `/repo-dd`, `/new-project`, `/token-audit`) + 3 skills (`session-usage-analyzer`, `ai-resource-builder`, `worktree-cleanup-investigator`)
+- `~/.claude/plans/let-s-develop-this-nifty-pillow.md` — plan file (outside repo; Claude Code plan-mode artifact)
+
+### Files Modified
+
+None in the repo this session — all outputs were new files.
+
+### Decisions Made
+
+On the command's design (operator-confirmed via AskUserQuestion at planning):
+- Input format: manifest file + args override (over inline-only or registry-scan)
+- Overlap policy: run all 7 dimensions independently — self-contained report; does not delegate to `/token-audit`, `/audit-claude-md`, or `/repo-dd` for overlapping dimensions
+- Parallelism: one subagent per resource, parallel across resources; cross-resource synthesis runs in main session reading each working-notes file's `## Synthesis Input Block`
+
+On the critical set:
+- "Associated skills" scoped to skills the commands reference directly by path (3 skills). Subagents spawned by critical commands and invoked sibling commands were explicitly NOT included — operator can extend later if desired.
+
+QC-driven fixes applied during build (not analytical decisions):
+- Plan cycle 1: URL-provenance disambiguation, cross-resource synthesis input contract (Synthesis Input Block schema), Step 5 staging-path enumeration, manifest parse rules
+- Plan cycle 2: semantic URL re-verification at build-time, `WORKING_NOTES: <path>` last-line marker on subagent summary
+- Post-build: Step 6 YAML-block wording, slug-algorithm trailing-dash fix, subagent meta-comment stripping instruction
+
+### Next Steps
+
+- Push two unpushed commits on `main`: `07b367f` (command+subagent) and `b18dccc` (manifest)
+- Verify manifest parses with `/audit-critical-resources --dry-run` before the first real audit
+- Run the first audit: `/audit-critical-resources` (no args) — generates baseline report at `audits/audit-critical-resources-2026-04-24.md`
+- Consider whether to extend the critical set to include: subagents spawned by critical commands (e.g., `qc-reviewer`, `repo-dd-auditor`, `token-audit-auditor`, `claude-md-auditor`), and commands that critical commands invoke (e.g., `/audit-repo`, `/improve`, `/coach` invoked by `/friday-checkup`)
+
+### Open Questions
+
+None.
