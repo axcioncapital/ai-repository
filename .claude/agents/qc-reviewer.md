@@ -4,6 +4,7 @@ description: Independent QC reviewer for artifacts produced in the main conversa
 model: opus
 tools:
   - Read
+  - Write
   - Glob
   - Grep
 ---

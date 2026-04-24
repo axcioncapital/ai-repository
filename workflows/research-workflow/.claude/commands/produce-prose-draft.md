@@ -50,7 +50,7 @@ Present the plan: source document path, architecture status (used or missing), s
 
 ## Phase 2 — Decision-to-Prose Conversion [delegate]
 
-0. **Path setup (first phase that launches a subagent, reused across phases).** Determine the absolute project-root path (the CWD at invocation) and cache it as `project_root_abs`. Also resolve `prose_output_dir_abs = {project_root_abs}/{prose_output_dir}`. These absolute paths are passed to every subagent brief in Phases 2, 3, 4, 5 so subagents can read reference files directly rather than receiving inlined content. If unsure of the absolute root, run `pwd` once and cache the result.
+0. **Path setup (first phase that launches a subagent, reused across phases).** Determine the absolute project-root path (the CWD at invocation) and cache it as `project_root_abs`. Also resolve `prose_output_dir_abs = {project_root_abs}/{prose_output_dir}`. These absolute paths are passed to every subagent brief in Phases 2, 3, 4, 5 so subagents can read reference files directly rather than receiving inlined content. If unsure of the absolute root, run `pwd` once and cache the result. Then create the working directory for subagent findings files: `mkdir -p "{prose_output_dir_abs}/working"` (idempotent; needed for Phase 3 subagent-to-disk pattern).
 1. Read the source document identified in Phase 1
 2. Read `/ai-resources/skills/decision-to-prose-writer/SKILL.md`
 3. Launch a general-purpose sub-agent. Pass it:
@@ -102,15 +102,22 @@ Merged diagnostic review (chapter-prose-reviewer) and compliance gate (prose-com
    - **Expanded detection tests for Standards 10, 11, 12, 13 (apply explicitly):** (a) **Contrast constructions** — count per section ("not X, but Y", "X is Y, not Z", "not a preference but a constraint" and structural variants); flag if ≥4 in a 1,500-word section. (b) **Abstract-noun compounds** — for any three-noun compound, test whether an actor/verb rewrite would preserve meaning; if yes and the compound is not load-bearing document vocabulary, flag. (c) **Pseudo-maxim sentences** — short (<12 word) aphoristic sentences that function as standalone generalizations; count per section; flag if >1. (d) **Pivot closings** — read the last sentence of each section; if it describes what the next section will do rather than what this section established, flag. (e) **Flagged-vocabulary instances** — if the document's style-reference contains a Plain-Language Register / Flagged-Word Registry, scan the prose against it; flag any instance that is not a load-bearing PE term per the carve-outs named in the registry.
    - The style reference is the file at `{prose_output_dir_abs}/style-reference.md` (the generated/locked reference from Phase 1), not the context file at `context/style-guide.md`.
    - Task: **First, read the style reference and prose quality standards files at the provided absolute paths.** Then run the diagnostic review per chapter-prose-reviewer and produce a score (1-5) and flag report. Then run all four compliance scans per prose-compliance-qc (treating diagnostic findings as pending fixes per the sequencing note). Then apply the 13 prose quality checks — including Standard 6 at paragraph-to-paragraph granularity (not only at section boundaries), and the expanded Standards 10–13 detection tests above. Produce a unified findings list combining all passes, with severity ratings (HIGH/MEDIUM/LOW) and per-spec verdicts.
+   - **Output-to-disk pattern (required — subagent-contract compliance):** Write the full unified findings list to `{prose_output_dir_abs}/working/phase-3-qc-{section}.md`. The main session has already created the `working/` directory in Phase 2 step 0. Return to the main session a summary of **no more than 20 lines** (CLAUDE.md Subagent Contracts tighter cap for per-chapter invocation) with exactly these fields:
+     - `working_file`: absolute path to the file just written
+     - `score`: 1–5 (diagnostic review score)
+     - `high_count`, `medium_count`, `low_count`: finding counts by severity
+     - `bright_line_items_count`: number of items requiring operator approval under the bright-line rule
+     - `verdict`: one line — `auto-proceed` / `fix-agent-needed` / `pause-for-operator`
+     Do not repeat the findings inline in the return. Main session routes on the counts; reads the working file only when surfacing to the operator at Phase 6.
 
 6. Route on score and findings:
    - **Score 4-5 with only LOW findings:** Note findings. Proceed to Phase 4. No fix agent needed.
-   - **Score 4-5 with MEDIUM+ findings:** Launch a general-purpose sub-agent with: the prose file content, the unified findings list, the style reference absolute path (`{prose_output_dir_abs}/style-reference.md` — subagent reads before applying fixes), the source document, and the anti-scaffolding instruction from the review pass above. Task: apply all non-bright-line fixes and write the corrected file. For bright-line items (multi-paragraph changes, analytical claim alterations, sourced statement modifications): log them and present to the operator. After fixes, proceed to Phase 4.
+   - **Score 4-5 with MEDIUM+ findings:** Launch a general-purpose sub-agent with: the prose file content, the path to the Phase 3 findings file (`{prose_output_dir_abs}/working/phase-3-qc-{section}.md` — subagent reads findings from this file before applying fixes), the style reference absolute path (`{prose_output_dir_abs}/style-reference.md` — subagent reads before applying fixes), the source document, and the anti-scaffolding instruction from the review pass above. Task: apply all non-bright-line fixes and write the corrected file. For bright-line items (multi-paragraph changes, analytical claim alterations, sourced statement modifications): log them and present to the operator. After fixes, proceed to Phase 4.
    - **Score 3 with fewer than 3 HIGH findings:** Same as above — launch fix sub-agent. Present bright-line items and any HIGH findings to the operator before proceeding.
    - **Score 3 with 3+ HIGH findings:** PAUSE — present findings to the operator. Options: re-run Phase 2 with editorial annotations addressing the failures, or proceed with fix sub-agent.
    - **Score 1-2:** PAUSE — present findings to the operator. The prose conversion has failed. Options: re-run Phase 2 with editorial annotations addressing the failures, or override and proceed.
 
-7. Write a brief Phase 3 handoff note for the main session: the score, the unified findings list (severity + one-line description per finding), which findings were auto-fixed, and which are deferred as bright-line items requiring operator review. This note feeds Phase 6 (handoff). (Write this note to main session context before compacting — it must survive the compact.)
+7. Write a brief Phase 3 handoff note for the main session: the working-file path (`{prose_output_dir_abs}/working/phase-3-qc-{section}.md` — absolute form, matching the subagent-write site for consistency), the score, severity counts (HIGH/MEDIUM/LOW), count of findings auto-fixed, and count of bright-line items deferred for operator review. This note feeds Phase 6 (handoff). (Write this note to main session context before compacting — it must survive the compact. The full findings list stays on disk at the working-file path; Phase 6 reads it when presenting to the operator.)
 
 8. ▸ /compact — skill content and source document no longer needed.
 
@@ -191,13 +198,14 @@ Removes AI writing patterns (ornamental language, repetition, over-argumentation
 ## Phase 6 — Handoff (main session)
 
 1. Read the post-decontamination prose file
-2. Present to the operator:
+2. Read `{prose_output_dir}/working/phase-3-qc-{section}.md` to retrieve the full Phase 3 findings list for operator surfacing.
+3. Present to the operator:
    - **Source file path used** + draft number + final word count
-   - **Phase 3 review score (1–5)** + critical findings (HIGH severity)
+   - **Phase 3 review score (1–5)** + critical findings (HIGH severity, pulled from the working file just read)
    - **Cross-section integration check summary** (from Phase 4, if it ran): transitions added, redundancy/contradiction findings and their disposition
    - **Decontamination log path** + per-pass change summary (from Phase 5). Full log available at `{prose_output_dir}/decontamination-log.md`.
    - **Architecture compliance notes** (if architecture was used): depth allocation honored, must-land content implemented, seam notes implemented
    - **Bright-line items deferred for operator decision** (any unresolved items from Phases 3, 4, or 5)
-3. Suggest next step:
+4. Suggest next step:
    - **Standard path:** "Run `/produce-formatting {section}` to apply formatting, H3 placement, and document-level integration QC."
    - **If unresolved bright-line items:** "Resolve flagged items first (apply or discard per your decision), then run `/produce-formatting {section}`."
