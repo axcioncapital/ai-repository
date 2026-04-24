@@ -147,3 +147,32 @@
 - **`--style` flag covering all three:** rejected as scope creep. Skills that do three things do none well. If an editorial-digest need emerges, build a separate `/memo-from-document` skill.
 
 **Implication:** The skill's fidelity rules (must-survive / can-drop / must-not-introduce) are load-bearing. Future `/improve-skill` work should preserve the faithful-compression contract; interpretive extensions belong in a separate skill.
+
+## 2026-04-24 — /qc-pass guardrails: three-layer design over tag-only alternative
+
+**Context:** QC pass was net-negatively affecting mechanical work on repo-infrastructure files — surfacing false-positive findings, out-of-scope observations, and triage over-escalation. Needed guardrails that prevent QC from introducing more problems than it fixes.
+
+**Decision:** Implement a three-layer design — (L1) scope declaration upfront in `/qc-pass`; (L2) proportional rubric in `qc-reviewer` with mechanical-mode vs full, and `[In-scope]`/`[Out-of-scope]` placement tagging for full rubric; (L3) scope-aware triage in `triage-reviewer` with Out-of-scope → Park default. Plus CLAUDE.md updates for a "second gear" mechanical-mode bullet and an Auto-Loop skip condition when QC returns GO with only out-of-scope observations or mechanical-mode with all M-checks Clear.
+
+**Rationale:** Operator confirmed all three failure modes (false positives, out-of-scope findings, triage over-escalation) happen in practice — no single layer addresses all three. Layer 2 prevents out-of-scope commentary from qc-reviewer. Layer 3 ensures any that leaks through defaults to Park, not Do. Layer 1 makes scope visible to the operator for correction via re-invoke. CLAUDE.md changes align the auto-loop behavior with the new tag system and add the mechanical-mode skip so clean mechanical QC doesn't burn a triage subagent.
+
+**Alternatives considered:**
+- **Tag-only (simpler):** just add scope declaration + placement tags + scope-aware triage — skip the mechanical-mode rubric selector. Surfaced by QC-reviewer as a plausible alternative. Addresses net-negative outcomes (the stated problem) but not noise volume on mechanical work. Operator chose the fuller design because full-rubric QC on mechanical edits still produces needless findings that the operator has to mentally filter, even if they park cleanly.
+- **Skip QC entirely on mechanical work:** extend existing Post-edit QC skip criteria (currently ≤5 lines, mechanical substitution, validated elsewhere) to a broader auto-skip on any mechanical infra edit. Rejected: operator wanted QC to still run (it can catch M1/M2/M3 regressions), just with a narrower rubric that doesn't commentate on surrounding correct code.
+- **Hybrid ship-later:** ship tag-only now, add mechanical-mode later if noise is still a problem. Rejected: operator preferred the complete fix in one pass.
+
+**Implication:** Any future `/qc-pass` invoker must pass scope as a 4th input to get the new behavior. Legacy 3-input callers continue working via qc-reviewer's derive-scope fallback. Follow-up migration of `refinement-deep`, `cleanup-worktree`, and workflow commands is deferred but explicitly tracked in the session note.
+
+## 2026-04-24 — Ripple-edit scope narrowed: no changes to other qc-reviewer invokers
+
+**Context:** During `/qc-pass` on the plan, a grep revealed three more active qc-reviewer invokers beyond `/qc-pass` and `/refinement-deep`: `/cleanup-worktree` (top-level command) and three workflow-local commands (`qc-pass.md`, `produce-formatting.md`, `produce-prose-draft.md` in research-workflow). Presented three options: widen scope to top-level only, widen to everything, or defer all ripples.
+
+**Decision:** Defer all ripples. Scope narrowed to exactly four files — `qc-reviewer.md`, `triage-reviewer.md`, `qc-pass.md`, workspace `CLAUDE.md`. Do not update `refinement-deep.md`, `cleanup-worktree.md`, or workflow commands in this pass. Rely on qc-reviewer's legacy-caller fallback (derive scope if not passed, mark `(derived — caller did not supply)` in header) to keep all invokers running correctly on the old 3-input contract.
+
+**Rationale:** Operator preference for testability. Narrower change surface = easier to validate the guardrail's behavior in isolation before propagating. Legacy fallback is backwards-compatible by construction; no invoker breaks. If the three-layer design works as intended on real mechanical work, migrating the other invokers is mechanical and safe to do in a follow-up session.
+
+**Alternatives considered:**
+- **Widen to all top-level invokers (initially recommended):** add `refinement-deep.md` and `cleanup-worktree.md` in this pass; defer workflow commands. Rejected: operator wanted to test the core flow before propagating.
+- **Widen to everything, including workflow commands:** maximum consistency in one pass. Rejected: larger change surface, harder to validate, and workflow commands have their own handoff contracts (`cleanup-worktree` uses PLAN_PATH + request + snapshot + criteria — not a trivial remap).
+
+**Implication:** Follow-up session needs to migrate `refinement-deep.md`, `cleanup-worktree.md`, and the three workflow commands to the 4-input contract. Legacy fallback keeps these working in the meantime but the "derived" scope annotation in their QC output should be the signal that migration is due. No urgency — scope derivation works.

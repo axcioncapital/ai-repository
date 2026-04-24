@@ -2,141 +2,6 @@
 
 > Archive: [session-notes-archive-2026-04.md](session-notes-archive-2026-04.md)
 
-## 2026-04-18 — pipeline-stage-4 tier retrofit (inherit → sonnet)
-
-### Summary
-Cleared the last `inherit` holdout in the Agent Tier Table. Retrofitted `pipeline-stage-4` from `model: inherit` to `model: sonnet` and updated the tier-table row in workspace CLAUDE.md. Operator challenged the "sonnet" choice mid-session (argued for opus); held the line on the tier rule (Stage 4 is spec-following implementation, judgment happens upstream in 3b/3c). Operator then challenged the deferral itself and elected to flip now rather than wait for the `/new-project` validation run that was the original gate.
-
-### Files Created
-None.
-
-### Files Modified
-- `ai-resources/.claude/agents/pipeline-stage-4.md` — `model: inherit` → `model: sonnet`
-- `CLAUDE.md` (workspace root) — tier-table row updated from "Candidate: declare sonnet (deferred)" to "Retrofitted 2026-04-18 from inherit"
-
-### Decisions Made
-- **Flip pipeline-stage-4 to sonnet now, rather than wait for /new-project validation.** Deferral logic from 2026-04-18 morning session (commit `feaf614`) was over-cautious; the tier rule is unambiguous (spec-following implementation → sonnet), peers are all declared, and `inherit` leaves model selection non-deterministic. Cost of being wrong is low (one-line revert if a real `/new-project` run surfaces inadequacy).
-
-### Next Steps
-- No push needed for workspace root (no remote configured). `ai-resources` already pushed (`b9006b5`).
-- First real `/new-project` run is the empirical check — if Stage 4 underperforms at sonnet, revert to opus.
-
-### Open Questions
-None.
-
----
-
-## 2026-04-18 — Trim 3 oversized skills via pure-relocation refactor
-
-### Summary
-Trimmed three skills flagged by the 2026-04-18 token audit (out of 8 over the 300-line HIGH threshold) using a pure-relocation refactor — moved teaching examples and templates to sibling `references/` files, kept all operational logic inline. No content was reworded. Each refactored SKILL.md passed an independent qc-reviewer pass before commit.
-
-### Files Created
-- `skills/ai-prose-decontamination/references/change-log-template.md` — Change Log Format template (relocated from SKILL.md 355–419)
-- `skills/ai-prose-decontamination/references/worked-example.md` — End-to-end four-pass transformation (relocated from SKILL.md 435–485)
-- `skills/ai-prose-decontamination/references/sub-pattern-examples.md` — Before/After example pairs for sub-patterns 1a, 1b, 2a, 3a–c, 4a, plus Pass 4 main rhythm example
-- `skills/ai-resource-builder/references/skill-architecture.md` — Folder structure, size budget, progressive disclosure, bundled resources, naming (relocated from SKILL.md 28–77)
-- `skills/ai-resource-builder/references/required-sections.md` — Required Sections Checklist table (relocated from SKILL.md 398–411)
-- `skills/prose-compliance-qc/references/output-template.md` — Per-spec verdicts, findings entry format, severity defs, abbreviated example output (relocated from SKILL.md 205–296)
-- `skills/prose-compliance-qc/references/anti-pattern-checks.md` — ss1–ss5 named checks for Scan 1 sweep (relocated from SKILL.md 90–127)
-
-### Files Modified
-- `skills/ai-prose-decontamination/SKILL.md` — 484 → 314 L (35% reduction); pointers replace relocated blocks
-- `skills/ai-resource-builder/SKILL.md` — 463 → 401 L (13% reduction); Reference Files table updated with two new entries
-- `skills/ai-resource-builder/references/operational-frontmatter.md` — appended description-field good/bad examples
-- `skills/prose-compliance-qc/SKILL.md` — 330 → 210 L (36% reduction)
-
-### Decisions Made
-- **Approach: pure structural relocation, not /improve-skill pipeline.** Operator rejected both originally-offered paths (full /improve-skill = slow; ad-hoc trims = quality risk) and asked for a better solution. Plan-QC subsequently flagged that "compress/tighten" line items would constitute semantic editing and trigger the canonical-pipeline-bypass rule. Resolution: dropped all semantic-edit items, made the refactor cut-and-paste only. This kept the canonical-pipeline rule intact.
-- **Accepted ai-resource-builder gap above 300 L.** Plan-math reconciliation surfaced that available pure-relocation moves land that file at ~385 L (actual: 401 L), 100 L over threshold. Closing fully requires deferred command-file dedup (3-file refactor with command-behavior risk). Operator-equivalent decision via QC triage cascade: accept the gap, queue full sub-300 retrofit for a separate session.
-- **Skipped runtime smoke test for ai-resource-builder.** Plan called for invoking `/improve-skill` against a small skill to verify the methodology source still drives the pipelines after refactor. Operator chose Option 3 (skip — accept doc QC as sufficient). Risk: doc QC cannot detect behavioral breakage in /create-skill or /improve-skill; first real invocation of either command is the empirical check.
-
-QC fixes:
-- Removed framing sentence I introduced at `references/skill-architecture.md:3` after Skill 2 QC flagged it as a deviation from "verbatim relocation" discipline.
-
-### Next Steps
-- Push `e76d47d` to remote when ready.
-- 5 of 8 oversized skills remain (the audit's HIGH list shrinks from 8 → 5): `answer-spec-generator` (485 L), `research-plan-creator` (464 L), `evidence-to-report-writer` (332 L), `session-guide-generator` (320 L), `workflow-evaluator` (316 L). Same pure-relocation approach should work — separate session.
-- Deferred: command-file deduplication between `ai-resource-builder/SKILL.md` and `/create-skill` + `/improve-skill` commands. Would let ai-resource-builder Create/Improve workflows shrink to executive summaries and finally land that file under 300 L. 3-file refactor with command-behavior risk — needs its own session.
-- First real `/create-skill` or `/improve-skill` invocation is the empirical verification that ai-resource-builder's relocations did not break either pipeline.
-
-### Open Questions
-None.
-
-## 2026-04-21 — Created prose-refinement-writer skill via /create-skill
-
-### Summary
-Created new shared skill `prose-refinement-writer` in response to operator feedback diagnosing two residual weaknesses in the current `produce-prose-draft` pipeline output — unclear logical relationships between adjacent sentences, and underdeveloped hardest claims in a paragraph. The skill applies a targeted refinement pass addressing both while preserving voice and actively avoiding AI-register smoothing patterns. Session ran the full /create-skill pipeline including plan QC, cold evaluator (0 Critical / 2 Major / 6 Minor), workspace QC→Triage auto-loop, and post-edit QC (PASS). First real `/create-skill` invocation since the 2026-04-18 ai-resource-builder relocations — pipeline executed cleanly.
-
-### Files Created
-- `ai-resources/skills/prose-refinement-writer/SKILL.md` — 273 lines. Addresses both weaknesses with preserve list, Fix 1 (logical-linkage), Fix 2 (claim-development), worked examples, paired quotability test, delivery-shape spec, Runtime Recommendations (Opus tier).
-- `ai-resources/inbox/archive/prose-refinement-writer-brief.md` — resource brief consumed by /create-skill; archived post-commit. Contains operator's verbatim refinement-writer instruction as the skill's source material.
-
-### Files Modified
-None outside the created files.
-
-### Decisions Made
-- **Target artifact (operator-directed):** new shared skill in `ai-resources/skills/`, not an update to existing ai-prose-decontamination / decision-to-prose-writer / evidence-prose-fixer / document-optimizer. None absorbs the scope (logical-linkage + claim-depth gaps at sentence level).
-- **Pipeline wiring deferred to follow-up session (operator-directed):** skill's position in `produce-prose-draft.md` (post-decontamination / pre-decontamination / reorganize decontamination) held as an open question for the follow-up, does not affect skill content.
-- **Plan revisions after QC+triage cascade:** dropped example-input fixture (File Write Discipline + inbox-lifecycle + evaluator doesn't ingest fixtures); stripped interpretive Document 1 diagnoses from plan Context; added document-optimizer to adjacency analysis; corrected claim that /create-skill auto-archives briefs; flagged /request-skill bypass as deliberate deviation.
-- **Default resolutions during SKILL.md write (Claude-defaulted, flagged to operator at Step 6):**
-  - Self-validation loop: external reviewer approach (single pass + change log), not internal revise-test-revert. Matches QC Independence Rule.
-  - Size-of-change cap: judgment latitude per operator instruction's phrasing, no hard abort at four sentences.
-- **Cold evaluator fixes applied (auto-loop triage):**
-  - Fix #4 Major — added Runtime Recommendations section (Opus tier declared).
-  - Fix #5 Major — added Worked Examples section (3 examples: Fix 1 restructure, Fix 2 concrete-instance follow-up, change-log entry format).
-  - Fix #7 Minor — resolved "closed list below is non-exhaustive" contradiction → "illustrative, not exhaustive."
-  - Fix #6 Minor (auto-loop surfaced) — added mid-sentence marker vs. banned-opener demarcation to Fix 1 step 2; extended banned-opener prohibition to mid-sentence scaffolding.
-  - Fix #8 Minor (auto-loop surfaced) — added Delivery Shape subsection to Output Contract (two labeled message sections by default; `.changelog.md` sibling if caller specified file output).
-- **Parked minor findings:** #1 `disable-model-invocation`, #2 `allowed-tools`, #3 `paths` — frontmatter-conformance items triage-reviewer flagged for a batched pass across all skills rather than one-off on this skill.
-
-### Next Steps
-- Push commit `f719715`.
-- Follow-up session: wire `prose-refinement-writer` into `produce-prose-draft.md`. Operator chooses position (post/pre/reorganize relative to decontamination). Likely seam is a new phase between integration check (lines 119–162) and decontamination (line 165) — the "after decontamination" variant may reorder this depending on operator choice.
-- Batch frontmatter-conformance pass (findings #1, #2, #3) across all skills as a dedicated session rather than one-off edits.
-
-### Open Questions
-- Pipeline deployment position: post-decontamination / pre-decontamination / decontamination reorganized. Deferred to the wiring follow-up session.
-
-## 2026-04-21 — Refactored produce-prose-draft to path-based reference passing + permissions fix
-
-### Summary
-Second work block of 2026-04-21. Acted on the 2026-04-21 `/usage-log.md` Wasteful entry's primary recommendation: converted `produce-prose-draft.md` Phases 2/3/4/5 from inlining `style-reference.md` and `prose-quality-standards.md` content into subagent briefs to passing absolute paths. Updated four skill input contracts accordingly and added a narrow Context Isolation Rules carve-out to `workflows/research-workflow/CLAUDE.md`. A separate task surfaced during the refactor: harness permission prompts fired on nested `.claude/` paths because `**` glob patterns don't match dotfile path components by default — fixed the glob gap in two settings.json files.
-
-### Files Created
-None.
-
-### Files Modified
-- `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md` — Phases 2/3/4/5 converted to absolute-path passing; added Phase 2 step 0 for path setup; renumbered phase steps.
-- `ai-resources/workflows/research-workflow/CLAUDE.md` — added carve-out to Context Isolation Rules for style-reference + prose-quality-standards path-passing.
-- `ai-resources/skills/chapter-prose-reviewer/SKILL.md` — Style Spec input contract now expects absolute path.
-- `ai-resources/skills/prose-compliance-qc/SKILL.md` — Style Spec contract now expects absolute path; updated "content is passed directly" statement.
-- `ai-resources/skills/ai-prose-decontamination/SKILL.md` — Style Reference (blocking) and Prose Quality Standards (recommended) contracts now expect absolute paths.
-- `ai-resources/skills/decision-to-prose-writer/SKILL.md` — Style Reference contract now expects absolute path.
-- `.claude/settings.json` (workspace) — added `Write(**/.claude/**)` / `Edit(**/.claude/**)` + bare-dir variants + absolute workspace-root catchall.
-- `ai-resources/.claude/settings.json` — same glob-gap fix + absolute workspace-root catchall.
-
-### Decisions Made
-- **Refactor scope (operator-directed via AskUserQuestion):** reference files only. Operand artifacts (source document, prose file) and skill content stay content-passed. Include skill contract updates.
-- **Governance carve-out (operator-directed via plan approval):** update research-workflow/CLAUDE.md Context Isolation Rules with a narrow exception for the two named reference files, explicitly preserving content-passing as the default for operand artifacts. Sign-off absorbed into plan approval per Autonomy Rule 8.
-- **Commit ordering:** two commits, command first (a746f65), skills second (08b901f). Default chosen in triage; the command-first order makes the intermediate-state failure benign (skills still expect content, receive a path string, halt cleanly). Reverse order would produce "skill expects path, receives content" which is a new unfamiliar error.
-- **Permissions fix (operator-directed):** eliminate nested-.claude/ permission prompts by adding `Write(**/.claude/**)`, `Edit(**/.claude/**)`, bare-dir variants, and absolute workspace-root catchalls. Applied to both workspace and ai-resources settings.json files. Vault-level and step-1-long-list settings left intentionally scoped for data safety.
-
-### QC fixes applied
-- Plan revise cycle after initial QC (HIGH: Context Isolation Rules conflict not surfaced; HIGH: Commit A leaves pipeline broken; MEDIUM×4). Auto-loop triage recommended: surface CLAUDE.md conflict with carve-out in same change set; reverse commit order; pre-execution Glob for deployed-copy path; correct "no behavioral change" claim for run-report.md; add Phase 4 coverage detail; specify absolute-path construction. Post-edit QC: PASS with 2 minor items applied (project_root provenance rewrite, verification grep-list alignment). Second post-edit QC: GO — auto-loop terminated.
-
-### Next Steps
-- Push all commits: `a746f65`, `08b901f`, `fabebae`, `1d2e4ed`, `fedf2e9` (plus earlier `f719715`, `f7ca018` from the first work block).
-- Smoke test `/produce-prose-draft` on next queued section. Measure token-usage delta against 2026-04-20 Wasteful entry — expected ~30K tokens/run reduction.
-- Smoke test `/run-report` single chapter — chapter-prose-reviewer contract change may surface blocking flag where previously suppressed. Operator decides: add style-ref path to run-report invocation, add "no style-ref → proceed with warning" carve-out to the skill, or restructure the chapter-prose-reviewer call.
-- Deferred follow-up: wire `prose-refinement-writer` (from first work block) into `produce-prose-draft.md`. Operator chooses position (post/pre/reorganize relative to decontamination).
-- Deferred follow-up: frontmatter-conformance batch (`disable-model-invocation` / `allowed-tools` / `paths`) across all skills as a dedicated pass.
-
-### Open Questions
-- `run-report.md` behavioral change disposition — smoke-test decision deferred.
-- Token-savings estimate grounding — ~30K figure assumes ~60% excerpting baseline; actual delta measured by post-smoke-test usage-log entry.
-
-
 ## 2026-04-21 — Created /recommend command
 
 ### Summary
@@ -471,6 +336,50 @@ Ran `/friday-checkup` with operator-override to monthly tier, then narrowed scop
 - Follow up on `/audit-claude-md` spec gap: the monthly branch currently skips ai-resources when workspace isn't also selected. Consider revising so ai-resources-only runs still audit the ai-resources CLAUDE.md directly.
 - Optional: run `/cleanup-worktree` once the audit session's own files are reviewed/committed.
 - Carryover next-steps from 2026-04-23: push `/summary` skill commits (`9f62fe6`, `7463f44`); first real test of `/summary` on an actual long document.
+
+### Open Questions
+
+- None.
+
+## 2026-04-24 — /qc-pass guardrails: three-layer scope-aware rubric for mechanical infra work
+
+### Summary
+
+Designed and shipped three layered guardrails to the `/qc-pass` flow so QC stops net-negatively affecting mechanical work on repo-infrastructure files (permission settings, SKILL.md tweaks, command/agent edits, CLAUDE.md fixes, prompt changes). Dogfooded the new auto-loop mechanical-mode skip rule on the implementation's own post-edit QC pass — mechanical-mode GO with all M-checks Clear correctly skipped triage on first real use.
+
+### Files Created
+
+- None. Plan lives at `~/.claude/plans/let-s-fix-qc-pass-command-quiet-comet.md` (outside repo).
+
+### Files Modified
+
+- `ai-resources/.claude/agents/qc-reviewer.md` — wholesale rewrite: Rubric Selection section, Mechanical mode M1/M2/M3 checklist, Finding tagging via section placement (Findings = in-scope, Notes = out-of-scope), Findings+Notes output structure, legacy 3-input fallback with derived-scope annotation. Incidentally added dimension 6 (Sibling Redundancy) back into Output Format template — pre-existing bug absorbed by restructure.
+- `ai-resources/.claude/agents/triage-reviewer.md` — wholesale rewrite: dimension 0 scope relationship, Parked-by-scope default output table, scope-tag overrides Do bar unless out-of-scope fix prevents in-scope break.
+- `ai-resources/.claude/commands/qc-pass.md` — added scope input (Step 2 fourth item), mechanical-mode hint logic (Step 3), Step 4a scope visibility note for operator re-invoke.
+- `CLAUDE.md` (workspace root) — Mechanical-mode QC (second gear) bullet in QC Independence Rule; Auto-Loop step 1 rewrite with findings/notes gating and mechanical-mode GO skip.
+
+Commits: ai-resources `d50480f` (batch: /qc-pass guardrails); workspace `fe362ad` (update: CLAUDE.md — mechanical-mode bullet + Auto-Loop scope gating).
+
+Archive activity (wrap-session): `ai-resources/logs/session-notes.md` trimmed by archive script to keep 10 most recent entries; `ai-resources/logs/session-notes-archive-2026-04.md` auto-updated with 4 older April entries.
+
+### Decisions Made
+
+- **Mechanical-mode scope definition:** operator directive broadened from "JSON/settings only" to "everything involved in repo infrastructure" — settings files, command/agent defs, SKILL.md, CLAUDE.md, hooks, prompts, analogous infra. Implemented as target universe in qc-reviewer Rubric Selection.
+- **Scope declaration flow:** hybrid derive-and-display. Main agent derives scope from artifact + last turn, reviewer echoes in output header, operator corrects by re-invoking `/qc-pass` if mis-derived. Rejected: caller form-fill (adds friction where false-positive problem lives) and silent derivation (errors hidden).
+- **Mechanical-mode detection:** qc-reviewer auto-detects from diff + scope + optional `mechanical-mode: suggested` hint. `forced-off` override exists; no `forced-on` override (dangerous direction — would let caller narrow rubric on design work).
+- **Design shape:** three-layer (scope + rubric + triage) over simpler tag-only alternative (operator chose after QC surfaced alternative). Three-layer addresses both net-negative outcomes AND noise volume; tag-only addresses only net-negative.
+- **Ripple-edit scope:** narrowed by operator after QC found three additional qc-reviewer invokers — `refinement-deep.md`, `cleanup-worktree.md`, three workflow commands. Operator directed: do not touch these; rely on legacy 3-input fallback (derive-scope) in qc-reviewer. Deferred to follow-up migration.
+
+QC-fix items applied (triaged "Do"):
+- Output Format tag-placement disambiguation — tags implicit by section placement, not inline.
+- Auto-Loop step 1 skip condition extended to cover mechanical-mode GO with all M-checks Clear (in addition to existing "all Notes" skip).
+
+### Next Steps
+
+- Push both repos: `ai-resources` at `d50480f`; workspace at `fe362ad`.
+- First real-world test: on the next mechanical `/qc-pass` invocation, confirm rubric selection, tag placement, and auto-loop skip behave as designed.
+- Follow-up migration (separate session): update `refinement-deep.md`, `cleanup-worktree.md`, and workflow commands (`qc-pass.md`, `produce-formatting.md`, `produce-prose-draft.md`) to the 4-input contract. Low urgency — legacy fallback keeps them correct in the meantime.
+- Carryover from 2026-04-23: push `/summary` skill commits (`9f62fe6`, `7463f44`); first real test of `/summary` on an actual long document.
 
 ### Open Questions
 
