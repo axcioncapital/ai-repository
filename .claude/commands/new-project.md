@@ -205,12 +205,19 @@ Otherwise, install the three pieces:
 
    **Requires `jq` on PATH.** If `jq` is not available, stop and report the missing dependency — do not attempt string-level JSON manipulation.
 
-   **Canonical permissions block** (mirrors the `allow` / `deny` arrays from the operator's user-level `~/.claude/settings.json`, plus a narrow archival `Read(...)` deny set). Note: `additionalDirectories` is **not** included in this canonical block because each project's entry is computed dynamically at enrichment time — see step 3 below, which adds the ai-resources workspace root via a separate jq merge so projects with existing `permissions.allow` arrays (which skip this canonical merge) still receive the grant.
+   **Canonical permissions block** (mirrors `ai-resources/docs/permission-template.md` Layer D). Three structural additions compared to the pre-2026-04-24 template, driven by four root causes surfaced in the permission-sweep design doc:
+
+   - `"defaultMode": "bypassPermissions"` — without this, projects default to prompt-on-allow regardless of their allow list (the primary cause of recurring Edit/Delete prompts).
+   - `Edit(**/.claude/**)` and `Write(**/.claude/**)` — `**` globs do not match dotfile path components by default, so broad `Edit(X/**)` rules leave nested `.claude/` paths uncovered.
+   - `Bash(rm *)` — narrow `rm` in allow (destructive `rm -rf` stays on deny). Fixes Delete/Remove prompts.
+
+   Note: `additionalDirectories` is **not** included in this canonical block because each project's entry is computed dynamically at enrichment time — see step 3 below, which adds the ai-resources workspace root via a separate jq merge so projects with existing `permissions.allow` arrays (which skip this canonical merge) still receive the grant.
 
    The `Read(...)` denies target archival-only paths that no active command routinely reads. Per the workspace `## Applying Audit Recommendations` rule, these four entries are the safe universal set. Project-shape-specific denies (e.g., `Read(output/**)`, `Read(reports/**)`) are **not** included in the canonical block — they should be added per-project after confirming no active command reads from them.
 
    ```json
    {
+     "defaultMode": "bypassPermissions",
      "allow": [
        "Bash(*)",
        "Read",
@@ -225,7 +232,10 @@ Otherwise, install the three pieces:
        "WebFetch",
        "WebSearch",
        "NotebookEdit",
-       "ToolSearch"
+       "ToolSearch",
+       "Edit(**/.claude/**)",
+       "Write(**/.claude/**)",
+       "Bash(rm *)"
      ],
      "deny": [
        "Bash(git push*)",
@@ -252,7 +262,18 @@ Otherwise, install the three pieces:
    }
    ```
 
-   The hook is invoked **directly from ai-resources** — do not copy `auto-sync-shared.sh` into the project's hooks directory.
+   **Permission-sanity SessionStart hook entry** (added to `hooks.SessionStart`) — surfaces a nudge when the project's `settings.json` or `settings.local.json` lacks `defaultMode: "bypassPermissions"`, the primary cause of recurring Edit/Delete permission prompts:
+
+   ```json
+   {
+     "type": "command",
+     "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '/' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/check-permission-sanity.sh\" ] && { \"$d/ai-resources/.claude/hooks/check-permission-sanity.sh\"; exit; }; done",
+     "timeout": 5,
+     "statusMessage": "Permission sanity check..."
+   }
+   ```
+
+   Both hooks are invoked **directly from ai-resources** — do not copy the scripts into the project's hooks directory.
 
    **Predicate for "already has a permissions allowlist":** parsed JSON has `.permissions.allow` *and* that array is non-empty. If true, leave `permissions` alone (protects projects that intentionally have a narrower block). Otherwise, merge the canonical block in.
 
@@ -265,26 +286,33 @@ Otherwise, install the three pieces:
    mkdir -p "$(dirname "$SETTINGS")"
    [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
 
-   CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)","Read(archive/**)","Read(**/*.archive.*)","Read(**/deprecated/**)","Read(**/old/**)"]}'
+   CANONICAL_PERMS='{"defaultMode":"bypassPermissions","allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","Skill","TodoWrite","Glob","Grep","WebFetch","WebSearch","NotebookEdit","ToolSearch","Edit(**/.claude/**)","Write(**/.claude/**)","Bash(rm *)"],"deny":["Bash(git push*)","Bash(rm -rf *)","Bash(sudo *)","Read(archive/**)","Read(**/*.archive.*)","Read(**/deprecated/**)","Read(**/old/**)"]}'
 
    AUTO_SYNC_HOOK='{"type":"command","command":"d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '"'"'/'"'"' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\" ] && { \"$d/ai-resources/.claude/hooks/auto-sync-shared.sh\"; exit; }; done","timeout":10,"statusMessage":"Syncing shared commands from ai-resources..."}'
 
-   jq --argjson perms "$CANONICAL_PERMS" --argjson hook "$AUTO_SYNC_HOOK" '
+   SANITY_HOOK='{"type":"command","command":"d=\"$CLAUDE_PROJECT_DIR\"; while [ \"$d\" != '"'"'/'"'"' ]; do d=$(dirname \"$d\"); [ -x \"$d/ai-resources/.claude/hooks/check-permission-sanity.sh\" ] && { \"$d/ai-resources/.claude/hooks/check-permission-sanity.sh\"; exit; }; done","timeout":5,"statusMessage":"Permission sanity check..."}'
+
+   jq --argjson perms "$CANONICAL_PERMS" --argjson sync "$AUTO_SYNC_HOOK" --argjson sanity "$SANITY_HOOK" '
      (if (.permissions.allow // []) | length > 0 then . else .permissions = $perms end)
      | (if (.model // "") == "" then .model = "sonnet" else . end)
      | .hooks = (.hooks // {})
      | .hooks.SessionStart = (.hooks.SessionStart // [])
-     | if (.hooks.SessionStart | any(.hooks? // [.] | .[]? | .command == $hook.command))
-       then .
-       else .hooks.SessionStart += [{"hooks":[$hook]}]
-       end
+     | (if (.hooks.SessionStart | any(.hooks? // [.] | .[]? | .command == $sync.command))
+        then .
+        else .hooks.SessionStart += [{"hooks":[$sync]}]
+        end)
+     | (if (.hooks.SessionStart | any(.hooks? // [.] | .[]? | .command == $sanity.command))
+        then .
+        else .hooks.SessionStart += [{"hooks":[$sanity]}]
+        end)
    ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
    ```
 
    Report in the step output:
    - whether `permissions` was added, already present, or skipped
    - whether `model: sonnet` was added or already present
-   - whether the SessionStart hook was added or already present
+   - whether the auto-sync SessionStart hook was added or already present
+   - whether the permission-sanity SessionStart hook was added or already present
 
 3. **Grant ai-resources filesystem visibility** — Claude Code sandboxes each project to its own directory by default. Shared skills under `ai-resources/skills/` and symlinks into `ai-resources/.claude/{commands,agents}/` are unreachable until the workspace root is added to `permissions.additionalDirectories` in the project's `.claude/settings.json`. This step performs that grant.
 
