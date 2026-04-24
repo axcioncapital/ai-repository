@@ -407,3 +407,6 @@ Designed and shipped a new command system that diagnoses structural Claude Code 
 ### Open Questions
 
 None. Permission-sweep is ready to run.
+
+## 2026-04-24 — Fix working tree (cleanup pass)
+
