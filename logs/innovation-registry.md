@@ -75,8 +75,8 @@
 | 2026-04-23 | command | .claude/commands/summary.md | triaged:graduate | already canonical in ai-resources — created directly via /create-skill |
 | 2026-04-24 | command | .claude/commands/audit-critical-resources.md | triaged:graduate | — (run `/graduate-resource audit-critical-resources` to move to ai-resources) |
 | 2026-04-24 | agent | .claude/agents/critical-resource-auditor.md | triaged:graduate | — (paired with audit-critical-resources command; graduates together) |
-| 2026-04-24 | agent | .claude/agents/permission-sweep-auditor.md | triaged:graduate | — (run `/graduate-resource permission-sweep-auditor` to move to ai-resources) |
-| 2026-04-24 | command | .claude/commands/permission-sweep.md | triaged:graduate | — (already canonical in ai-resources; run `/graduate-resource permission-sweep` if workspace copy diverges) |
+| 2026-04-24 | agent | .claude/agents/permission-sweep-auditor.md | graduated | ai-resources/.claude/agents/permission-sweep-auditor.md (already canonical — workspace copy is a symlink) |
+| 2026-04-24 | command | .claude/commands/permission-sweep.md | graduated | ai-resources/.claude/commands/permission-sweep.md (already canonical — workspace copy is a symlink) |
 | 2026-04-24 | hook | .claude/hooks/check-permission-sanity.sh | triaged:project-specific | — (workspace-root infrastructure) |
 | 2026-04-24 | hook | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/hooks/model-classifier.sh | triaged:project-specific | — (workspace-level UserPromptSubmit hook; first-prompt model-tier recommendation) |
 | 2026-04-24 | command | .claude/commands/risk-check.md | detected | — |
