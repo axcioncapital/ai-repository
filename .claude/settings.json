@@ -36,6 +36,8 @@
       "Write(inbox/**)",
       "Edit(CLAUDE.md)",
       "Write(CLAUDE.md)",
+      "Bash(*)",
+      "Bash(rm *)",
       "Bash(git add *)",
       "Bash(git add:*)",
       "Bash(git commit *)",
@@ -50,6 +52,9 @@
       "Bash(cp:*)"
     ],
     "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(git push*)",
       "Read(archive/**)",
       "Read(audits/working/**)",
       "Read(logs/*-archive-*.md)",
