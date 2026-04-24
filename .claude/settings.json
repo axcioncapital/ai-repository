@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Edit(.claude/settings.json)",
+      "Write(.claude/settings.json)",
+      "Edit(**/.claude/settings.json)",
+      "Write(**/.claude/settings.json)",
       "Edit",
       "Write",
       "MultiEdit",
