@@ -51,6 +51,10 @@ Run `/usage-analysis` at the end of every substantive session. Output goes to `l
 
 Run `/friday-checkup` each Friday before starting next week's work. Auto-detects tier (weekly / monthly / quarterly), asks which projects are active, runs the tier's audits across `ai-resources/`, workspace root, and named projects, and writes a consolidated review-only report to `ai-resources/audits/friday-checkup-YYYY-MM-DD.md`. Full mechanics: `.claude/commands/friday-checkup.md`.
 
+## Permission Management
+
+Claude Code permission prompts (Edit / Write / Delete) are managed structurally, not reactively. Canonical shapes for all settings layers (user / workspace / ai-resources / project) live in `docs/permission-template.md`. The `/permission-sweep` command diagnoses and remediates drift across all layers in one approved pass; `/new-project` emits the canonical project template for every new project; the `check-permission-sanity.sh` SessionStart hook nudges on drift. Pairs with `/fewer-permission-prompts` (which handles empirical, transcript-driven gaps).
+
 ## General Session Rules
 
 - Do not create files or resources that weren't explicitly requested. Suggest additions in chat instead.
