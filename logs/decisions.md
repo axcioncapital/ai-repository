@@ -261,3 +261,27 @@
 - Rationale: narrow-scope interpretation is conservative and auditable; transitive inclusions risk sweeping in too much for the initial audit. Operator was informed of the exclusions and can extend explicitly.
 
 **Implication:** first run of `/audit-critical-resources` will audit 15 resources. If the critical set grows, the plan's existing `--full-repo-context` flag provides an escape hatch for reverse-reference checks without a manifest edit.
+
+## 2026-04-24 — Model-tier classifier hook design
+
+**Context:** Patrik routinely leaves the session default at Opus (chosen for quality) but forgets to run `/model sonnet` on Sonnet-tier work. The overspend is only noticed at weekly usage review, by which point the tokens are already spent. Asked for the "best overall solution" to this recurring pattern.
+
+**Decision:** Build a `UserPromptSubmit` hook at workspace root that fires once per session on the first free-form (non-slash-command) prompt, injecting a system-reminder that tells Claude to classify the task against the workspace Model Tier rule and recommend `/model sonnet` if clearly Sonnet-tier. Default session model stays Opus; the hook only automates the recommendation, not the switch.
+
+**Rationale:**
+
+- Matches the actual failure mode (forget entirely → notice at weekly review): active interrupt at session start, not passive cue.
+- Preserves the quality default (Opus). Hook defaults to Opus on ambiguity; only recommends downshift on clear Sonnet-tier signals.
+- Uses Claude's own judgment rather than keyword matching (brittle) or static reminder text (operator ignores passive cues).
+- Skips slash commands, so `/prime` and other orientation or work commands with their own `model:` frontmatter don't trigger spurious classifications.
+- Cost: one short classification turn per session on Opus, saves many Opus turns when the work is actually Sonnet-tier.
+
+**Alternatives considered:**
+
+- Flip default to Sonnet and escalate to Opus manually — rejected: operator states quality degrades without Opus default.
+- Static `SessionStart` reminder printing the tier rule — rejected: same failure mode as statusline; operator ignores passive cues.
+- Statusline showing the current model — rejected: passive; operator misses it.
+- Post-hoc usage alerts — rejected: too late; money already spent.
+- Manual slash command at session open (e.g., `/classify`) — rejected: same forget-problem as manual `/model sonnet`.
+
+**Implication:** Marker file at `/tmp/claude-model-classifier/$CLAUDE_SESSION_ID` prevents re-firing within a session. Scope is workspace-level, so the behavior applies uniformly across every Axcíon project.

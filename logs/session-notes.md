@@ -2,6 +2,11 @@
 
 > Archive: [session-notes-archive-2026-04.md](session-notes-archive-2026-04.md)
 
+## 2026-04-24 — Commission v4 Batch 1 — /risk-check command + agent + audit-discipline + workspace CLAUDE.md edit
+
+Plan: `/Users/patrik.lindeberg/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md`
+Scope: Batch 1 only (not Batches 2–5).
+
 ## 2026-04-22 — SC-04 + SC-02 closeout
 
 ### Summary
@@ -420,3 +425,36 @@ QC-driven fixes applied during build (not analytical decisions):
 ### Open Questions
 
 None.
+
+## 2026-04-24 — Model-tier classifier hook at workspace root
+
+### Summary
+
+Designed and built a UserPromptSubmit hook that addresses Patrik's recurring overspend pattern: session default stays on Opus for quality, but Sonnet-tier work (mechanical, factual, orchestration) silently runs on Opus because the downshift is forgotten until weekly usage review. The hook fires once per session on the first free-form (non-slash-command) prompt and injects a system-reminder telling Claude to classify the task against the workspace Model Tier rule and recommend `/model sonnet` when clearly Sonnet-tier. Opus remains the default; only the recommendation is automated. Scope is workspace-level, applying to every Axcíon project.
+
+### Files Created
+
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/hooks/model-classifier.sh` — executable bash hook. Reads stdin JSON via jq for `.prompt` and `.session_id`; skips if prompt begins with `/`; skips if `/tmp/claude-model-classifier/$session_id` marker exists; otherwise creates the marker and emits `hookSpecificOutput.additionalContext` with the classification instruction. Pipe-tested against four scenarios (slash command, first free-form fire, repeat fire, missing payload) — all pass; emitted JSON validates via `jq -e`.
+
+### Files Modified
+
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/settings.json` — added `UserPromptSubmit` hook entry registering the new script alongside existing `SessionStart` / `Stop` / `PreCompact` / `PostCompact` / `SubagentStop` entries. Operator/linter also added three blanket permission entries (`Read(**)`, `Write(**)`, `Edit(**)`) during the session — left intact per the intentional-change system reminder.
+
+### Decisions Made
+
+- **Keep Opus as session default (not flip to Sonnet):** operator stated quality degrades when Sonnet is the default; automated-recommendation approach preferred over blanket downshift.
+- **Active interrupt over passive cue:** operator only notices spend at weekly usage review, so statusline or static SessionStart reminders would be ignored; a hook that injects a system-reminder before work starts is the forcing function.
+- **Claude-based classifier (not keyword-matching, not static text):** keyword-matching is brittle; static reminders become noise; a single short Opus classification turn at session open is cheap relative to the Sonnet savings across the rest of the session.
+- **Skip slash-command prompts in the trigger:** Patrik's typical first prompt is `/prime` (orientation); work commands with their own `model:` frontmatter already override session default. Firing only on free-form prompts lands the recommendation at the right point in the session.
+- **Scope: workspace-level, not project-level:** the hook belongs in workspace-root `.claude/settings.json` so it applies to every Axcíon project equally, not only ai-resources.
+
+### Next Steps
+
+- Open `/hooks` once or restart the CLI next session to pick up the mid-session hook registration — the settings watcher only monitors files that existed at session start.
+- On the next session's first free-form prompt, verify the hook fires and the classification recommendation is sensible. Test with a clearly Sonnet-tier task (e.g., "rename X to Y across these files") to confirm the `/model sonnet` recommendation surfaces.
+- Workspace-root commit `0e4d6af` is local-only (no git remote configured on the workspace-root repo). Operator may want to add a remote for off-machine backup of workspace-level configuration.
+- Unrelated: the workspace-root repo has many untracked files and modifications from prior sessions — consider a separate cleanup pass when convenient.
+
+### Open Questions
+
+None. (Remote-addition decision deferred to operator.)
