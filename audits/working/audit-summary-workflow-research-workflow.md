@@ -1,22 +1,19 @@
-# Section 4 Summary — research-workflow
+# Section 4 Summary — research-workflow (prose sub-pipeline)
 
-**Workflow:** research-workflow (5-stage template: Preparation → Execution → Analysis → Report Production → Final Production)
-**Telemetry label:** Structural inferences only (no session telemetry available).
+**Scope:** produce-architecture, produce-prose-draft, produce-formatting (April 2026 three-command split).
+**Telemetry:** Structural inferences from command text; no session telemetry.
 
-**Total findings:** 20 — HIGH: 10, MEDIUM: 7, LOW: 3
+**Total findings:** 18 (HIGH 7 | MEDIUM 8 | LOW 3). Boundary-tagged: 4.
 
-**Context-loading chain at workflow start (main-session per-turn cost):**
-- CLAUDE.md chain (workspace + ai-resources + workflow): 345 lines / ~5,396 tokens
-- If `@`-referenced stage-instructions/file-conventions/quality-standards/style-guide auto-load: ~11,017 tokens
-- Per-invocation command overhead: 264–4,307 tokens (largest: `produce-prose-draft.md` at 207 lines / 3,313 words)
-- 34 skills loaded into main session across the pipeline (largest: `ai-prose-decontamination` 484 lines / ~8,342 tokens; 4 skills >300 lines)
-- Subagent count per section run: 40+ launches (preparation 6 + execution 7–15 + 3a 12 per 6 clusters + 3b 8+ + synthesis 6 + report 24 for 6 chapters)
+**Top 3:**
+1. HIGH — produce-prose-draft Phase 3 subagent returns unified findings list (chapter-prose-reviewer + prose-compliance-qc 4 scans + 13 prose-quality checks + expanded detection tests) to main session, explicitly preserved across /compact (line 113). Est. 60–200+ lines.
+2. HIGH — Ten SKILL.md files (~29,400 tok total) loaded in main session across the three commands before being passed to subagents. Pattern used for `style-reference.md` and `prose-quality-standards.md` (subagent reads by path) is not applied to skill files.
+3. HIGH — produce-formatting Phase 2 subagent returns full H3 decisions table + formatting change log + MTC pre-scan + SPLIT verdicts. Required by design for Phase 4 operator surfacing; 10–20 headings = 50–200+ lines.
 
-**Top 3 findings:**
-1. `run-report.md` Step 4.0 loads 6 file categories (all chapter drafts, scarcity register, all section directives, all refined cluster memos, all research extracts, editorial recommendations) into main session before any delegation — 30+ files for a 6-cluster project. [HIGH]
-2. Workflow's context-isolation rule ("sub-agents receive content, not file paths" — CLAUDE.md line 53) forces every delegated step to read all inputs into main session first. Systemic driver of Stage 3b/4 token cost. [HIGH]
-3. Subworkflow 3.S (gap-supplementary) and 2.S (supplementary research) steps S.0/S.1/S.3/S.4 run inline in main session and each read 3–5 files — violates protocol "3–4 files → subagent" rule. [HIGH]
+**Other HIGH findings (brief):** produce-formatting Phase 3 two-stage QC return (60–200+ lines); source document re-read 3× in prose-draft main session; prose-draft Phase 4 reads all completed prose sections in main session (6–18k tok); architecture Phase 3 re-reads all section drafts in main session.
 
-Also notable: (a) `run-report.md` Step 4.2a return includes "chapter draft content" → full prose (~1,000–3,000 tokens) returns to main [HIGH]; (b) no custom `/compact` preservation instructions in workflow CLAUDE.md [MEDIUM]; (c) refinement multiplier 12–20+ passes per section [MEDIUM].
+**MEDIUM themes:** command-file size (produce-prose-draft 203 lines / 4,532 tok); inline Tier 1/2/3 + Standards 10–13 detection tests duplicating prose-quality-standards.md; no /clear between commands; @ reference always-load of stage-instructions; findings-list preservation across /compact; 7–9 subagent launches per section end-to-end.
 
-Full evidence in /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/working/audit-working-notes-workflow-research-workflow.md. Main session should read the full notes only if a specific finding needs deeper review.
+**LOW:** architecture.md small re-reads; out-of-scope note on run-execution.md size.
+
+Full evidence in `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/working/audit-working-notes-workflow-research-workflow.md`. Main session should read the full notes only if a specific finding needs deeper review.

@@ -251,3 +251,10 @@
 - **Decisions logged:** 2 (SC-02 deferral rationale; vault settings.json gitignore flag)
 - **QC cycles:** 0 (textual edits only, verified structurally via grep/jq per plan's verification section)
 - **Gates:** 2 (0 changed) — ask-user-question:confirmed (2 clarifying answers on "fix" intent + scope), plan-approval:confirmed (All P0 + P1 scope approved)
+
+### 2026-04-24 — Friday checkup (monthly tier, ai-resources scope)
+- **Commands used:** /prime, /friday-checkup, /audit-repo, /improve, /coach, /token-audit, /wrap-session
+- **Iterations:** 0 (no drafting — audit session)
+- **Decisions logged:** 0
+- **QC cycles:** 0
+- **Gates:** 3 (2 changed) — tier-selection:changed (auto-detected weekly → operator-overrode to monthly), scope-selection:changed (initial 4-scope selection → narrowed to ai-resources after 233-min runtime estimate), runtime-threshold:confirmed (typed `proceed with long run`)

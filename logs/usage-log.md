@@ -2,6 +2,35 @@
 
 <!-- entries below -->
 
+### 2026-04-24 | Acceptable
+
+**Task:** Ran /friday-checkup monthly-tier audit scoped to ai-resources (narrowed from 4 scopes). Executed /audit-repo, /improve, /coach, /token-audit in sequence; produced consolidated checkup report plus 11-section token-audit report.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~15 |
+| Files read | 16 (re-reads: 0) |
+| Files written/edited | 8 |
+| Tool calls | ~60 |
+| Subagents | 6 |
+| Rework cycles | 0 |
+
+**Findings:**
+- /coach subagent returned ~100 lines of full analysis to main session while a compact ~15-line entry was also written to `logs/coaching-log.md` — the full return adds ~4–8k tokens to main-session context for the remainder of the session, duplicating content already archived to disk. (Context bloat, Moderate)
+- /token-audit report built via 1 Write + ~9 sequential Edit calls; protocol-driven design (incremental appends for interruption safety), but each Edit re-pays the file-write tool overhead. (Tool overhead, Minor)
+- `audits/token-audit-protocol.md` read in full at 633 lines (~8.2k tokens) — single read, protocol-mandated as session-resident, so not avoidable under current design but dominates read-side cost. (Context bloat, Minor)
+- Sections 2 and 6 of /token-audit correctly launched in parallel; Section 4 ran sequentially after. No dependency was documented between Section 4 and the others. (Missed parallelization, Minor)
+- Stable relative to last 3 entries (Acceptable / Efficient / Wasteful / Acceptable) — no regression; same moderate-bloat pattern as 2026-04-22.
+
+**Recommendation:** Update /coach skill so the coaching subagent writes its full analysis to disk (e.g., `logs/coaching-analysis-{date}.md`) and returns only the ~15-line compact entry to the main session, mirroring the token-audit subagent output-to-disk contract.
+
+**Estimated savings:** ~4–8k tokens per /coach invocation (the ~100-line full return no longer lands in main context). Derivation: ~100 lines × ~60 tokens/line ≈ 6k tokens eliminated from downstream turns in the same session. Over a 10–20 session horizon with /coach running in each Friday checkup plus ad-hoc use (~8–15 invocations), projected savings ~50–120k tokens.
+
+**Additional levers (ROI-ranked):**
+- Launch /token-audit Section 4 in parallel with Sections 2 and 6 (all three are independent mechanical/research audits) — saves one sequential subagent round-trip, ~2–5k tokens of orchestration overhead per /token-audit run.
+- Batch the /token-audit report construction: reduce the 1 Write + ~9 Edit pattern to 1 Write + 2–3 Edits by grouping sections written together (e.g., Sections 1–3 as one Edit, 4–7 as another). Saves ~6–9 tool-call round-trips per audit; minor per-session but compounds monthly.
+- Consider whether `audits/token-audit-protocol.md` (633 lines) can be split into a short "session-resident" core (~150 lines of rules actually needed in-context) plus a reference appendix loaded only when a specific section needs it. Largest single read of the session; ~5–6k tokens recoverable per /token-audit run if split.
+
 ### 2026-04-22 | Acceptable
 
 **Task:** Implemented 6 of 7 P0+P1 improvements from the 2026-04-21 setup-improvement-scan across three nested git repos, with one deferral (SC-02, unverifiable baseline) and one mid-execution adaptation (1→3 commits after nested-repo discovery).

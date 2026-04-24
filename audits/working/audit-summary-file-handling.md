@@ -1,23 +1,26 @@
-# Section 6 File Handling — Summary
+# Section 6 — File Handling Patterns — Summary
 
-**Total findings:** 7
+**Audit date:** 2026-04-24  
+**Total findings:** 6
 
 **By severity:**
-- HIGH: 1
-- MEDIUM: 5
-- LOW: 1
+- HIGH: 0
+- MEDIUM: 4
+- LOW: 2
 
-**Top findings:**
-1. HIGH — No `Read(...)` deny rules exist anywhere in AUDIT_ROOT settings (verdict re-used from Step 0.3). Claude Code may freely read all archival/log/output content during any session.
-2. MEDIUM — `audits/` contains 9 archival files totaling ~3,730 lines / 36,650 words (3 prior DD reports alone = 2,372 L / 17,908 W) in an uncovered directory.
-3. MEDIUM — `logs/` contains `session-notes.md` (800 L / 9,304 W — largest single file in repo) plus `decisions.md` (5,461 W) in an uncovered directory.
+**Top 3 findings:**
+1. MEDIUM — `Read(pattern)` deny-rule coverage incomplete. Only 1 of 8 expected directories covered (`archive/`); missing coverage for `audits/`, `logs/`, `reports/`, `inbox/`, `drafts/`, and glob patterns.
+2. MEDIUM — `audits/` directory contains 13 large files (9 prior reports + 4 working notes) totaling ~8,000+ lines / 76,000+ estimated tokens, unprotected. Single Glob/Grep could load ~100,000 tokens.
+3. MEDIUM — `logs/session-notes.md` (437 lines / 5,362 words / 6,970 est. tokens) is largest single file in repo; stored in unprotected `logs/` directory alongside archive-marked files and decision logs.
 
-**Other MEDIUM findings:** `inbox/` (3 briefs, 4,320 W), `reports/repo-health-report.md` (1,340 W), `audits/working/` in-progress notes (this audit itself contributes ~3,256 W). All in uncovered directories.
+**Other MEDIUM findings:** `audits/working/` (in-progress audit notes), `reports/` (generated output), `logs/` (session archives).
 
-**LOW finding:** 3 coexisting repo-due-diligence reports (04-06, 04-11, 04-12) with implicit date-succession but no explicit deprecation.
+**LOW findings:** Archive-marked files at root of `logs/` despite archive naming convention; superseded repo-due-diligence versions (04-06, 04-11, 04-12) coexist without explicit deprecation.
 
-**No explicit deprecated/draft/tmp/archive folders or filename markers found** (one `produce-prose-draft.md` matched on "draft" substring but is an active command).
+**No deprecated/draft directories found.** Archive-named files exist in unprotected directories but naming is clear.
 
-**Boundary findings:** None. HIGH and LOW are categorical. MEDIUM findings are per-directory, not threshold-proximate.
+**Confidence:** HIGH (all measurements direct; based on file-size inspection, deny-rule inspection via jq, filename analysis).
 
-Full evidence in /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/working/audit-working-notes-file-handling.md. Main session should read the full notes only if a specific finding needs deeper review.
+**Boundary findings:** None.
+
+Full evidence in `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/working/audit-working-notes-file-handling.md`. Main session should read the full notes only if a specific finding needs deeper review.

@@ -1,28 +1,35 @@
-# Section 2 — Skill Census Summary
+---
+section: 2
+audit_date: 2026-04-24
+protocol_version: 1.2
+---
 
-**Total skills (SKILL.md files):** 69 (67 unique; 2 duplicated in workflows/research-workflow/reference/skills/)
-**Total lines:** 14,171 · **Total words:** 120,956 · **Est. tokens:** ~157,243
+# Section 2 Summary: Skill Census
 
-## Findings by severity
-- HIGH: 8 (skills over 300 lines)
-- MEDIUM: 36 (skills 150–300 lines; 7 are boundary cases ±15% of 300 threshold)
-- LOW: 1 (duplicate skill files — D1)
-- Missing frontmatter: 0
-- Vague descriptions: 0
-- Dead skills (per protocol): 0
+**Total skills:** 69 (67 canonical + 2 workflow-reference copies)
+**Total lines:** 14,334 | **Total words:** 126,050 | **Est. tokens:** ~164,000
 
-## Size distribution
-- <50 lines: 0 · 50–150 lines: 25 · 150–300 lines: 35 · >300 lines: 9 (includes 1 boundary at exactly 300)
+## Findings Count
 
-## Top 3 findings
-1. HIGH — 8 skills exceed 300 lines (largest: ai-prose-decontamination.md 484L/6,417 words ≈ 8,342 tokens; answer-spec-generator 485L; research-plan-creator 464L; ai-resource-builder 463L)
-2. MEDIUM — 36 skills in the 150–300 line MEDIUM band; 7 within ±15% of the HIGH threshold (boundary findings)
-3. LOW — 2 pairs of duplicate SKILL.md files at `/skills/` and `/workflows/research-workflow/reference/skills/` (knowledge-file-producer, report-compliance-qc)
+- **HIGH:** 6 (skills >300 lines)
+- **MEDIUM:** 1 (multi-mode bloat + high word density)
+- **LOW:** 2 (vague descriptions, file duplicates)
+- **Boundary findings:** 4 (within ±15% of 300-line threshold)
 
-## Notable non-findings
-- All 69 files have valid frontmatter (name + description)
-- All descriptions include activation triggers and "Do NOT use for" exclusions — no vague descriptions
-- No skills carry folder-level deprecation markers; 15 skills have 0 inbound references but none qualifies as "dead" per protocol
-- All adjacent-skill pairs (e.g., workflow-creator/documenter/consultant; prose-compliance-qc/report-compliance-qc) are already explicitly demarcated
+## Top 3 Findings
 
-Full evidence in /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/working/audit-working-notes-skills.md. Main session should read the full notes only if a specific finding needs deeper review.
+1. **Six oversized skills (HIGH):** `answer-spec-generator` (485L), `research-plan-creator` (464L), `ai-resource-builder` (401L), `evidence-to-report-writer` (332L), `workflow-evaluator` (316L), `ai-prose-decontamination` (314L). Combined ~19,000 estimated tokens.
+
+2. **Multi-mode skills load unused content (MEDIUM):** `ai-resource-builder` (3 modes) and `answer-spec-generator` (5 modes) combine independent workflows into single files. Splitting would save 1,500–2,000 tokens/session.
+
+3. **Workflow reference copies duplicate canonical skills (LOW):** `knowledge-file-producer` and `report-compliance-qc` exist in both `skills/` and `workflows/research-workflow/reference/skills/`. Intentional (workflow self-containment) but creates maintenance risk.
+
+## Quality Metrics
+
+- Frontmatter complete: 100% (all 69 skills)
+- Descriptions trigger-rich: 97% (67 of 69)
+- Dead skills: 0
+- Semantic redundancy: 0
+- Size distribution: 0% (<50L) | 35% (50–150L) | 57% (150–300L) | 9% (>300L)
+
+Full evidence in `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/ai-resources/audits/working/audit-working-notes-skills.md`.

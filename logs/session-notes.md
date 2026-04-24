@@ -435,3 +435,43 @@ Pipeline ran cleanly: plan mode with QC loop (REVISE → fixes → APPROVE) → 
 ### Open Questions
 
 - None.
+
+## 2026-04-24 — Friday checkup (monthly tier, ai-resources scope)
+
+### Summary
+
+Ran `/friday-checkup` with operator-override to monthly tier, then narrowed scope from the initial 4-scope selection (ai-resources + workspace + obsidian-pe-kb + project-planning) to ai-resources only after the 233-min runtime estimate surfaced. Completed all auto-run checks inside the ai-resources scope: `/audit-repo`, `/improve`, `/coach`, `/token-audit`. `/audit-claude-md` was spec-skipped because it only runs on ai-resources when workspace scope is also selected. Consolidated findings into a single review-only report. Surfaced a spec gap in `/audit-claude-md` coverage.
+
+### Files Created
+
+- `audits/friday-checkup-2026-04-24.md` — consolidated review-only report (7 prioritized findings across HIGH/MEDIUM/LOW, per-scope summary, 6 operator follow-ups)
+- `audits/repo-health-ai-resources-2026-04-24.md` — cadence snapshot of /audit-repo output
+- `audits/token-audit-2026-04-24-ai-resources.md` — 11-section token audit report (351 lines)
+- `audits/working/audit-working-notes-skills.md` + `audit-summary-skills.md` — Section 2 subagent outputs (69 skills audited)
+- `audits/working/audit-working-notes-file-handling.md` + `audit-summary-file-handling.md` — Section 6 subagent outputs
+- `audits/working/audit-working-notes-workflow-research-workflow.md` + `audit-summary-workflow-research-workflow.md` — Section 4 subagent outputs
+- `reports/repo-health-report-2026-04-06.md` — prior canonical report auto-archived by /audit-repo
+
+### Files Modified
+
+- `reports/repo-health-report.md` — updated by /audit-repo (Overall GREEN, 0 Critical / 0 Important / 11 Minor)
+- `audits/working/audit-working-notes-preflight.md` — overwritten for 2026-04-24 (was 2026-04-18)
+- `logs/coaching-log.md` — first baseline coaching entry appended
+
+### Decisions Made
+
+- **Tier override to monthly** (auto-detected was weekly; today is Friday day-24, outside monthly's first-week window). Routine operator direction.
+- **Scope narrowed to ai-resources only** after 233-min runtime estimate for the original 4-scope plan. 51-min estimate accepted via `proceed with long run` gate.
+- No analytical decisions logged to `decisions.md` this session — all calls were operational.
+
+### Next Steps
+
+- Push: today's commits (this wrap + any follow-on work).
+- Review the consolidated `audits/friday-checkup-2026-04-24.md`; pick HIGH items to act on first. Highest-ROI quick win: token-audit H2 (expand `Read(pattern)` deny rules in `ai-resources/.claude/settings.json`).
+- Follow up on `/audit-claude-md` spec gap: the monthly branch currently skips ai-resources when workspace isn't also selected. Consider revising so ai-resources-only runs still audit the ai-resources CLAUDE.md directly.
+- Optional: run `/cleanup-worktree` once the audit session's own files are reviewed/committed.
+- Carryover next-steps from 2026-04-23: push `/summary` skill commits (`9f62fe6`, `7463f44`); first real test of `/summary` on an actual long document.
+
+### Open Questions
+
+- None.
