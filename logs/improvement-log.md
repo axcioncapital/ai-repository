@@ -1,5 +1,20 @@
 # Improvement Log
 
+## Schema
+
+Each entry is a `### YYYY-MM-DD — {title}` block. Fields:
+
+- **Status:** `logged` | `proposed` | `pending` | `applied YYYY-MM-DD`
+- **Verified:** present when Status is `applied` and the operator has confirmed the fix is live. Both `Status: applied` AND `Verified:` are required for `/resolve-improvements` to classify an entry as resolved.
+- **Age:** auto-computed from the header date by `/resolve-improvements`; surfaced when > 6 weeks without resolution.
+- **Review-cycle:** for items not yet resolved — records the last review date and disposition (e.g., `reviewed 2026-04-24, deferred to next quarterly`).
+- **Category:** broad classification (e.g., `Audit-recurrence prevention`, `command/skill`).
+- **Proposal:** the proposed change.
+- **Target files:** files to be edited when executed.
+
+Resolved entries (Status: applied + Verified) are archived to `improvement-log-archive.md` via `/resolve-improvements`.
+
+---
 
 - **Status:** applied 2026-04-18 (Prevention Session 2)
 - **Verified:** 2026-04-18 — confirmed by operator

@@ -18,6 +18,34 @@ Archive resolved entries from `ai-resources/logs/improvement-log.md` so stale it
    - **Resolved** — the entry contains both a line starting `**Status:** applied` AND a line starting `**Verified:**`.
    - **Pending** — anything else (missing Status, Status is "logged"/"proposed"/"pending", or "applied" without a Verified line).
 
+3b. **Identify and surface stale-pending entries.** From the Pending set, flag any entry whose `### YYYY-MM-DD` header date is > 6 weeks ago (42 days; configurable by operator instruction at invocation). Compute age: extract the date from the `### ` header line, then `python3 -c "from datetime import date; print((date.today() - date.fromisoformat('ENTRY_DATE')).days)"`. Call this set `STALE_PENDING`.
+
+   - Skip age-checking for entries with no parseable `### YYYY-MM-DD` header; count them as Pending only.
+   - Entries with a `**Review-cycle:**` line are still flagged if the header date is > 42 days — include the Review-cycle value in the display so the operator sees the prior disposition.
+
+   If `STALE_PENDING` is empty, proceed silently to step 4.
+
+   If non-empty, display:
+   ```
+   {N} stale-pending entries (>42 days without resolution):
+     1. {date} — {title} — {age} days{  ·  last review: {Review-cycle value} if present}
+     2. …
+
+   Disposition each (one letter per item, in order):
+     (r)eview-cycle — update Review-cycle field with new text (prompts for text)
+     (e)scalate     — mark active; sets Status: pending (escalated YYYY-MM-DD)
+     (c)lose        — mark closed; sets Status: closed YYYY-MM-DD (stays in active log)
+     (k)eep         — no change
+   ```
+
+   Wait for the operator's per-item disposition string (characters `{r,e,c,k}`). Re-prompt on mismatch.
+
+   Apply dispositions via `Edit` against the active improvement-log before proceeding to step 4:
+   - `r` → prompt `New Review-cycle text for "{title}" (e.g., "reviewed 2026-04-25, defer to Q3"):` and set/update the `**Review-cycle:**` line in the entry.
+   - `e` → set `**Status:** pending (escalated {TODAY})`.
+   - `c` → set `**Status:** closed {TODAY}`.
+   - `k` → no edit.
+
 4. **Present resolved entries.** If zero resolved entries exist, tell the operator "No resolved entries to archive. Active log has N pending entries." and stop.
 
    Otherwise, show a numbered list: date and one-line title only, one entry per line. Then ask exactly:
@@ -56,6 +84,7 @@ Archive resolved entries from `ai-resources/logs/improvement-log.md` so stale it
    ```
    Moved N entries to improvement-log-archive.md.
    Active improvement-log: M pending entries remaining.
+   Stale-pending surfaced: {S} entries ({D} dispositioned, {K} kept as-is). [Omit line if STALE_PENDING was empty.]
    [If orphaned content: Skipped K orphaned lines (no `### ` header) — left in place.]
    ```
 
