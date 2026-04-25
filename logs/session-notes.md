@@ -2,123 +2,50 @@
 
 > Archive: [session-notes-archive-2026-04.md](session-notes-archive-2026-04.md)
 
-## 2026-04-24 — Repo maintenance cadence — commission v4 review + 5-batch plan
+## 2026-04-25 — Commission Batch 5 (partial): docs/repo-architecture.md drafted; /route-change deferred
 
 ### Summary
 
-Reviewed operator-supplied v4 commission for a "durable weekly Friday repo maintenance cadence." Core finding: the commission substantially underestimates existing repo infrastructure (`/friday-checkup`, reminder hook, `improvement-log.md`, `/triage`, `/coach`, `audit-discipline.md`, symlink policy) — faithful implementation would create parallel structures. Pared the commission to eight genuine gaps and drafted a 5-batch implementation plan sequenced per the commission's own risk-analysis-first constraint. Plan ran through /qc-pass → /triage (7 Do + 3 parked items applied) → post-edit /qc-pass (GO with minor findings) → inline fixes before approval.
+Opened to execute the final commission batch (Stage 1 repo architecture: `docs/repo-architecture.md` + `/route-change` command). Drafted the architecture map (top-level layout, canonical homes by artifact type, symlink topology, cross-repo coupling points, Q1–Q8 placement heuristics). Stopped before drafting `/route-change` after diagnosing a context-window issue: workspace `settings.local.json` declares `"claude-sonnet-4-6"` (bare identifier, no `[1m]` suffix), which silently downgrades the session to 200k context. Operator chose to wrap and restart in a fresh 1M-context session rather than risk auto-compact mid-batch. Architecture doc remains in the working tree (untracked) for next session to bundle with `/route-change` in a single Batch 5 commit per the plan's "one commit per batch" discipline.
 
 ### Files Created
 
-- `/Users/patrik.lindeberg/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md` — approved implementation plan (outside repo; input for future execution sessions). Contains Part A critique, 5-batch build plan, Critical Files list, 10 flagged assumptions, 5 Decision Gates, Verification per batch, Skipping list, Handoff notes for fresh sessions.
+- `ai-resources/docs/repo-architecture.md` — Stage 1 repo architecture map. Sections: top-level layout (workspace / ai-resources / projects), canonical homes by artifact type (skills, commands, agents, hooks, docs, logs, prompts, audits, plans, CLAUDE.md layers), symlink topology (auto-sync rules + exclusions), cross-repo coupling points, Q1–Q8 placement heuristics (artifact type → home → spawn shape → log routing → /risk-check trigger), maintenance trigger list, related canonical sources. Hand-maintained; reviewed at quarterly checkup. **Deferred from this wrap commit — must land with `/route-change` in the Batch 5 commit next session.**
 
 ### Files Modified
 
-- None in repo. Planning-only session — plan file lives at `~/.claude/plans/`, outside the repo.
+- `logs/session-notes.md` — this entry.
 
 ### Decisions Made
 
-Strategic / scoping (material):
-- **Commission ≠ set plan.** Treated commission as intent; cut parallel-structure asks; reused existing infrastructure aggressively.
-- **Merge original Batches 2 + 3** (`/friday-act` + tier-differentiated output) due to shared data contract. Plan now has 5 batches, not 6.
-- **Seven autonomy axes → `/friday-act` output, not coaching-log.** Commission's axes are forward-looking weekly targets; coaching-log is backward-looking session ratings. Different purpose — kept separate.
-- **Freshness derived from `audits/friday-checkup-*.md` listing, not a parallel stamp file.** Single source of truth; applies plan's own "don't parallel existing infrastructure" argument.
+Plan-level (resolved with recommended defaults per autonomy memory):
+- **Assumption 7** — `/route-change` non-mutating, not auto-wired into `/create-skill`. Default accepted.
+- **Assumption 2** — symlink policy treated as already satisfied (existing `auto-sync-shared.sh` covers tier-1/tier-2 placement). No drift-detection requested.
+- **Decision Gate 5** — `/route-change` auto-wiring into `/create-skill` = OFF until proven useful.
 
-Design (architectural):
-- **`/risk-check` as new slash command** (not hook, not `/triage` extension). Operator-invoked manually or inline-invoked by other commands; no auto-invocation hook.
-- **Stage 1 repo architecture = static `docs/repo-architecture.md` + `/route-change` command** (not an agent, not auto-wired into `/create-skill`).
-- **`/route-change` auto-wire into `/create-skill` = OFF until proven useful** (preserves existing pipeline; change only if Batches 1–4 show misplaced resources).
-
-Process:
-- **QC → triage auto-loop applied fully.** First QC returned REVISE with 6 findings; triage returned 7 Do / 9 Park; operator directed "proceed per triage + add parked 2/3/6"; post-edit QC returned GO with minor findings; operator chose option (b) inline fixes; plan approved post-handoff-notes.
-- **Commit discipline: one commit per batch, 5 commits total.** Each internally coherent, independently revertible.
+Session-management:
+- **Stop Batch 5 mid-execution.** Context window showing "almost full" — diagnosed bare `claude-sonnet-4-6` identifier in workspace `settings.local.json` causing silent 200k downgrade. Cleaner to wrap and restart with 1M context than risk auto-compact mid-batch. Pre-compact-checkpoint pattern: this session note + the existing plan file are the resumption scratchpad.
+- **Defer `repo-architecture.md` from this wrap commit.** Bundle with `/route-change` in a single Batch 5 commit next session, preserving the plan's "one commit per batch" discipline (Assumption 10).
 
 ### Next Steps
 
-- **Open fresh session to execute Batch 1** (`/risk-check` + `risk-check-reviewer` agent + `docs/audit-discipline.md` edit + workspace `CLAUDE.md` edit). Full session on its own — new command + new agent + decision gate for top-3-commands-affected analysis before landing CLAUDE.md edit.
-- **Session opening ritual:** `/prime` → read plan file → confirm Batch 1 assumption sign-offs (assumptions 1, 3, 4, 9) → begin deliverables.
-- **Pacing:** plan's Handoff notes specify don't attempt more than 2 batches per session. Batch 1 alone is a full session; Batches 2 and 5 are comparable.
-- **Dogfood ordering:** `/risk-check` doesn't exist during Batch 1 — can't self-invoke. Real dogfood starts Batch 2.
+**Before next session:**
+- **Fix workspace `settings.local.json`**: change `"model": "claude-sonnet-4-6"` → `"model": "claude-sonnet-4-6[1m]"`. Bare identifier silently downgrades to 200k. (Memory entry `feedback_sonnet_1m_suffix.md` documents this.)
+
+**Next session (resume Batch 5):**
+1. `/prime` to orient (will surface this entry as last session).
+2. Confirm `ai-resources/docs/repo-architecture.md` is still in the working tree (untracked, not committed).
+3. Draft `ai-resources/.claude/commands/route-change.md` — non-mutating routing advisor. Inputs: free-text change description via `$ARGUMENTS`. Reads `docs/repo-architecture.md` + relevant CLAUDE.md files. Outputs: canonical home + specific files/sections to touch + pipeline pointer (`/create-skill` etc.) + `/risk-check` recommendation if structural class. Main session, no subagent (lightweight). Sonnet tier (bounded mapping task).
+4. Post-edit QC subagent (`qc-reviewer`) on both files; apply triage if findings.
+5. Synthetic-brief verification: invoke `/route-change` with "I want to add a skill that does X" → verify recommendation cites `docs/repo-architecture.md` sections.
+6. End-time `/risk-check` on the executed change set (new command + new docs file qualify).
+7. Single commit: `new: Stage 1 repo architecture — docs/repo-architecture.md + /route-change`.
+
+**Plan reference:** `~/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md` lines 146–160 (Batch 5 deliverables) and lines 222–226 (verification).
 
 ### Open Questions
 
-- None. Plan explicitly flags 10 assumptions and 5 decision gates for operator sign-off at batch opening; those are expected prompts, not blockers.
-
-## 2026-04-24 — Built /audit-critical-resources command + subagent
-
-### Summary
-
-Developed a new slash command `/audit-critical-resources` and its `critical-resource-auditor` subagent from a context pack the operator provided. The command audits user-nominated resources (skills, commands, agents, CLAUDE.md) across seven quality dimensions — brokenness, currency vs. Anthropic docs, architectural fit, token/efficiency, guardrail integrity, cross-resource consistency, epistemic hygiene — and produces a fix-session-ready markdown report. Went through plan mode with two QC/triage cycles on the plan, then post-build QC/triage on the built files. Operator then designated 12 commands and 3 directly-referenced skills as the initial critical set; populated the manifest accordingly.
-
-### Files Created
-
-- `.claude/commands/audit-critical-resources.md` — orchestrator command; manifest-driven with args override, `--dry-run` and `--full-repo-context` flags, 10-step procedure from preflight through commit
-- `.claude/agents/critical-resource-auditor.md` — Opus subagent; audits one resource across all 7 dimensions; writes full findings to working-notes with Synthesis Input Block for main-session cross-resource pass; returns ≤30-line summary ending with `WORKING_NOTES: <path>` marker
-- `audits/critical-resources-manifest.md` — initial designation: 12 commands (`/prime`, `/wrap-session`, `/create-skill`, `/improve-skill`, `/friday-checkup`, `/friction-log`, `/qc-pass`, `/refinement-pass`, `/cleanup-worktree`, `/repo-dd`, `/new-project`, `/token-audit`) + 3 skills (`session-usage-analyzer`, `ai-resource-builder`, `worktree-cleanup-investigator`)
-- `~/.claude/plans/let-s-develop-this-nifty-pillow.md` — plan file (outside repo; Claude Code plan-mode artifact)
-
-### Files Modified
-
-None in the repo this session — all outputs were new files.
-
-### Decisions Made
-
-On the command's design (operator-confirmed via AskUserQuestion at planning):
-- Input format: manifest file + args override (over inline-only or registry-scan)
-- Overlap policy: run all 7 dimensions independently — self-contained report; does not delegate to `/token-audit`, `/audit-claude-md`, or `/repo-dd` for overlapping dimensions
-- Parallelism: one subagent per resource, parallel across resources; cross-resource synthesis runs in main session reading each working-notes file's `## Synthesis Input Block`
-
-On the critical set:
-- "Associated skills" scoped to skills the commands reference directly by path (3 skills). Subagents spawned by critical commands and invoked sibling commands were explicitly NOT included — operator can extend later if desired.
-
-QC-driven fixes applied during build (not analytical decisions):
-- Plan cycle 1: URL-provenance disambiguation, cross-resource synthesis input contract (Synthesis Input Block schema), Step 5 staging-path enumeration, manifest parse rules
-- Plan cycle 2: semantic URL re-verification at build-time, `WORKING_NOTES: <path>` last-line marker on subagent summary
-- Post-build: Step 6 YAML-block wording, slug-algorithm trailing-dash fix, subagent meta-comment stripping instruction
-
-### Next Steps
-
-- Push two unpushed commits on `main`: `07b367f` (command+subagent) and `b18dccc` (manifest)
-- Verify manifest parses with `/audit-critical-resources --dry-run` before the first real audit
-- Run the first audit: `/audit-critical-resources` (no args) — generates baseline report at `audits/audit-critical-resources-2026-04-24.md`
-- Consider whether to extend the critical set to include: subagents spawned by critical commands (e.g., `qc-reviewer`, `repo-dd-auditor`, `token-audit-auditor`, `claude-md-auditor`), and commands that critical commands invoke (e.g., `/audit-repo`, `/improve`, `/coach` invoked by `/friday-checkup`)
-
-### Open Questions
-
-None.
-
-## 2026-04-24 — Model-tier classifier hook at workspace root
-
-### Summary
-
-Designed and built a UserPromptSubmit hook that addresses Patrik's recurring overspend pattern: session default stays on Opus for quality, but Sonnet-tier work (mechanical, factual, orchestration) silently runs on Opus because the downshift is forgotten until weekly usage review. The hook fires once per session on the first free-form (non-slash-command) prompt and injects a system-reminder telling Claude to classify the task against the workspace Model Tier rule and recommend `/model sonnet` when clearly Sonnet-tier. Opus remains the default; only the recommendation is automated. Scope is workspace-level, applying to every Axcíon project.
-
-### Files Created
-
-- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/hooks/model-classifier.sh` — executable bash hook. Reads stdin JSON via jq for `.prompt` and `.session_id`; skips if prompt begins with `/`; skips if `/tmp/claude-model-classifier/$session_id` marker exists; otherwise creates the marker and emits `hookSpecificOutput.additionalContext` with the classification instruction. Pipe-tested against four scenarios (slash command, first free-form fire, repeat fire, missing payload) — all pass; emitted JSON validates via `jq -e`.
-
-### Files Modified
-
-- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/settings.json` — added `UserPromptSubmit` hook entry registering the new script alongside existing `SessionStart` / `Stop` / `PreCompact` / `PostCompact` / `SubagentStop` entries. Operator/linter also added three blanket permission entries (`Read(**)`, `Write(**)`, `Edit(**)`) during the session — left intact per the intentional-change system reminder.
-
-### Decisions Made
-
-- **Keep Opus as session default (not flip to Sonnet):** operator stated quality degrades when Sonnet is the default; automated-recommendation approach preferred over blanket downshift.
-- **Active interrupt over passive cue:** operator only notices spend at weekly usage review, so statusline or static SessionStart reminders would be ignored; a hook that injects a system-reminder before work starts is the forcing function.
-- **Claude-based classifier (not keyword-matching, not static text):** keyword-matching is brittle; static reminders become noise; a single short Opus classification turn at session open is cheap relative to the Sonnet savings across the rest of the session.
-- **Skip slash-command prompts in the trigger:** Patrik's typical first prompt is `/prime` (orientation); work commands with their own `model:` frontmatter already override session default. Firing only on free-form prompts lands the recommendation at the right point in the session.
-- **Scope: workspace-level, not project-level:** the hook belongs in workspace-root `.claude/settings.json` so it applies to every Axcíon project equally, not only ai-resources.
-
-### Next Steps
-
-- Open `/hooks` once or restart the CLI next session to pick up the mid-session hook registration — the settings watcher only monitors files that existed at session start.
-- On the next session's first free-form prompt, verify the hook fires and the classification recommendation is sensible. Test with a clearly Sonnet-tier task (e.g., "rename X to Y across these files") to confirm the `/model sonnet` recommendation surfaces.
-- Workspace-root commit `0e4d6af` is local-only (no git remote configured on the workspace-root repo). Operator may want to add a remote for off-machine backup of workspace-level configuration.
-- Unrelated: the workspace-root repo has many untracked files and modifications from prior sessions — consider a separate cleanup pass when convenient.
-
-### Open Questions
-
-None. (Remote-addition decision deferred to operator.)
+- **WIP — `ai-resources/docs/repo-architecture.md` deferred from this commit (untracked in working tree).** Must be staged with `/route-change` in next session's Batch 5 commit. If next session inadvertently re-creates it from scratch, the existing draft is the better starting point — review before overwriting.
 
 ## 2026-04-24 — Built /permission-sweep durable permission-prompt audit + remediation
 
@@ -465,3 +392,37 @@ Implemented a complete per-project model routing architecture across 6 git repos
 ### Open Questions
 
 None.
+
+## 2026-04-25 — Applied per-project model routing (settings.local.json + workspace fallback)
+
+### Summary
+
+Followed up the prior session's per-project model routing implementation by applying it on disk. Created four per-project `settings.local.json` files (gitignored, per-machine) declaring each project's default model — `claude-opus-4-7` for project-planning; `claude-sonnet-4-6[1m]` for global-macro-analysis, nordic-pe-landscape-mapping-4-26, obsidian-pe-kb. Added `"model": "sonnet[1m]"` to workspace-root `.claude/settings.json` so the workspace fallback is declared rather than implicit. Tracked workspace-root file change is in the parent `Axcion AI Repo` git tree (separate from the ai-resources repo this session is running in), which is currently very dirty — flagged for operator disposition rather than auto-committing across an unrelated dirt zone.
+
+### Files Created
+
+- `projects/project-planning/.claude/settings.local.json` — Opus default (`claude-opus-4-7`); gitignored
+- `projects/global-macro-analysis/.claude/settings.local.json` — Sonnet 1M default (`claude-sonnet-4-6[1m]`); gitignored
+- `projects/nordic-pe-landscape-mapping-4-26/.claude/settings.local.json` — Sonnet 1M default; gitignored
+- `projects/obsidian-pe-kb/.claude/settings.local.json` — Sonnet 1M default; gitignored
+
+### Files Modified
+
+- `Axcion AI Repo/.claude/settings.json` (parent workspace, NOT ai-resources) — added `"model": "sonnet[1m]"` at top of root object; declares the workspace fallback explicitly
+- `logs/session-notes-archive-2026-04.md` — auto-archive triggered during /wrap-session (4 entries archived from session-notes.md, 10 kept)
+- `logs/improvement-log.md` — appended new entry: `2026-04-25 — Make /wrap-session leaner` (5-point proposal, derived from this wrap's mid-flight friction)
+
+### Decisions Made
+
+- **Workspace-root commit deferred to operator.** The tracked `.claude/settings.json` edit lives in the parent `Axcion AI Repo` git tree, not the ai-resources subrepo. The parent tree is currently very dirty (many untracked dirs including `ai-resources/`, `projects/`, `workflows/`). Did not auto-commit per the single-repo dirt-check rule (`feedback_dirt_check_scope.md`); presented the commit as an operator-directed step instead.
+- **Verified gitignore coverage before writing.** Confirmed all four `settings.local.json` paths match either the global gitignore (`/Users/patrik.lindeberg/.config/git/ignore` line 1: `**/.claude/settings.local.json`) or the project's own `.gitignore` (nordic-pe-landscape-mapping-4-26). No accidental tracking risk.
+
+### Next Steps
+
+- Operator to decide whether to commit the parent-workspace `.claude/settings.json` change in isolation (`git add` with explicit path enumeration) or batch it with a parent-workspace cleanup later.
+- Smoke test the routing: open a fresh session in `projects/project-planning/` (expect Opus 4.7), and one in any of the three Sonnet 1M projects (expect Sonnet 1M); confirm the harness picks up the per-project default before any prompt.
+- No follow-up work needed on the ai-resources side — the canonical routing doc, classifier hook, and frontmatter coverage already shipped on 6d879f8 / fd3523e.
+
+### Open Questions
+
+- WIP: `ai-resources/docs/repo-architecture.md` (deferred 2026-04-25; not produced this session). Already documented as Batch 5 deferral in the 2026-04-25 Commission Batch 5 (partial) entry above — must land with `/route-change` in next session's Batch 5 commit. No action needed from this session.

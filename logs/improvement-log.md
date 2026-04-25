@@ -51,3 +51,18 @@ Suggested three-session sequence:
 - **Proposed change:** one-off inventory session, or a new `/validate-hooks` command (or `hook-validator` skill) that: (a) enumerates each hook by path and declared trigger (SessionStart / PreToolUse / PostToolUse / Stop / pre-commit); (b) checks whether it is actually wired via the nearest `settings.json`; (c) in a test session, triggers each hook type and confirms it fires. Priority order: high-value hooks first — SessionStart context loader, `auto-sync-shared.sh`, `check-heavy-tool.sh`, pre-commit `skill-size`.
 - **Deferred reason:** scope estimated ~1 hour; no active friction driving urgency. Better handled as a dedicated maintenance session than bundled into a scan-fix session.
 - **Target files (when executed):** potentially new — `ai-resources/.claude/commands/validate-hooks.md` or `ai-resources/skills/hook-validator/SKILL.md`.
+
+### 2026-04-25 — Make /wrap-session leaner
+
+- **Status:** logged (pending)
+- **Category:** command/skill
+- **Source:** Mid-wrap conversation 2026-04-25 — operator asked why /wrap-session was taking so long. Audit of the wrap's actual tool-call count surfaced ~3-4 round-trips of avoidable cost.
+- **Friction observation:** A typical /wrap-session reads 3 full log files (innovation-registry, improvement-log, friction-log) when single greps would do, and runs the archive AFTER appending today's entry, which forces a freshness-failure re-read of session-notes.md when the archive trims it.
+- **Proposal:**
+  1. **Replace full-file Reads with greps in steps 7, 9, 10.** Step 7 (innovation triage): grep for `| detected |` in `logs/innovation-registry.md`. Step 9 (improvement verification): scan for entries with `Status: applied` missing a `Verified:` line via awk/grep. Step 10 (friction reminder): grep for today's date (`$(date +%Y-%m-%d)`) in `logs/friction-log.md`. Saves ~150 lines of content streaming through context per wrap.
+  2. **Reorder Step 11 (archive) BEFORE Step 3 (append session note).** Archive script rewrites session-notes.md when threshold exceeded; appending FIRST then archiving causes Edit-after-archive freshness invalidation, forcing a re-read of ~60 lines of the just-written note. Archive operates only on existing entries — running it before today's note is written is safe and avoids the re-read entirely.
+  3. **Drop the wc -l + Read pattern in steps 1-2.** Spec says "last 5 lines only" but a `wc -l` probe before tail-reading is redundant. Tail-read directly with a known offset.
+  4. **Drop the file-existence inventory before content reads.** Six `if -f` checks pre-empting reads in the current flow — let Read error on the rare missing case rather than pre-checking each.
+  5. **Auto-pass dirt check when all dirty paths match Files Created/Files Modified verbatim.** Step 12a currently only short-circuits on empty git-status. Extending the silent-skip rule to "all matched" would skip the operator prompt for clean wraps where every dirty path was produced this session and is already enumerated.
+- **Target files (when executed):**
+  - `ai-resources/.claude/commands/wrap-session.md`
