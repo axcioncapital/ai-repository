@@ -6,6 +6,29 @@ Input: `$ARGUMENTS` (optional) — `weekly` | `monthly` | `quarterly` to overrid
 
 ---
 
+### Step 0: Skipped-Friday Recovery
+
+0. Locate the most recent existing checkup report:
+   ```bash
+   ls -1 "{AI_RESOURCES}/audits/friday-checkup-"*.md 2>/dev/null | sort | tail -1
+   ```
+   - If no report exists (first run ever), skip this step and continue to Step 1.
+   - Extract `LAST_DATE` from the filename (the `YYYY-MM-DD` between `friday-checkup-` and `.md`).
+   - Compute days elapsed with Python: `from datetime import date; print((date.today() - date.fromisoformat('LAST_DATE')).days)`.
+   - If `DAYS ≤ 10`, skip this step and continue to Step 1.
+
+   If `DAYS > 10`, ask:
+   ```
+   Last /friday-checkup was {DAYS} days ago (last: {LAST_DATE}).
+   Skipped-Friday recovery options:
+     (a) Run now as a recovery Friday — execute the normal tier sequence today.
+     (b) Skip today — defer until next scheduled Friday.
+   ```
+   - On `a`: continue to Step 1 (normal execution).
+   - On `b`: print `"Deferred. Run /friday-checkup on the next scheduled Friday."` and stop.
+
+---
+
 ### Step 1: Detect Tier
 
 1. Compute date fields with Bash:
