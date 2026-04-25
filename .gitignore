@@ -17,3 +17,6 @@ credentials*.json
 # Python
 __pycache__/
 *.pyc
+
+# Ephemeral audit working notes (Layer C settings.json also denies Read on this path)
+audits/working/
