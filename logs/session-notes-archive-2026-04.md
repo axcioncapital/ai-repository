@@ -1826,3 +1826,116 @@ QC cycle notes (auto-loop applied, not listed as separate decisions): plan-level
 ### Open Questions
 
 - None.
+## 2026-04-22 — /friday-checkup — tiered weekly maintenance cadence + Friday reminder hook
+
+### Summary
+
+Planned and built `/friday-checkup`, a tiered weekly maintenance orchestrator that runs the right subset of existing audits across `ai-resources/`, workspace root, and operator-selected active projects, then writes a single consolidated review-only report. Tier is auto-detected from the date (weekly / monthly / quarterly). Plan QC caught structural problems with an auto-run quarterly tier (silent data-tier downgrade, 3–5h runtime) and the design pivoted to quarterly-as-operator-follow-ups. Also added a SessionStart hook that reminds to run `/friday-checkup` on Fridays when today's report doesn't yet exist.
+
+### Files Created
+
+- `ai-resources/.claude/commands/friday-checkup.md` — orchestrator command (~180 lines). Detects tier, asks for active projects, runs tier's checks per scope, writes consolidated report at `ai-resources/audits/friday-checkup-YYYY-MM-DD.md`.
+- `ai-resources/.claude/hooks/friday-checkup-reminder.sh` — SessionStart hook script. On Fridays, emits a one-line `systemMessage` reminder if today's consolidated report doesn't exist.
+
+### Files Modified
+
+- `ai-resources/CLAUDE.md` — added a 5-line "Maintenance Cadence" pointer section.
+- `ai-resources/.claude/settings.json` — wired the SessionStart hook into the existing hooks block.
+- `ai-resources/logs/session-notes-archive-2026-04.md` — auto-archived via `check-archive.sh` at wrap (5 entries archived, 10 kept).
+
+### Decisions Made
+
+Scoping and design (logged to decisions.md):
+- `/friday-checkup` shape: slash command orchestrator (not a passive checklist doc).
+- Cadence tiers: weekly (every Fri) / monthly (first Fri of month) / quarterly (first Fri of Q1–Q4).
+- Scope: `ai-resources/` + workspace root + active projects selected interactively each run.
+- Findings handling: review-only; no auto-fix. Fixes happen in normal sessions next week.
+- Quarterly tier dropped from auto-run after QC — now surfaced as an operator follow-up checklist only.
+- Runtime guardrail: estimates >45 min require the phrase `proceed with long run`.
+- Reminder mechanism: SessionStart hook firing on Fridays when today's report missing (over scheduled remote agent).
+
+QC fixes applied:
+- Interface-table corrections for `/improve` and `/coach` (they write to `{scope}/logs/` not `ai-resources/logs/`); added `/coach` <5-sessions skip logic.
+- Specified `/audit-repo` snapshot mechanism concretely (Step 5a copies the per-scope report to `ai-resources/audits/repo-health-{scope-slug}-YYYY-MM-DD.md`).
+- Added "Commit behavior" section — the orchestrator does not commit; operator reviews at session wrap.
+
+### Next Steps
+
+- `git push` both commits (`ffc9b2d`, `d456c20`).
+- Dry-run `/friday-checkup weekly` against ai-resources scope only, to verify tier-detection, `/audit-repo` snapshot copy, and `/coach` skip-logic before next Friday.
+- Next actual Friday: confirm SessionStart hook fires (will require a new session) and run the full weekly tier end-to-end.
+
+### Open Questions
+
+- None.
+
+## 2026-04-23 — Session-guide rewrite + bypassPermissions
+
+### Summary
+
+Full rewrite of the `/session-guide` command/agent/skill trio — replaced the up-front playbook generator with a state-aware, scope-flexible, Notion-ready progress view. Worked through /clarify → /recommend → plan (approved via ExitPlanMode) → pre-approval QC → implementation → post-edit QC → commit/push. Then added `permissions.defaultMode: "bypassPermissions"` to both `ai-resources/.claude/settings.json` and workspace-root `.claude/settings.json` after operator directive for zero permission prompts.
+
+### Files Created
+
+- `/Users/patrik.lindeberg/.claude/plans/joyful-splashing-hamster.md` — rewrite plan (lives outside repo; user-level plans dir)
+
+### Files Modified
+
+- `.claude/commands/session-guide.md` — rewritten as thin orchestrator (asks scope, spawns agent)
+- `.claude/agents/session-guide-generator.md` — delegates to skill methodology; stays on `model: sonnet`
+- `skills/session-guide-generator/SKILL.md` — full methodology rewrite (state-detection cascade, scope-bounded plan reads, Notion-ready output template, no-plan fallback)
+- `.claude/settings.json` — added `permissions.defaultMode: "bypassPermissions"`
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/settings.json` (workspace root) — same `defaultMode` addition; separate repo, uncommitted
+- `logs/innovation-registry.md` — triaged `.claude/commands/session-guide.md` entry to `graduate` (already canonical in ai-resources)
+
+### Decisions Made
+
+- **Session-guide repeat-run behavior: overwrite** (operator chose from three options: versioned files, timestamped-append, overwrite). Cleanest for Notion paste; Notion retains history as distribution surface. Documented as exception to workspace "new version file" convention.
+- **`permissions.defaultMode: "bypassPermissions"` on both repos** (operator directive: no prompts at all). Accepted security tradeoff. `deny` lists preserved — still block `rm -rf *`, `git push *`, `git reset --hard *`, `git checkout *` at workspace root.
+- Three optional QC improvements applied in-flow (Glob tiebreaker for plan-file fallback, N-exceeds-remaining collapse note, ISO-date regex caveat) — non-blocking, mechanical doc additions.
+
+### Next Steps
+
+- Test the rewritten `/session-guide` on a real project (e.g., `projects/obsidian-pe-kb/`) to validate the state-detection cascade end-to-end and confirm token cost materially below baseline.
+- If permission prompts still fire from `projects/*/` sessions, extend `bypassPermissions` to those project-level `.claude/settings.json` files.
+- Workspace-root `.claude/settings.json` is uncommitted with bypassPermissions + other pre-existing dirty state. Decide whether to commit the bypass setting separately or leave uncommitted.
+
+### Open Questions
+
+- None.
+
+## 2026-04-23 — Created /summary skill for faithful document compression
+
+### Summary
+
+Built a new `/summary` skill + command via the `/create-skill` pipeline. The skill compresses long markdown/text documents (plans, strategies, proposals, memos) into shorter, stakeholder-facing summaries — preserving source structure, all numbers/names/decisions/quotations/citations/tables, and dropping only rhetorical scaffolding and illustrative material. Key editorial call: chose faithful compression ("Option A") over a Marks-style discursive digest or Dalio-style principle-extraction approach, on grounds that the summary's job is to convey what the source *says* (for stakeholder reference and action), not what the summarizer thinks about it.
+
+Pipeline ran cleanly: plan mode with QC loop (REVISE → fixes → APPROVE) → brief in `inbox/` → operator brief-review gate → `/create-skill` (evaluation subagent returned 2 Major + 6 Minor; auto-fix pass applied Runtime Recommendations section + worked Example; frontmatter tightened with `allowed-tools: Read, Write` and `disable-model-invocation: true`) → post-edit QC caught a fidelity slip in the teaching example (dropped attribution restored in a 5-word follow-up commit). Two commits total, pre-push.
+
+### Files Created
+
+- `ai-resources/skills/summary/SKILL.md` — the skill (298 lines after fixes; methodology, fidelity rules, execution workflow, bias countering, runtime recs, example)
+- `ai-resources/.claude/commands/summary.md` — thin command wrapper (25 lines)
+- `ai-resources/inbox/archive/summary-skill-brief.md` — build brief (archived post-pipeline)
+
+### Files Modified
+
+- None besides the above creations.
+
+### Decisions Made
+
+**/summary skill:**
+- **Summarization philosophy — Option A (faithful compression)** over B (Marks-style editorial digest) or C (Dalio-style principle extraction). See decisions.md.
+- Deferred 3 open questions to `/create-skill` Step 1, then defaulted all to "no/simpler for v1": built-in fidelity QC (defer to `/qc-pass` if needed), optional appendix (not requested), `--audience` flag (would violate compression philosophy).
+- Fixed pipeline QC Major findings #4 (add Runtime Recommendations) and #5 (add worked Example); deferred Minor findings #3, #6, #7, #8 per methodology; applied Minor findings #1 and #2 (frontmatter hygiene — `allowed-tools`, `disable-model-invocation`) as operator-directed adds.
+- Applied post-edit QC finding #1 (restore "team sizing study" attribution in teaching example) as a follow-up commit; left finding #2 (Validation Checklist 4-vs-5 field list) unfixed as truly optional.
+
+### Next Steps
+
+1. **Push two commits** — `9f62fe6` (new: /summary — ...) and `7463f44` (update: /summary — restore attribution). Operator requested push at wrap time.
+2. **First real test** — run `/summary` on an actual long document (plan, strategy, proposal) to validate fidelity rules in practice. If issues surface, iterate via `/improve-skill` rather than direct edits.
+3. **No cross-project sync needed** — `.claude/commands/summary.md` lives in ai-resources (the shared library); consumer projects get it via `--add-dir`.
+
+### Open Questions
+
+- None.

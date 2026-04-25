@@ -2,6 +2,36 @@
 
 <!-- entries below -->
 
+### 2026-04-25 | Acceptable
+
+**Task:** Designed and landed five preventative fixes (F1-F5) for working-tree drift and concurrent-session damage, including plan-mode design with 2 parallel Explore agents and 2 /risk-check gates that redirected F2 design and dropped G5.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | ~16 |
+| Files read | 13 (re-reads: 2) |
+| Files written/edited | 10 |
+| Tool calls | ~57 |
+| Subagents | 5 |
+| Rework cycles | 1 (F2 design pivot, pre-implementation) |
+
+**Findings:**
+- permission-template.md read in 3 partial passes (offsets 1, 100, 183) covering full 285-line file — single full read would have saved 2 round-trips (Re-reads / context handling, Moderate)
+- permission-sweep-auditor.md edited 3 separate times for "13"→"14" substitutions — could have collapsed to 1-2 edits using replace_all or unique substring matching (Tool overhead, Minor)
+- coaching-data.md tail re-read once at near-identical offsets (Re-reads, Minor — immaterial)
+- F2 design pivot via /risk-check RECONSIDER reflects the gate working as intended, not artifact rework — no implementation tokens lost
+- Stable vs. last 3 entries (all Acceptable): same rating, similar moderate-finding profile around partial-read patterns and small Edit-batching inefficiencies.
+
+**Recommendation:** When a reference file is <300 lines and the task requires scanning most of it, default to one full Read rather than chained partial offsets — partial-read pattern only pays off above ~400 lines or when a single section is clearly load-bearing.
+
+**Estimated savings:** Per-session ~1.5-2k tokens (2 redundant partial-read round-trips on permission-template.md ≈ ~1.2k tokens of duplicated structural overhead + 1 collapsible Edit cycle ≈ ~300-500 tokens). 10-20 session projection: ~15-40k tokens, assuming the partial-read pattern recurs in ~half of multi-file plan-mode sessions.
+
+**Additional levers (ROI-ranked):**
+- Batch consecutive same-file Edits when the substitution is a simple find/replace — replace_all=true on the unique pattern saves ~600-1000 tokens per occurrence vs. 3 sequential Edits; bigger than primary on edit-heavy sessions.
+- Cap risk-check + qc-reviewer reports at summary-only re-reads in main session — already doing this for F3+G5; codify as default. ~400-800 tokens per subagent report avoided; smaller than primary because the discipline is already mostly observed.
+- Skip TodoWrite reminders mid-execution on linear 5-step plans where progression is self-evident — ~200-400 tokens per session in tool overhead and re-narration; smaller than primary, mostly orchestration noise.
+- Consolidate workspace + ai-resources commit narration into single chat summary when both repos take coordinated commits in same flow — ~200-300 tokens per multi-repo session; smallest lever.
+
 ### 2026-04-24 | Acceptable
 
 **Task:** Executed Batch 1 of Commission v4 — built `/risk-check` command + `risk-check-reviewer` Opus subagent as a pre-execution gate, added class list + pause-trigger #9 across `docs/audit-discipline.md` and workspace CLAUDE.md. One QC → triage → fix → post-edit QC cycle; committed to two repos.

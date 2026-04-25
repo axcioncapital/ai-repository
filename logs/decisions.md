@@ -314,3 +314,28 @@
    Rationale: `/permission-sweep` fixes structural causes (deterministic rulebook, 13 rules); `/fewer-permission-prompts` fixes empirical causes (transcript-driven). Different detection modes. Bolting structural analysis onto a transcript scanner would bloat a tightly-scoped skill. Order of use: run `/permission-sweep` first; run `/fewer-permission-prompts` after if specific tool calls still prompt.
 
 **Implication.** Prevention is wired into both `/new-project` (canonical template emitted per project at creation) and `/friday-checkup` (weekly `--dry-run` catches drift within a week). The operator should no longer hit this recurring pattern — baseline is durable.
+
+---
+
+## 2026-04-25 — Working-tree drift prevention: design choices
+
+**Context:** Plan called for five core fixes (F1–F5) plus five opportunistic guardrails (G1–G5). During execution, three judgment calls reshaped scope.
+
+1. **F2 design pivot — operator disclosure over pgrep.**
+   Rationale: `/risk-check` returned RECONSIDER on the original mechanical-abort design. Live test on this machine: `pgrep -fl 'claude' | grep -v $$` returned 12 matches in a single Claude Code session because Claude Code spawns helper/subagent processes and VSCode caches multiple binary versions. A no-override mechanical abort would have made `/cleanup-worktree` unusable. Recommended redesign (Option 1 in the risk-check report): a Step 1 disclosure prompt asking the operator directly. This aligns with the existing CLAUDE.md "Concurrent-session staging discipline" pattern (which is already operator-disclosure-based) and removes the false-positive class entirely.
+   Alternative considered: narrowing the pgrep regex (parent-PID walking, env-var override). Rejected — expanded scope beyond a single-file edit.
+
+2. **G5 dropped as redundant.**
+   Rationale: F3 already documents the concurrent-session rule in the workspace CLAUDE.md "Concurrent-session staging discipline" section. Adding `/cleanup-worktree` to Autonomy Rules pause-triggers would have duplicated the rule in a different section without load-bearing semantics. The F3+G5 risk-check report explicitly flagged "commit to one shape; prefer extending existing pause-trigger over adding bullet #10" — operator chose the cleaner path of dropping G5 entirely.
+
+3. **F5 severity ADVISORY (plan said HIGH).**
+   Rationale: The existing detection-rulebook taxonomy classifies HIGH as "Delete prompts or future Edit prompts." The gitignore-vs-deny mismatch is hygiene — it pollutes `git status` but produces no live or future permission prompt. ADVISORY fits the existing severity structure. The plan's HIGH classification was an overcall; aligned to the rulebook's actual semantics.
+   Alternative considered: keeping HIGH per plan. Rejected — would have set a precedent of severity-based-on-perceived-importance rather than rulebook semantics, making the classification bucket fuzzy.
+
+4. **Stopped after core five; deferred G1/G3/G4.**
+   Rationale: Operator pushed back on overcomplication mid-session ("Why are you overcomplicating this operation?"). The core five fixes cover both failure classes from the 2026-04-24 incident (session-end hygiene + canonical-state drift). G items are nice-to-have additions (new SessionStart hook, marker-file mechanism, weekly checkup line) that add capability rather than addressing the incident's root causes. Deferred to a future session if the core five turn out to be insufficient.
+
+5. **Reduced /risk-check ceremony for small edits.**
+   Rationale: After running `/risk-check` on F2 and F3+G5, recognized that running it on every CLAUDE.md paragraph and hook validation extension is heavy ceremony for low-risk edits. Skipped `/risk-check` on F4 (small extension to existing hook validation) and F5 (new check class added to existing auditor — no new structural infrastructure). Reserves `/risk-check` for genuinely structural changes (new hooks, new commands, new permission rules). Self-check + post-edit testing was sufficient for the small extensions.
+
+**Implication.** The plan-vs-execution gap surfaced two patterns worth carrying forward: (a) `/risk-check` should be invoked when scope is genuinely structural, not on every item that touches a hook or CLAUDE.md; (b) plan-stage severity classifications should be cross-checked against existing rulebook taxonomies before landing.
