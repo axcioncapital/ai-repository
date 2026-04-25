@@ -42,12 +42,26 @@ fi
 # Decision logic:
 #   - If settings.local.json has a permissions block AND its defaultMode != "bypassPermissions" → nudge.
 #   - Else if settings.json's defaultMode != "bypassPermissions" → nudge.
+#   - Else if settings.json's deny array is missing safety-floor entries (Bash(rm -rf *), Bash(sudo *)) → nudge.
 #   - Else pass silently.
 nudge_reason=""
 if [ "$local_exists" = "1" ] && [ "$local_has_perms" = "1" ] && [ "$local_mode" != "bypassPermissions" ]; then
   nudge_reason="settings.local.json has a permissions block but no 'bypassPermissions' defaultMode — it is shadowing settings.json. Run /permission-sweep to fix."
 elif [ "$main_mode" != "bypassPermissions" ]; then
   nudge_reason="settings.json is missing 'defaultMode: bypassPermissions'. You will see permission prompts on Edit/Write/Delete. Run /permission-sweep to fix."
+else
+  # Safety-floor deny check — Bash(rm -rf *) and Bash(sudo *) must be in every settings.json's deny array
+  # per docs/permission-template.md (Layers A, B, C, D all require these).
+  missing_denies=""
+  for entry in "Bash(rm -rf *)" "Bash(sudo *)"; do
+    has_entry=$(jq --arg e "$entry" '(.permissions.deny // []) | any(. == $e)' "$SETTINGS" 2>/dev/null)
+    if [ "$has_entry" != "true" ]; then
+      [ -z "$missing_denies" ] && missing_denies="$entry" || missing_denies="$missing_denies, $entry"
+    fi
+  done
+  if [ -n "$missing_denies" ]; then
+    nudge_reason="settings.json is missing safety-floor deny entries: $missing_denies. These are mandatory per docs/permission-template.md. Run /permission-sweep to restore."
+  fi
 fi
 
 if [ -n "$nudge_reason" ]; then
