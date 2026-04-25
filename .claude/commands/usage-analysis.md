@@ -12,13 +12,14 @@ Scan the full conversation history in this session and produce a structured summ
 - **Files read:** List every file that was read (via Read, cat, view, or any file-reading tool), with approximate line count. Flag any file read more than once.
 - **Files written or edited:** List files created or modified
 - **Tool calls:** List tools used and rough count (e.g., "Read x7, Edit x3, Bash x4")
-- **Subagents:** Were any spawned? What did they do?
+- **Subagents:** Were any spawned? What did they do? For each subagent, note whether the main agent then re-output the subagent's content into a separate artifact (e.g., the main agent writes a verdict file with the same content the subagent already returned in its tool result) — this duplication is load-bearing for the savings estimate.
+- **Largest files read:** For the 3 largest files read this session, record the approximate line count (or rough token estimate). This grounds the savings estimate for re-read and full-vs-partial-read recommendations.
 - **Rework instances:** Any cases where output was produced, rejected or corrected, then redone?
 - **Notable patterns:** Anything else relevant — long outputs, repeated operations, large context loads
 
 ## Step 2: Read the Existing Usage Log
 
-Read `usage/usage-log.md` if it exists. This gives the subagent historical context for pattern detection.
+Read `logs/usage-log.md` if it exists. This gives the subagent historical context for pattern detection.
 
 If the file doesn't exist, note that this is the first review.
 
@@ -36,7 +37,9 @@ The subagent receives content only — it does not read files itself.
 
 Take the subagent's output and:
 
-1. If `usage/usage-log.md` doesn't exist, create it with this header:
+1. **Print the chat-only preamble first.** One or two lines max, summarizing the primary Recommendation and the top-ranked Additional lever with their rough savings figures. This gives the operator the headline immediately, before any file-write narration. The preamble appears in chat only; do NOT write it into the log file.
+
+2. **Write to the log.** If `logs/usage-log.md` doesn't exist, create it with this header:
 
 ```markdown
 # Usage Log
@@ -48,11 +51,9 @@ Token efficiency tracking. Each entry records one session's resource usage and w
 <!-- entries below -->
 ```
 
-Then add the entry below the `<!-- entries below -->` marker.
+Then add the entry below the `<!-- entries below -->` marker. If the file already exists, insert the new entry directly below the `<!-- entries below -->` marker (above all existing entries).
 
-2. If it exists, insert the new entry directly below the `<!-- entries below -->` marker (above all existing entries).
-
-3. Confirm to the user: "Usage analysis added to usage/usage-log.md" and print the entry.
+3. **Confirm and print the full entry.** Say "Usage analysis added to logs/usage-log.md" and print the full entry below the confirmation.
 
 ## Step 5: Check Log Length
 

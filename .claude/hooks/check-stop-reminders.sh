@@ -1,7 +1,7 @@
 #!/bin/bash
 # Stop hook: emits a session-end reminder combining two checks.
 #   1. Innovation-registry: are there detected entries pending triage?
-#   2. Usage telemetry: does usage/usage-log.md have an entry for today?
+#   2. Usage telemetry: does logs/usage-log.md have an entry for today?
 # Output is a single {"systemMessage":"..."} JSON object.
 #
 # Replaces the inline command previously in .claude/settings.json Stop hook.
@@ -9,7 +9,7 @@
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 REGISTRY="$PROJECT_DIR/logs/innovation-registry.md"
-USAGE_LOG="$PROJECT_DIR/usage/usage-log.md"
+USAGE_LOG="$PROJECT_DIR/logs/usage-log.md"
 TODAY=$(date +%Y-%m-%d)
 
 detected=0
