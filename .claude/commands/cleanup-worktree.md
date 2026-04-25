@@ -12,6 +12,8 @@ Input: $ARGUMENTS (optional) — any operator notes about what triggered the cle
 
 ## Step 1: Verify prerequisites
 
+**Concurrent-session disclosure (mandatory, run before any other prereq).** Ask the operator: "Is any other Claude Code session currently active on this repo or on this machine? (yes/no)". If yes, STOP and instruct the operator to wrap or close the other session(s) first, then re-invoke. `/cleanup-worktree` commits and untracks files — running it concurrently with another session can clobber that session's in-flight work. Do not attempt a programmatic process check (`pgrep` and equivalents return false positives because Claude Code spawns helper processes within a single session); operator disclosure is the contract per workspace `CLAUDE.md → Concurrent-session staging discipline`. If no, proceed to item 1 below.
+
 1. Confirm `ai-resources/` is mounted — required because `worktree-cleanup-investigator` depends on `find-template.sh` walking up from CWD to find the `ai-resources` sibling. If `ai-resources/` is not accessible from the current working directory, STOP and surface to the operator — do not attempt a text-based fallback for template detection.
 2. Confirm git state is clean-baseline — run `git status` and check for in-progress rebase, merge conflict, or detached HEAD. If any of those apply, STOP and instruct the operator to resolve the underlying state first.
 3. Locate the skill: `ai-resources/skills/worktree-cleanup-investigator/SKILL.md`. If missing, STOP — the command cannot run without the skill.
