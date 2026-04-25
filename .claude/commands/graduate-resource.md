@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Graduate a project-level resource to the shared library: $ARGUMENTS
 
 Use this command when you've built something useful in a project (a command, agent, hook, rule, or pattern) and want it available to all future projects.

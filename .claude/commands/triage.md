@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 You just proposed changes or suggestions. Before the operator approves anything, run an independent triage.
 
 ## Why a subagent?

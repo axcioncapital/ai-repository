@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Request a new or improved skill: $ARGUMENTS
 
 Use this command from any project workspace when you identify a skill gap. This command does NOT create the skill — it captures the need as a structured brief and routes it to the canonical creation pipeline.

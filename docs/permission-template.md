@@ -180,7 +180,7 @@ Canonical shape:
 ```
 
 **Key assertions:**
-- `model: "sonnet"` at top level (workspace Model Tier default).
+- `model: "sonnet[1m]"` at top level (workspace-root fallback per `ai-resources/docs/model-routing.md`; the `[1m]` suffix forces 1M context). Projects override via `.claude/settings.local.json` per their declared Model Selection.
 - `defaultMode: "bypassPermissions"` (root causes #1, #3).
 - Dotfile-path glob `Edit(**/.claude/**)` (root cause #2).
 - `Bash(rm *)` in allow — fixes Delete/Remove prompts.

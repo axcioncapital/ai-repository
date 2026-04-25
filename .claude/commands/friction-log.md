@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Log a friction event or start a new friction log session.
 
 ## Usage

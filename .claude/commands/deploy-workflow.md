@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Usage: /deploy-workflow [project-name]
 
 Initialize a new project from a workflow template. Handles copying, placeholder replacement, skill symlinks, git init, and initial commit.
@@ -163,7 +167,7 @@ Do NOT auto-modify `settings.json` — hook registration requires knowing the ma
 }
 ```
 
-**Canonical model default.** The merge procedure below also sets `"model": "sonnet"` at the top level of `settings.json` if unset, establishing Sonnet as the per-turn default per the workspace `## Model Tier` rule.
+**Canonical model default.** The merge procedure below also sets `"model": "sonnet[1m]"` at the top level of `settings.json` if unset, establishing Sonnet 1M as the per-turn default per `ai-resources/docs/model-routing.md` (the `[1m]` suffix forces 1M context; bare `sonnet` resolves to 200k). Per-project overrides go in `.claude/settings.local.json` per the project's Model Selection section.
 
 **Merge procedure:**
 
@@ -178,11 +182,11 @@ CANONICAL_PERMS='{"allow":["Bash(*)","Read","Edit","Write","MultiEdit","Agent","
 
 jq --argjson perms "$CANONICAL_PERMS" '
   (if (.permissions.allow // []) | length > 0 then . else .permissions = $perms end)
-  | (if (.model // "") == "" then .model = "sonnet" else . end)
+  | (if (.model // "") == "" then .model = "sonnet[1m]" else . end)
 ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
 ```
 
-Report in the enrichment output whether `permissions` was added or already present, and whether `model: sonnet` was added or already present.
+Report in the enrichment output whether `permissions` was added or already present, and whether `model: sonnet[1m]` was added or already present.
 
 **Interaction with the research-workflow template.** The template's own `settings.json` already carries a `permissions` block (added alongside this change), so on a fresh deploy the predicate returns true and this sub-step is a no-op. The sub-step remains load-bearing for (a) any future template that ships without a `permissions` block and (b) running `/sync-workflow` on older projects that were deployed before the template fix landed.
 

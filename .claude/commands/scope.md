@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Based on the conversation so far, produce a scope summary:
 
 1. **Objective** — What the user is trying to accomplish, in one sentence.

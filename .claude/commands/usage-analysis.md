@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 # Usage Analysis
 
 Analyze this session's token efficiency and append a review to the usage log.

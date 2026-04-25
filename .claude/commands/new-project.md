@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 # /new-project — Project Pipeline Orchestrator
 
 You are the orchestrator for Axcíon's project pipeline. This pipeline discovers approved planning artifacts (context pack, project plan, optional technical spec) from the `projects/project-planning/` workspace and produces a fully configured Claude Code setup through a series of staged gates, starting at Stage 3a (Repo Snapshot).
@@ -138,6 +142,25 @@ Planning artifacts (context pack, project plan, optional technical spec) are pro
 ```
 
 11. **Announce what was discovered and copied.** Include: source directory, picked versions (e.g., `project-plan-v3.md`), whether a tech spec was found, any QC-verdict warnings. State that Stage 3a is starting. No separate confirmation gate before copy — the announcement names every file, `sources.md` records provenance, and any wrong picks are reversible via the existing `ABORT` gate.
+
+11a. **Scaffold the project's Model Selection section.** Per `ai-resources/docs/model-routing.md`, every project declares its own default model. Ask the operator one question:
+
+    > Project task profile?
+    > (a) Heavy execution → Sonnet 1M (`claude-sonnet-4-6[1m]`) default. Most repo work, KB ops, operational projects.
+    > (b) Heavy judgment → Opus 4.7 (`claude-opus-4-7`) default. Plan/spec drafting, identity drafting, strategic projects.
+    > (c) Mixed → Sonnet 1M default with Opus opt-ins. Most projects; commands/agents declare `model: opus` where judgment is needed.
+
+    **Pre-flight identifier verification.** Before writing the chosen identifier into the project CLAUDE.md, confirm the canonical strings against a live source: read `projects/buy-side-service-plan/CLAUDE.md` for the Opus 4.7 form, and the system-prompt model context for the Sonnet 4.6 1M form. If any string fails to match the precedent, abort scaffolding and surface the discrepancy — do not write a non-resolvable model ID into a new project. Sonnet identifiers must include the `[1m]` suffix to force 1M context (bare `claude-sonnet-4-6` resolves to 200k).
+
+    **Append a `Model Selection` section to `projects/{project-name}/CLAUDE.md`** (insert just before any `## Commit Rules` section, or before the final section if no Commit Rules section exists). Format matching the buy-side-service-plan precedent:
+
+    ```
+    ## Model Selection
+
+    Default model for this project is {Sonnet 1M | Opus 4.7} (`{full-form identifier}`, set in `.claude/settings.local.json`, which is gitignored — each operator applies the default manually per machine). Reason: {one-line rationale tied to the chosen profile}. {Optional: one line about which commands/agents opt out of the default and why.} Routing rule: `ai-resources/docs/model-routing.md`.
+    ```
+
+    Confirm the section was written by reading the file back and showing the operator the appended text. Do not write `.claude/settings.local.json` automatically — that is a per-operator manual step (gitignored).
 
 12. **Spawn the Stage 3a subagent** (`pipeline-stage-3a`). Include in the spawn prompt: "Project directory: projects/{project-name}/ — Pipeline directory: projects/{project-name}/pipeline/"
 

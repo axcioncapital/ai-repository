@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 # /session-guide — Progress View Generator
 
 Produce a state-aware, Notion-ready view of where the operator is in the current project and what they should do next. Runs at any point during execution — read current state from disk, surface the next session(s), and write a clean markdown file the operator can copy-paste into Notion.

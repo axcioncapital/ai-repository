@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Usage: /sync-workflow [project-path]
 
 Compare a deployed project's `.claude/` tooling against its canonical workflow template and report what's drifted, what's new, and what can be updated.

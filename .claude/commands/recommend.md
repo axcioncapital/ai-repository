@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 The operator is telling you to proceed using your own judgment rather than waiting for their answers. Apply this procedure:
 
 1. **Answer your own questions.** For each clarifying question you asked (or each open decision you surfaced in your previous turn), state the answer the operator would most likely give — reasoned from the stated goal, conversation context, prior session decisions, project CLAUDE.md, and operator preferences in memory. Be specific; do not hedge.

@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 # /friday-checkup — Weekly Maintenance Cadence
 
 Run a tiered Friday maintenance cadence against `ai-resources/`, the workspace root, and operator-selected active projects. Produces a single consolidated review-only report under `ai-resources/audits/`. No auto-fix; findings direct next week's work.

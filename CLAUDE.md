@@ -25,9 +25,9 @@ I am Patrik, a non-developer. Explain technical details in plain language. I rev
 
 See `skills/ai-resource-builder/SKILL.md` for skill format, creation sequence, improvement sequence, and quality-check framework. `/create-skill` and `/improve-skill` read that SKILL.md at invocation.
 
-## Model Preference
+## Model Selection
 
-Default to Claude Opus 4.6 (`claude-opus-4-6`) for subagents and API calls unless a faster model is explicitly justified for the task.
+Default model for this project is Sonnet 1M (`claude-sonnet-4-6[1m]`). Reason: most ai-resources work is repo operation, command/skill editing, and orchestration — execution-tier. Judgment work (architecture decisions, plan reviews, drafting analytical artifacts) opts in via `/model opus` or via slash commands that declare `model: opus` in frontmatter. Routing rule: `docs/model-routing.md`.
 
 Agent model tiering: see workspace `CLAUDE.md` → Model Tier → Agents for the canonical rule and Agent Tier Table.
 

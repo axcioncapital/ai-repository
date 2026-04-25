@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Stop and run an independent QC pass on the work you just produced or proposed.
 
 ## Why a subagent?

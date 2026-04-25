@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Run an independent refinement pass on the work you just produced.
 
 ## Why a subagent?

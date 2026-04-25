@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Run a full workspace health audit on this project.
 
 Input: $ARGUMENTS (optional) — not currently used, reserved for future scope options.

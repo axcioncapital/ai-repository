@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 # /friday-act — Session 2 of the Friday cadence (operator-driven fixes)
 
 Consume the freshest `/friday-checkup` report and drive structured fixes. Tier-differentiated decision shape: weekly = tactical fixes; monthly = + policy-level review; quarterly = + architectural retrospective. Inline `/risk-check` gate on fixes that fall in any required class. Captures repo-health observations and next-week autonomy-axis posture targets at exit.
@@ -214,7 +218,7 @@ Input: `$ARGUMENTS` (optional) — explicit path to a `friday-checkup-YYYY-MM-DD
     Suggested next: /wrap-session
     ```
 
-29. **Do NOT commit.** Fixes executed in Step 3 follow standard commit-directly rules (each fix's commit happens at execution time per workspace `Commit behavior`). The `maintenance-observations.md` append lands unstaged; the operator commits it at `/wrap-session` (Step 13a dirt check will surface it for explicit disposition).
+29. **Do NOT commit.** Fixes executed in Step 3 follow standard commit-directly rules (each fix's commit happens at execution time per workspace `Commit behavior`). The `maintenance-observations.md` append lands unstaged; the operator commits it at `/wrap-session` (Step 12a dirt check will surface it for explicit disposition).
 
 ---
 

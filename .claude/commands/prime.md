@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Orient the session. Read state, brief the operator, wait for direction.
 
 1. Read the last entry from `/logs/session-notes.md`. Extract: date, summary, next steps, open questions.
@@ -23,6 +27,12 @@ Orient the session. Read state, brief the operator, wait for direction.
     working-tree state or next steps. This is a Prime-time orientation check, distinct from the
     commit-time "no pre-commit git status" rule.
 
+4b. Determine the active session model and the active project default for the model brief in step 5.
+    - **Active session model:** read your own model identifier from the system-prompt context (e.g., `claude-opus-4-7[1m]` or `claude-sonnet-4-6[1m]`). Do not run any external command — the identifier is already in context.
+    - **Project default:** identify which project's `CLAUDE.md` is loaded (the cwd-nearest one). Read its `Model Selection` section to extract the declared default identifier. If the session is opened at the workspace root with no project `CLAUDE.md` loaded, the fallback default is Sonnet 1M (`claude-sonnet-4-6[1m]`).
+    - **Compare:** if session model and project default differ, mark the line with a `→ /model {default}` hint so the operator can switch with one keystroke. If they match, mark it `match`.
+    - Routing rule reference: `ai-resources/docs/model-routing.md`.
+
 5. Output this and nothing else:
 
 ```
@@ -34,6 +44,7 @@ Orient the session. Read state, brief the operator, wait for direction.
 **Innovations:** {N} detected, pending triage
 **Recent decisions:** {list or "None"}
 **Working tree:** {clean | list of live-verified changes from step 4a}
+**Model:** {session model} — project default {project default} ({match | → /model {default} to align})
 
 **Next steps (from last session):**
 {bulleted list from session notes}

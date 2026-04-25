@@ -1,3 +1,7 @@
+---
+model: sonnet
+---
+
 Do NOT start working on the user's request yet.
 
 Instead, do the following:
