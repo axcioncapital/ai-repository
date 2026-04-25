@@ -91,3 +91,21 @@ End-time /risk-check returned PROCEED-WITH-CAUTION with three Medium-risk dimens
 - Reversibility: attestation only (/wrap-session Step 13a already catches the append; no code change needed).
 
 The "no-op acceptable" mitigation from the report is a valid disposition under the verdict semantics — the report itself states no-op is acceptable given loud-failure behavior. Documented the choice in commit body so the audit trail is intact.
+
+## 2026-04-25 — Zero permission prompts as account-level policy
+
+**Context:** Operator hit a permission prompt this session when editing `.claude/commands/*.md` files (auto mode classifier prompted because `.claude/**` paths aren't in the allowlist). Stated explicit, repeated directive: never wants to be hit by a permission prompt again, regardless of risk.
+
+**Decision:** Configure user-level `~/.claude/settings.json` for maximally permissive operation:
+1. `defaultMode: "bypassPermissions"` (was `bypassPermissions` originally — was briefly changed to `"auto"` in error and reverted).
+2. `deny: []` — removed `Bash(rm -rf *)` and `Bash(sudo *)` entries; deny entries hard-block rather than prompt, but still produce friction equivalent to a prompt.
+3. Added top-level `autoMode.allow` block with `$defaults` + 3 natural-language rules: allow all file edits/reads, allow all bash commands, never prompt under any circumstance. Defense-in-depth in case `/auto` activates by accident.
+
+**Rationale:** Operator's explicit cost-benefit: harness permission prompts are net friction for a solo expert operator who is present at the terminal during work. The "smart autonomy" promise of auto mode is undermined by a classifier too coarse to distinguish "operator's actual work editing Claude Code config" from "sensitive system file." Compensating controls retained: CLAUDE.md model-side Autonomy Rules (force-push, branch delete, external writes still pause) and git as recovery mechanism. Operator explicitly accepted the residual risk (no harness brake on destructive bash; bigger prompt-injection blast radius; account-wide scope across all projects).
+
+**Alternatives considered:**
+- **Keep auto mode as default + run `/fewer-permission-prompts` at wrap** — operator rejected; relies on wrap discipline and only patches paths that have already prompted, doesn't prevent the first prompt.
+- **`acceptEdits` mode** — middle ground; still prompts on bash commands. Rejected as not zero-prompt.
+- **Per-path Edit allowlist for `.claude/**`** — narrower fix, but would still leave bash prompts and other surface. Rejected as insufficient for the stated zero-prompt goal.
+
+**Memory written:** `~/.claude/projects/.../memory/feedback_zero_permission_prompts.md` — codifies the policy and the behavioral rule (don't suggest `/auto`, `/plan`, or deny-list additions in future sessions). Old `feedback_permission_prompts.md` deleted as superseded.
