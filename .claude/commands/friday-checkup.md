@@ -154,10 +154,31 @@ Permission-sweep scans every settings file in the workspace in one pass — it i
 
 ### Step 6: Compile Follow-Ups
 
-14. Check follow-up triggers:
-    - **Resolve-improvements:** in `ai-resources/logs/improvement-log.md`, count entries that have both `**Status:** applied` and `**Verified:**` lines. If count ≥ 5, add follow-up: `` `/resolve-improvements` — {N} resolved entries pending archive ``.
-    - **Cleanup-worktree:** run `git status --short` in `ai-resources/`. If non-empty, count modified vs untracked lines and add follow-up: `` `/cleanup-worktree` — working tree dirty (M modified, U untracked) ``.
-    - **Quarterly follow-ups:** if `TIER=quarterly`, add one item per scope for `/repo-dd deep`, and one item per directory found under `workflows/` for `/analyze-workflow`.
+14. Check follow-up triggers and assemble three tier-differentiated sections.
+
+    **Tactical follow-ups (all tiers).** Per-item shape: `[ ] {item} — risk: {low | med | high}`. Risk derivation:
+    - Sub-report severity `CRITICAL` → `high`
+    - Sub-report severity `HIGH` → `high`
+    - Sub-report severity `MEDIUM` → `med`
+    - Anything else (advisory, info) → `low`
+    - Hand-coded items below: `med` unless an upstream signal raises them.
+
+    Standard tactical items:
+    - **Resolve-improvements:** in `ai-resources/logs/improvement-log.md`, count entries that have both `**Status:** applied` and `**Verified:**` lines. If count ≥ 5, add `` `/resolve-improvements` — {N} resolved entries pending archive `` (risk: `low`).
+    - **Cleanup-worktree:** run `git status --short` in `ai-resources/`. If non-empty, count modified vs untracked lines and add `` `/cleanup-worktree` — working tree dirty (M modified, U untracked) `` (risk: `med`).
+    - **Quarterly follow-ups:** if `TIER=quarterly`, add one item per scope for `/repo-dd deep` (risk: `low`), and one item per directory under `workflows/` for `/analyze-workflow` (risk: `low`).
+
+    **Policy-level observations (monthly + quarterly).** Skip if `TIER=weekly`. Sources:
+    - `/audit-claude-md` reports: any finding tagged as a rule-level recommendation (suggests adding/removing/rewording a CLAUDE.md rule rather than a single file fix).
+    - `/token-audit` reports: any finding that recommends a workspace- or project-wide policy change (default-model tier, frontmatter convention, hook-firing pattern, agent-tier table revision).
+    - Recurrence signals: if any tactical item appears in both this checkup AND the prior `audits/friday-checkup-*.md` (search backward by filename date, comparing item text), flag as `[recurring]` — recurrence is the canonical trigger for policy-level review.
+
+    Surface up to 5 observations. If none qualify, write `(none flagged this cycle)`.
+
+    **Architectural retrospective (quarterly only).** Skip if `TIER ∈ {weekly, monthly}`. Populate with:
+    - Standard substrate questions (always present): "What's the repo drifting toward?" / "What's accumulating without a forcing function to remove it?" / "Which boundary felt fuzziest this quarter?"
+    - Quarterly follow-up references already added to Tactical (`/repo-dd deep`, `/analyze-workflow`) — repeat their paths here so the retrospective section is self-contained for `/friday-act`'s quarterly review.
+    - Auto-detect substrate-drift signals: count of `audits/risk-checks/*.md` files this quarter; count of new `.claude/commands/*.md` files this quarter (`git log --since="3 months ago" --name-only -- ai-resources/.claude/commands/`). Surface counts as one-liners; the operator interprets in `/friday-act`.
 
 ---
 
@@ -189,12 +210,37 @@ Permission-sweep scans every settings file in the workspace in one pass — it i
     - /audit-claude-md (monthly): {summary} → {path OR skipped reason}
     - /token-audit (monthly): {summary} → {path}
 
-    ## Operator follow-ups
-    - [ ] {follow-up items from Step 6, including quarterly items if TIER=quarterly}
+    ## Tactical follow-ups
+    - [ ] {item} — risk: {low | med | high}
+    (One bullet per Step 6 tactical item. Always present.)
+
+    ## Policy-level observations
+    - {observation} — {source: /audit-claude-md | /token-audit | recurring | …}
+    (Monthly and quarterly only. Omit the heading if TIER=weekly. If TIER ∈ {monthly, quarterly} but no observations qualify, write the heading followed by "(none flagged this cycle)".)
+
+    ## Architectural retrospective
+    - Substrate questions:
+      - What's the repo drifting toward?
+      - What's accumulating without a forcing function to remove it?
+      - Which boundary felt fuzziest this quarter?
+    - Quarter-over-quarter signals:
+      - /risk-check reports filed this quarter: {N}
+      - New commands added this quarter: {N}
+    - Quarterly follow-ups (also listed under Tactical):
+      - /repo-dd deep — {scope_label}
+      - /analyze-workflow — {workflow_path}
+    (Quarterly only. Omit the heading entirely if TIER ∈ {weekly, monthly}.)
 
     ## All reports generated
     - {every path recorded in RESULTS}
     ```
+
+    **Section presence by tier (data contract for `/friday-act`):**
+    - `weekly` → Tactical follow-ups only (Policy-level and Architectural retrospective omitted).
+    - `monthly` → Tactical + Policy-level (Architectural retrospective omitted).
+    - `quarterly` → Tactical + Policy-level + Architectural retrospective.
+
+    `/friday-act` parses these section headings verbatim. Do not rename them.
 
 16. To extract findings: Read each sub-report produced in Step 5 (the snapshot audit-repo files, the audit-claude-md reports, the token-audit reports, the permission-sweep report). For each, look for sections titled `HIGH`, `CRITICAL`, `Top findings`, or the report's executive summary. Pull headline items; do not re-evaluate severity. If a report uses numeric scoring (e.g. repo-health RED/YELLOW/GREEN), surface RED findings only. For the permission-sweep dry-run, surface all CRITICAL findings (the primary signal of live permission-prompt issues) and HIGH findings in aggregate (e.g., "5 HIGH gaps across 3 projects — see report").
 
