@@ -429,3 +429,40 @@ Operator flagged that `/risk-check` was firing too frequently mid-session under 
 ### Open Questions
 
 - The concurrent session's commit `26d9c7f` swept this session's `wrap-session.md` edit (Step 13b) into its commit. The edit landed correctly but commit narrative is incomplete. Decide later whether to leave-as-is or note in a follow-up commit.
+
+## 2026-04-25 — Commission Batch 2: /friday-act + tier-differentiated /friday-checkup output
+
+
+### Summary
+
+Executed Commission Batch 2 per the approved plan at `/Users/patrik.lindeberg/.claude/plans/here-s-an-idea-i-memoized-bumblebee.md`. Built `/friday-act` (Session 2 of the Friday cadence) and added tier-differentiated output sections to `/friday-checkup` as the data contract `/friday-act` consumes. First real dogfood of `/risk-check` against a structural change set under the new two-gate model — verdict PROCEED-WITH-CAUTION with three Mediums, mitigations applied. Session committed as `6e80a7d`.
+
+### Files Created
+
+- `.claude/commands/friday-act.md` — Session 2 command (locate freshest report → 10-day staleness guard → tier-aware parse → tactical-fix loop with inline /risk-check gate → policy review monthly+ → quarterly retrospective → operator observations + 7-axis posture targets)
+- `logs/maintenance-observations.md` — append-only ledger seeded with header schema; written by /friday-act Steps 5–6
+- `audits/risk-checks/2026-04-25-commission-batch-2-friday-act-and-tier-differentiated-output.md` — end-time /risk-check report
+
+### Files Modified
+
+- `.claude/commands/friday-checkup.md` — Step 6/7 extended with three tier-differentiated output sections (Tactical follow-ups all tiers, Policy-level observations monthly+, Architectural retrospective quarterly only); renamed `## Operator follow-ups` → `## Tactical follow-ups`; added section-presence-by-tier data contract paragraph for /friday-act parsing
+- `logs/decisions-archive-2026-04.md` — auto-archive output (17 entries archived, 3 kept) from check-archive.sh during this wrap
+
+### Decisions Made
+
+- **Plan-time /risk-check skipped.** Original commission plan was QC'd + triaged in 2026-04-24 session; end-time gate alone covers the executed change set. Documented in commit body.
+- **Three /risk-check Medium-risk dimensions accepted with paired mitigations.** Blast radius (no-op acceptable per report), Reversibility (attestation only), Hidden coupling (one-line cross-reference comment added at /friday-act Step 2 → friday-checkup.md Step 7 schema-contract paragraph).
+- **Tactical-fix queue scoped to standard items only at MVP.** /friday-act consumes only the standard tactical items (resolve-improvements, cleanup-worktree, quarterly follow-ups) plus risk-graded extras; richer ingestion of `## Prioritized findings` deferred to Batch 3+ refinement if usage shows the queue is too narrow.
+- **No /wrap-session edit.** Plan called for `/wrap-session` to be untouched; maintenance-observations.md appends are caught by the existing Step 13a dirt check rather than added to the always-staged list.
+- **Coaching-log untouched.** 7 autonomy axes live in /friday-act output (forward-looking weekly posture); coaching-log keeps its 5 backward-looking session-pattern dimensions. Honored prior 2026-04-24 design decision.
+
+### Next Steps
+
+- **Push** ai-resources commits (`16d05a4`, `6e80a7d`) and workspace-root `bcf45a9` (from prior session) — two repos, requires operator approval.
+- **Batch 3** (durability supplements: hook stale-state detection + /friday-checkup Step 0 recovery + /friday-act freshness-check refactor). Half-session sized; Sonnet-suitable per earlier model recommendation.
+- After first real `/friday-act` invocation, watch whether the tactical-fix queue feels too narrow — if so, fold sub-report findings into Tactical follow-ups in a follow-up edit (deferred from this batch).
+- Pacing constraint from plan: ≤2 batches per session. Batches 3+4 pair well in a single Sonnet session.
+
+### Open Questions
+
+- None.

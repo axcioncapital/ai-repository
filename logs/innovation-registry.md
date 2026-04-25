@@ -81,3 +81,4 @@
 | 2026-04-24 | hook | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/hooks/model-classifier.sh | triaged:project-specific | — (workspace-level UserPromptSubmit hook; first-prompt model-tier recommendation) |
 | 2026-04-24 | command | .claude/commands/risk-check.md | triaged:project-specific | — (already in ai-resources canonical location; no graduation needed) |
 | 2026-04-24 | agent | .claude/agents/risk-check-reviewer.md | triaged:project-specific | — (paired with /risk-check command; already canonical) |
+| 2026-04-25 | command | .claude/commands/friday-act.md | detected | — |
