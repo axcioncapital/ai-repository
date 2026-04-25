@@ -29,7 +29,7 @@ The main agent passes you:
 Read TEMPLATE_PATH in full. It defines:
 - Canonical shapes for Layers A (user), B (workspace root), B′ (workspace local), C (ai-resources), D (project), D′ (project local).
 - The **intentional-narrow** detection heuristic (`Edit(path/**)` + paired `Write(path/**)` deny).
-- The **detection rulebook** (13 rules across CRITICAL / HIGH / MEDIUM / ADVISORY).
+- The **detection rulebook** (14 rules across CRITICAL / HIGH / MEDIUM / ADVISORY).
 
 Do not invent new rules. Apply only the rules defined in the template.
 
@@ -73,11 +73,11 @@ jq '.' "$FILE_PATH" > /dev/null || echo "PARSE ERROR: $FILE_PATH"
 
 If the file fails to parse, record a CRITICAL finding with the parse error text and skip the remaining rules for that file.
 
-Then apply rules 1–13 from the template rulebook. For each rule that fires, record:
+Then apply rules 1–14 from the template rulebook. For each rule that fires, record:
 
 - **File:** absolute path
 - **Layer:** A / B / B′ / C / D / D′
-- **Rule:** 1–13
+- **Rule:** 1–14
 - **Severity:** CRITICAL / HIGH / MEDIUM / ADVISORY (from the rule's bucket)
 - **Evidence:** quote the exact JSON key or value that triggered the rule (or state what is missing)
 - **Canonical value:** what the template says the value should be (pull from TEMPLATE_PATH)

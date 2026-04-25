@@ -270,6 +270,7 @@ The hook is invoked directly from ai-resources — do not copy `check-permission
 
 12. `settings.local.json` tracked by git (should be gitignored per Claude Code convention).
 13. Typos / duplicate entries / syntax form inconsistencies (`Bash(foo *)` vs `Bash(foo:*)` — prefer the former).
+14. `Read(<dir>/**)` deny entry where `<dir>` is a single concrete directory (not a glob pattern like `**/...`) and `<dir>/` does not appear in the appropriate `.gitignore` (same repo as the settings file). Audit/scan commands writing into denied scratchpad directories pollute `git status` when the directory is not gitignored — e.g., `Read(audits/working/**)` paired with `audits/working/` in `ai-resources/.gitignore`. Canonical fix: add `<dir>/` to the `.gitignore` at the same repo root as the settings file declaring the deny.
 
 ---
 
