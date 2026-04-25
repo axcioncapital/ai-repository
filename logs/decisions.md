@@ -109,3 +109,24 @@ The "no-op acceptable" mitigation from the report is a valid disposition under t
 - **Per-path Edit allowlist for `.claude/**`** — narrower fix, but would still leave bash prompts and other surface. Rejected as insufficient for the stated zero-prompt goal.
 
 **Memory written:** `~/.claude/projects/.../memory/feedback_zero_permission_prompts.md` — codifies the policy and the behavioral rule (don't suggest `/auto`, `/plan`, or deny-list additions in future sessions). Old `feedback_permission_prompts.md` deleted as superseded.
+
+---
+
+## 2026-04-25 — Per-project model defaults replace workspace-wide default
+
+**Context:** Three sources disagreed on the "default model" — workspace `CLAUDE.md` said Sonnet, `ai-resources/CLAUDE.md` said Opus 4.6, `model-classifier.sh` said Opus. The framework adopted ("Haiku scans, Sonnet executes, Opus judges") needed a reliable mechanism to apply across the current ai-resources work AND every new project, without the operator having to make per-task decisions.
+
+**Decision:** Each project declares its own default model in a `Model Selection` section in its `CLAUDE.md`. Sessions outside any project (workspace root) fall back to Sonnet 1M. The `model-classifier.sh` hook becomes a project-aware tier classifier that compares the active task's tier against the project's declared default and recommends a switch only on mismatch. A new canonical doc — `ai-resources/docs/model-routing.md` — is the single source of truth that CLAUDE.md files, the hook, `/prime`, and `/new-project` all reference.
+
+**Rationale:** Per-project defaults match the actual variance in workload across projects (ai-resources is mostly execution-tier; project-planning is judgment-heavy by definition; mixed projects opt into Opus when synthesis lands). A workspace-wide default would either over-route execution work to Opus (cost) or under-route judgment work to Sonnet (quality). The per-project rule lets each project's CLAUDE.md state the right tier for its actual workload, with the classifier hook handling the per-task escalation/de-escalation when a session's task tier doesn't match the declared default.
+
+**Alternatives considered:**
+- **Keep workspace-wide default (Sonnet) + per-task `/model opus` escalation.** Rejected: places the routing burden on the operator at every task naming, exactly what the framework is supposed to remove.
+- **Workspace-wide default = Opus (cost-tolerant default).** Rejected: most ai-resources work is execution-tier; routing it through Opus is 5× input cost per token without quality benefit.
+- **Add Haiku to session-level classifier.** Rejected: Haiku's cost saving is marginal at the session level (mechanical-measurement work is rare at the session), and the classifier overhead of three-way classification doesn't pay for itself. Haiku stays at the agent tier only.
+
+**Sonnet `[1m]` suffix:** Operator-corrected mid-execution. All Sonnet full-form identifiers must use `claude-sonnet-4-6[1m]` (forces 1M context); bare `claude-sonnet-4-6` silently downgrades to 200k. Codified to memory as a durable rule applying to all future routing edits.
+
+**Risk-check verdict:** PROCEED-WITH-CAUTION (5 dimensions: Medium / Low / Medium / Medium / Medium); 6 mitigations applied before commit.
+
+**Memory written:** `~/.claude/projects/.../memory/feedback_sonnet_1m_suffix.md` — codifies the `[1m]` suffix rule.

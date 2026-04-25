@@ -404,3 +404,65 @@ Operator surfaced friction with `.claude/**` permission prompts (auto-mode class
 ### Open Questions
 
 - **Concurrent Claude Code session likely active.** Three commits (`7f3f5ce`, `89447ea`, `6073b63`) landed during this session, and 4 dirty paths exist that weren't from this session: `.claude/commands/friday-act.md`, `.claude/commands/wrap-session.md`, `logs/session-notes-archive-2026-04.md`, `logs/session-notes.md`. Session-notes.md already contained a complete session entry written by the concurrent session before this entry was appended. Wrap deferred staging until operator dispositions per dirt-check (Step 12a).
+
+## 2026-04-25 — Per-project model routing: canonical doc + classifier hook + frontmatter coverage
+
+### Summary
+
+Implemented a complete per-project model routing architecture across 6 git repos. Replaced the workspace-wide model default with a per-project rule (each project's CLAUDE.md declares its own default in a Model Selection section). Created `ai-resources/docs/model-routing.md` as the single canonical source; rewrote `model-classifier.sh` to be project-aware; added explicit `model:` frontmatter to all ai-resources slash commands; added a Model Escalation rule paralleling the QC Auto-Loop; added a model brief to `/prime`; and added Model Selection scaffolding to `/new-project`. All Sonnet identifiers use the `[1m]` suffix to force 1M context (bare `claude-sonnet-4-6` resolves to 200k — operator correction codified to memory).
+
+### Files Created
+
+- `ai-resources/docs/model-routing.md` — canonical routing doc (three-tier rule, decision question, examples table, cost ratios, project-default architecture, identifier forms)
+- `ai-resources/audits/risk-checks/2026-04-25-per-project-model-routing.md` — risk-check report (verdict PROCEED-WITH-CAUTION, 5 dimensions, 6 mitigations)
+- `~/.claude/projects/.../memory/feedback_sonnet_1m_suffix.md` — memory: Sonnet identifiers must use `[1m]` suffix
+
+### Files Modified
+
+**Workspace repo:**
+- `CLAUDE.md` — Model Tier section rewrite (per-project rule + pointer); added Model Escalation section
+- `.claude/hooks/model-classifier.sh` — JSON heredoc payload rewritten (project-aware, Sonnet 1M fallback, binary classifier excluding Haiku at session level); jq-validated
+- `.claude/commands/{document-workflow,improve-workflow,new-workflow,run-qc,status,update-md,validate}.md` — prepended `model: sonnet` frontmatter (7 workspace-only commands)
+- `projects/corporate-identity/CLAUDE.md` — Model Selection revised: removed "inherits workspace" language; declares Opus 4.7 explicitly
+
+**ai-resources sub-repo:**
+- `CLAUDE.md` — Model Preference (Opus 4.6 default) replaced with Model Selection (Sonnet 1M default, `claude-sonnet-4-6[1m]`)
+- `docs/permission-template.md` — `"sonnet"` → `"sonnet[1m]"`; reference updated to model-routing.md
+- `.claude/commands/deploy-workflow.md` — merge script `"sonnet"` → `"sonnet[1m]"`; canonical default updated; prepended frontmatter
+- 22 commands (`audit-repo`, `clarify`, `cleanup-worktree`, `deploy-workflow`, `friction-log`, `friday-act`, `friday-checkup`, `graduate-resource`, `new-project`, `note`, `prime`, `qc-pass`, `recommend`, `refinement-pass`, `request-skill`, `scope`, `session-guide`, `sync-workflow`, `triage`, `update-claude-md`, `usage-analysis`, `wrap-session`) — prepended `model: sonnet` frontmatter
+- `.claude/commands/prime.md` — added Step 4b model brief; modified Step 5 status block to include Model line
+- `.claude/commands/new-project.md` — added Step 11a Model Selection scaffolding before Stage 3a; pre-flight identifier verification
+
+**Project sub-repos:**
+- `projects/global-macro-analysis/CLAUDE.md` — added Model Selection (Sonnet 1M, mixed)
+- `projects/nordic-pe-landscape-mapping-4-26/CLAUDE.md` — added Model Selection (Sonnet 1M, mixed)
+- `projects/obsidian-pe-kb/CLAUDE.md` — added Model Selection (Sonnet 1M, mixed)
+- `projects/project-planning/CLAUDE.md` — added Model Selection (Opus 4.7)
+- `projects/project-planning/.claude/agents/{plan-evaluator,spec-evaluator}.md` — `claude-opus-4-6` → `claude-opus-4-7`
+
+**Memory:**
+- `memory/MEMORY.md` — added entry for `feedback_sonnet_1m_suffix.md`
+
+### Decisions Made
+
+- **Per-project default architecture chosen over workspace-wide default.** Each project declares its own default; sessions outside any project fall back to Sonnet 1M. Resolves three-way conflict (workspace CLAUDE.md said Sonnet, ai-resources said Opus 4.6, hook said Opus).
+- **Haiku stays at agent tier only.** Session-level classifier remains binary (Sonnet vs Opus); Haiku invoked through agent frontmatter for mechanical-measurement subagents.
+- **Sonnet `[1m]` suffix mandatory in full-form identifiers.** Bare `claude-sonnet-4-6` silently resolves to 200k context; operator-confirmed correction. Codified to memory as durable rule.
+- **Project task profiles set via 4-question batch:** global-macro / nordic-pe / obsidian-pe-kb = Mixed (Sonnet 1M default, Opus opt-in for synthesis); project-planning = Opus 4.7 (plan/spec drafting is judgment-heavy by definition).
+- **Plan QC: two independent qc-reviewer passes** (full plan → conditional pass → rework → second QC → pass) before operator approval.
+- **/risk-check at plan-time produced PROCEED-WITH-CAUTION verdict.** 6 mitigations applied: jq-validate hook, update permission-template/deploy-workflow pointers, ask operator for 4 missing project defaults, exact insertion line ranges in Changes 6/7, fix project-planning agent identifiers, capture per-project CLAUDE.md appends in session note (this section satisfies mitigation #6).
+
+### Next Steps
+
+- **Create per-project `.claude/settings.local.json` files** (gitignored, per-machine) so the harness applies the declared CLAUDE.md defaults:
+  - `projects/project-planning/.claude/settings.local.json` → `{"model": "claude-opus-4-7"}`
+  - `projects/global-macro-analysis/.claude/settings.local.json` → `{"model": "claude-sonnet-4-6[1m]"}`
+  - `projects/nordic-pe-landscape-mapping-4-26/.claude/settings.local.json` → `{"model": "claude-sonnet-4-6[1m]"}`
+  - `projects/obsidian-pe-kb/.claude/settings.local.json` → `{"model": "claude-sonnet-4-6[1m]"}`
+  - Optional: workspace `.claude/settings.json` add `"model": "sonnet[1m]"` for fallback consistency
+- **Smoke tests** (interactive): open fresh sessions in workspace root, ai-resources, buy-side-service-plan; run `/prime` in each; verify Model line in status block and hook behavior on first free-form prompt.
+
+### Open Questions
+
+- **Pre-existing workspace dirt.** Workspace shows ~70 untracked files (massive `.claude/agents/`, `.claude/commands/`, `projects/*` listing) and `M .claude/settings.json` + `M projects/corporate-identity/.claude/settings.json`. None of these were produced by this session. They likely originate from a concurrent session or accumulated background state. Deferred — operator should run `/cleanup-worktree` in a clean follow-up session.
+- **Ai-resources `logs/session-notes-archive-2026-04.md`** — pre-existing dirty state (not this session). Defer.

@@ -1939,3 +1939,132 @@ Pipeline ran cleanly: plan mode with QC loop (REVISE → fixes → APPROVE) → 
 ### Open Questions
 
 - None.
+## 2026-04-24 — Friday checkup (monthly tier, ai-resources scope)
+
+### Summary
+
+Ran `/friday-checkup` with operator-override to monthly tier, then narrowed scope from the initial 4-scope selection (ai-resources + workspace + obsidian-pe-kb + project-planning) to ai-resources only after the 233-min runtime estimate surfaced. Completed all auto-run checks inside the ai-resources scope: `/audit-repo`, `/improve`, `/coach`, `/token-audit`. `/audit-claude-md` was spec-skipped because it only runs on ai-resources when workspace scope is also selected. Consolidated findings into a single review-only report. Surfaced a spec gap in `/audit-claude-md` coverage.
+
+### Files Created
+
+- `audits/friday-checkup-2026-04-24.md` — consolidated review-only report (7 prioritized findings across HIGH/MEDIUM/LOW, per-scope summary, 6 operator follow-ups)
+- `audits/repo-health-ai-resources-2026-04-24.md` — cadence snapshot of /audit-repo output
+- `audits/token-audit-2026-04-24-ai-resources.md` — 11-section token audit report (351 lines)
+- `audits/working/audit-working-notes-skills.md` + `audit-summary-skills.md` — Section 2 subagent outputs (69 skills audited)
+- `audits/working/audit-working-notes-file-handling.md` + `audit-summary-file-handling.md` — Section 6 subagent outputs
+- `audits/working/audit-working-notes-workflow-research-workflow.md` + `audit-summary-workflow-research-workflow.md` — Section 4 subagent outputs
+- `reports/repo-health-report-2026-04-06.md` — prior canonical report auto-archived by /audit-repo
+
+### Files Modified
+
+- `reports/repo-health-report.md` — updated by /audit-repo (Overall GREEN, 0 Critical / 0 Important / 11 Minor)
+- `audits/working/audit-working-notes-preflight.md` — overwritten for 2026-04-24 (was 2026-04-18)
+- `logs/coaching-log.md` — first baseline coaching entry appended
+
+### Decisions Made
+
+- **Tier override to monthly** (auto-detected was weekly; today is Friday day-24, outside monthly's first-week window). Routine operator direction.
+- **Scope narrowed to ai-resources only** after 233-min runtime estimate for the original 4-scope plan. 51-min estimate accepted via `proceed with long run` gate.
+- No analytical decisions logged to `decisions.md` this session — all calls were operational.
+
+### Next Steps
+
+- Push: today's commits (this wrap + any follow-on work).
+- Review the consolidated `audits/friday-checkup-2026-04-24.md`; pick HIGH items to act on first. Highest-ROI quick win: token-audit H2 (expand `Read(pattern)` deny rules in `ai-resources/.claude/settings.json`).
+- Follow up on `/audit-claude-md` spec gap: the monthly branch currently skips ai-resources when workspace isn't also selected. Consider revising so ai-resources-only runs still audit the ai-resources CLAUDE.md directly.
+- Optional: run `/cleanup-worktree` once the audit session's own files are reviewed/committed.
+- Carryover next-steps from 2026-04-23: push `/summary` skill commits (`9f62fe6`, `7463f44`); first real test of `/summary` on an actual long document.
+
+### Open Questions
+
+- None.
+
+## 2026-04-24 — /qc-pass guardrails: three-layer scope-aware rubric for mechanical infra work
+
+### Summary
+
+Designed and shipped three layered guardrails to the `/qc-pass` flow so QC stops net-negatively affecting mechanical work on repo-infrastructure files (permission settings, SKILL.md tweaks, command/agent edits, CLAUDE.md fixes, prompt changes). Dogfooded the new auto-loop mechanical-mode skip rule on the implementation's own post-edit QC pass — mechanical-mode GO with all M-checks Clear correctly skipped triage on first real use.
+
+### Files Created
+
+- None. Plan lives at `~/.claude/plans/let-s-fix-qc-pass-command-quiet-comet.md` (outside repo).
+
+### Files Modified
+
+- `ai-resources/.claude/agents/qc-reviewer.md` — wholesale rewrite: Rubric Selection section, Mechanical mode M1/M2/M3 checklist, Finding tagging via section placement (Findings = in-scope, Notes = out-of-scope), Findings+Notes output structure, legacy 3-input fallback with derived-scope annotation. Incidentally added dimension 6 (Sibling Redundancy) back into Output Format template — pre-existing bug absorbed by restructure.
+- `ai-resources/.claude/agents/triage-reviewer.md` — wholesale rewrite: dimension 0 scope relationship, Parked-by-scope default output table, scope-tag overrides Do bar unless out-of-scope fix prevents in-scope break.
+- `ai-resources/.claude/commands/qc-pass.md` — added scope input (Step 2 fourth item), mechanical-mode hint logic (Step 3), Step 4a scope visibility note for operator re-invoke.
+- `CLAUDE.md` (workspace root) — Mechanical-mode QC (second gear) bullet in QC Independence Rule; Auto-Loop step 1 rewrite with findings/notes gating and mechanical-mode GO skip.
+
+Commits: ai-resources `d50480f` (batch: /qc-pass guardrails); workspace `fe362ad` (update: CLAUDE.md — mechanical-mode bullet + Auto-Loop scope gating).
+
+Archive activity (wrap-session): `ai-resources/logs/session-notes.md` trimmed by archive script to keep 10 most recent entries; `ai-resources/logs/session-notes-archive-2026-04.md` auto-updated with 4 older April entries.
+
+### Decisions Made
+
+- **Mechanical-mode scope definition:** operator directive broadened from "JSON/settings only" to "everything involved in repo infrastructure" — settings files, command/agent defs, SKILL.md, CLAUDE.md, hooks, prompts, analogous infra. Implemented as target universe in qc-reviewer Rubric Selection.
+- **Scope declaration flow:** hybrid derive-and-display. Main agent derives scope from artifact + last turn, reviewer echoes in output header, operator corrects by re-invoking `/qc-pass` if mis-derived. Rejected: caller form-fill (adds friction where false-positive problem lives) and silent derivation (errors hidden).
+- **Mechanical-mode detection:** qc-reviewer auto-detects from diff + scope + optional `mechanical-mode: suggested` hint. `forced-off` override exists; no `forced-on` override (dangerous direction — would let caller narrow rubric on design work).
+- **Design shape:** three-layer (scope + rubric + triage) over simpler tag-only alternative (operator chose after QC surfaced alternative). Three-layer addresses both net-negative outcomes AND noise volume; tag-only addresses only net-negative.
+- **Ripple-edit scope:** narrowed by operator after QC found three additional qc-reviewer invokers — `refinement-deep.md`, `cleanup-worktree.md`, three workflow commands. Operator directed: do not touch these; rely on legacy 3-input fallback (derive-scope) in qc-reviewer. Deferred to follow-up migration.
+
+QC-fix items applied (triaged "Do"):
+- Output Format tag-placement disambiguation — tags implicit by section placement, not inline.
+- Auto-Loop step 1 skip condition extended to cover mechanical-mode GO with all M-checks Clear (in addition to existing "all Notes" skip).
+
+### Next Steps
+
+- Push both repos: `ai-resources` at `d50480f`; workspace at `fe362ad`.
+- First real-world test: on the next mechanical `/qc-pass` invocation, confirm rubric selection, tag placement, and auto-loop skip behave as designed.
+- Follow-up migration (separate session): update `refinement-deep.md`, `cleanup-worktree.md`, and workflow commands (`qc-pass.md`, `produce-formatting.md`, `produce-prose-draft.md`) to the 4-input contract. Low urgency — legacy fallback keeps them correct in the meantime.
+- Carryover from 2026-04-23: push `/summary` skill commits (`9f62fe6`, `7463f44`); first real test of `/summary` on an actual long document.
+
+### Open Questions
+
+- None.
+
+## 2026-04-24 — Act on Friday-checkup HIGH findings (H2 + M1 + H1)
+
+### Summary
+
+Addressed three of the Friday-checkup report's prioritized items this session: H2 (expand `Read(pattern)` deny coverage), M1 (set `MAX_THINKING_TOKENS=10000`), and H1 (rework three research-workflow prose-pipeline subagent returns to output-to-disk per the Subagent Contracts). Plan was reviewed at ExitPlanMode after two self-check fixes (qc-reviewer Write-tool prerequisite, `mkdir -p` ownership). Ran the full QC → Triage Auto-Loop on Part B: first qc-reviewer pass GO-with-minor-items → triage promoted 3 Do items → fixes applied → second qc-reviewer pass REVISE on two stale step-number back-references I missed → mechanical fix applied (QC-skip criteria met). Two commits landed: `1df2a1c` (Part A settings) and `556313e` (Part B H1 refactor). Both pre-push. H3 (skill splits), M2, M3, and LOW items deferred per operator direction.
+
+### Files Created
+
+- None. Plan at `~/.claude/plans/snuggly-popping-allen.md` (outside repo; user-level plans dir).
+
+### Files Modified
+
+- `ai-resources/.claude/settings.json` — expanded `deny` list with 5 new patterns (`Read(audits/working/**)`, `Read(logs/*-archive-*.md)`, `Read(inbox/archive/**)`, `Read(**/deprecated/**)`, `Read(**/old/**)`); added `env.MAX_THINKING_TOKENS=10000`. Conservative scope — deliberately did NOT add broad `Read(audits/**)` or `Read(reports/**)` which would block reading today's canonical reports. (Operator also added explicit `Edit/Write(.claude/settings.json)` and `Edit/Write(**/.claude/settings.json)` allow rules mid-session after a harness prompt fired on the first settings edit despite `bypassPermissions` being on.)
+- `ai-resources/workflows/research-workflow/.claude/commands/produce-prose-draft.md` — Phase 2 step 0: added `mkdir -p "{prose_output_dir_abs}/working"`. Phase 3 step 5 subagent task: output-to-disk pattern (writes unified findings to `working/phase-3-qc-{section}.md`) + ≤20-line structured return spec. Phase 3 step 6 fix-agent handoff: receives working-file path instead of inline findings. Phase 3 step 7 handoff note: summary + absolute working-file path, full findings stay on disk. Phase 6 step 2: reads working file before operator surfacing.
+- `ai-resources/workflows/research-workflow/.claude/commands/produce-formatting.md` — Phase 2 step 5 (renumbered from initial `4a`): added `mkdir -p` call. Phase 2 subagent: output-to-disk (writes to `working/formatting-phase-2-{section}.md`) + ≤20-line return. Phase 3 subagent: output-to-disk (writes to `working/formatting-phase-3-qc-{section}.md`), now reads Phase 2 working file by path for deferred-items context. Phase 4 steps 2–3: reads both working files before operator surfacing.
+- `ai-resources/.claude/agents/qc-reviewer.md` — added `Write` tool to frontmatter tools list (between `Read` and `Glob`). Prerequisite for H1 — qc-reviewer is used in both produce-* Phase 3 contexts and needed disk-write capability to comply with the Subagent Contracts output-to-disk rule. Additive change; existing callers (via `/qc-pass`, `/refinement-pass`) unaffected unless brief explicitly asks for a write.
+- `ai-resources/logs/session-notes.md` — this entry.
+
+### Decisions Made
+
+- **H2 scope narrowed from token-audit's aggressive recommendation.** Audit recommended `Read(audits/**)` and `Read(reports/**)` broadly. Chose conservative additions that protect known-stale patterns (`audits/working/**`, `logs/*-archive-*.md`, `inbox/archive/**`, `**/deprecated/**`, `**/old/**`) without blocking canonical reports the operator needs to read during review sessions. See decisions.md.
+- **`qc-reviewer` Write tool grant.** Caught during plan self-check: Phase 3 subagents are `qc-reviewer` type, which previously had `Read/Glob/Grep` only — no disk-write capability. Required a frontmatter addition to enable the H1 refactor. Blast radius: additive, no existing caller exercises Write unless asked.
+- **mkdir responsibility assigned to main session.** `Write` tool doesn't auto-create parent directories; qc-reviewer has Write but not Bash. Placing `mkdir -p` in the main session's Phase 2 (both commands) inverts the responsibility pattern from `token-audit-auditor` but provides a cleaner split.
+- **20-line subagent return cap (down from 30).** Post-QC triage promoted this per the CLAUDE.md Subagent Contracts "Tighter cap (20 lines) when per-unit invocations proliferate (one subagent per workflow, per chapter, per file)" rule. Per-section invocation counts as per-chapter.
+
+QC-fix items applied (triaged "Do", not separate decisions):
+- Renumbered produce-formatting Phase 2 mkdir step from `4a` to `5` (and shifted subsequent steps), matching the clean-integer convention used in produce-prose-draft Phase 2 step 0.
+- Normalized `{prose_output_dir}` → `{prose_output_dir_abs}` in the produce-prose-draft Phase 3 handoff-note path reference.
+- Tightened the 30-line cap to 20 lines across all three subagent return specs.
+- Second-pass QC-revise fix: updated two stale `step 4a` back-references in produce-formatting.md lines 50 and 95 to `step 5` (missed by the initial renumber).
+
+### Next Steps
+
+- **Push** the two commits from this session (`1df2a1c` settings, `556313e` H1 refactor), plus the carryover `/summary` skill commits from 2026-04-23 (`9f62fe6`, `7463f44`). Operator confirmation required per Autonomy Rules pause-trigger #2.
+- **Validate H1 on a real chapter.** The refactor is template-only. On the next real `/produce-prose-draft` or `/produce-formatting` invocation, confirm: (a) `{prose_output_dir}/working/` dir created; (b) subagent writes structured findings file; (c) return summary ≤20 lines; (d) Phase 4 / Phase 6 reads successfully surface the findings to operator.
+- **Propagate H1 to deployed project workflows via `/sync-workflow`** when the operator decides — standard workflow-template update pattern.
+- **H3 skill splits** (`ai-resource-builder` 401L / 3 modes, `answer-spec-generator` 485L / 5 modes, plus `research-plan-creator` 464L, `evidence-to-report-writer` 332L, `workflow-evaluator` 316L, `ai-prose-decontamination` 314L) — staged across future sessions. Recommend starting with the two multi-mode skills where the per-invocation bloat is highest.
+- **M2** (orchestrator compression for `new-project.md` 476L, `deploy-workflow.md` 321L via protocol-file pattern) and **M3** (`/clear` guidance between produce-* commands) — deferred.
+- **`/audit-claude-md` spec gap** from the Friday-checkup's "Plan QC gap" note: ai-resources-only runs currently skip the ai-resources CLAUDE.md. Revise the monthly branch so ai-resources-only runs still audit it directly.
+- **`/cleanup-worktree`** — working tree still has ~30 dirty entries from last two sessions' audit artifacts (friday-checkup report, repo-health snapshots, token-audit report, working notes, plus some agent/command edits from today's /qc-pass session). Run after reviewing these artifacts.
+- **Carryover from 2026-04-23:** first real test of `/summary` on an actual long document.
+
+### Open Questions
+
+- None.
