@@ -57,7 +57,24 @@ Accept shorthand: "yy" / "yes both" / "both" = both yes; "nn" / "skip both" = bo
 
 13. **Session telemetry.** If the operator declined telemetry in the preflight, skip this step with a one-line note in chat ("Telemetry skipped per preflight") and proceed to the commit step. Otherwise, run the usage analysis inline before committing. Execute the full `/usage-analysis` flow (build session summary, read existing `logs/usage-log.md` if it exists, delegate to the `session-usage-analyzer` subagent per `ai-resources/skills/session-usage-analyzer/SKILL.md`, write the returned entry to the log). For trivial sessions (single-file edit, one-question read, aborted session), skip with a one-line note in chat ("Telemetry skipped — trivial session") and proceed. Rationale: R14 telemetry baseline depends on consistent capture; inlining the analysis prevents the common failure mode where the operator forgets to invoke it post-wrap and the session drops out of the record.
 
-After updating logs and writing the telemetry entry, stage and commit changes. **Stage by explicit file paths**, not directory wildcards — directory-level `git add` silently sweeps uncommitted files from concurrent sessions. Enumerate from the Files Created / Files Modified sections just written to the session note, plus always-present wrap-touched files:
+13a. **Working-tree dirt check.** Run `git status --porcelain` in the current working tree. If empty, skip this step. Otherwise, compare each dirty path against the session note's `Files Created` and `Files Modified` lists. For any dirty path NOT in those lists, capture its mtime (`stat -f "%Sm" -t "%Y-%m-%d" <path>` on macOS) and present once:
+
+    > Working tree has dirty paths not produced this session:
+    > - {path} ({modified|untracked}, mtime: {YYYY-MM-DD})
+    > - ...
+    >
+    > Disposition each (one letter per path, in order): (c)ommit with this session, (d)efer as WIP, (i)gnore?
+
+    Apply per-path decisions:
+    - **c (commit)** — stage the path explicitly so it lands in the wrap commit; add the path to the session note's `### Files Modified` list (Edit on the note file).
+    - **d (defer as WIP)** — leave the path dirty; append `- WIP: {path} (deferred {YYYY-MM-DD})` to the session note's `### Open Questions` section so it surfaces next session.
+    - **i (ignore)** — leave the path dirty; do not modify the note. Count these for the end-of-turn summary.
+
+    If any paths were ignored, include in your end-of-turn wrap summary: "{N} dirty path(s) deferred without disposition. Consider `/cleanup-worktree` next session." Skip silently if zero ignored.
+
+    Rationale: catches uncommitted edits and unstaged finished files that survive across sessions — the failure class observed on 2026-04-24 (telemetry-path migration sat in working tree for weeks; improvement-log-archive.md and setup-improvement-scan-2026-04-21.md sat untracked).
+
+After updating logs, writing the telemetry entry, and processing the dirt check, stage and commit changes. **Stage by explicit file paths**, not directory wildcards — directory-level `git add` silently sweeps uncommitted files from concurrent sessions. Enumerate from the Files Created / Files Modified sections just written to the session note, plus always-present wrap-touched files:
 - Always-staged (if modified this session): `logs/session-notes.md`, `logs/decisions.md`, `logs/coaching-data.md`, `logs/improvement-log.md`, `logs/improvement-log-archive.md`, `logs/innovation-registry.md`, `logs/usage-log.md`
 - Session-specific: every path listed in Files Created / Files Modified for this session, staged by explicit name
 
