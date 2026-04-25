@@ -14,7 +14,7 @@ This is a bright-line rule — do not skip even when the audit tags a recommenda
 
 ## Risk-check change classes
 
-Before landing a structural change in any of the following classes, run `/risk-check` and honor the resulting verdict:
+If a session touches a structural change in any of the following classes, run `/risk-check` at two session boundaries (not per-change — see *When to fire* below):
 
 - Hook edits (`.claude/hooks/*.sh`)
 - Permission changes (`settings.json` `allow` / `ask` / `deny` edits)
@@ -24,6 +24,15 @@ Before landing a structural change in any of the following classes, run `/risk-c
 - Automation with shared-state effects (scripts that auto-write to logs, cross-repo writes, auto-commit patterns)
 
 For change classes outside this list, `/risk-check` is optional — operators can still invoke it when a change feels risky.
+
+### When to fire (two-gate model)
+
+- **Plan-time gate** — once, after the plan is approved, if the planned work touches any class above. The `$ARGUMENTS` payload describes the *design* (e.g., "edit hook X to add Y; allow Bash(rg:*) in workspace settings"). Catches design risk before tokens are spent on execution.
+- **End-time gate** — once, before commit, batched across every in-class change the session actually made. The `$ARGUMENTS` payload describes the *executed* change set. Catches drift, emergent coupling, and scope creep that the plan-time gate didn't surface.
+
+Sessions without an explicit plan (auto-mode quick fixes, single-file edits) skip the plan-time gate and run only the end-time gate. Sessions that touch no class skip both gates.
+
+Each gate fires once per session. Mid-session re-invocation of `/risk-check` is operator-discretionary, not required by this rule. The point of the two-gate model is to avoid per-change firing — that pattern multiplied tokens without proportionate signal.
 
 ### Verdict semantics
 

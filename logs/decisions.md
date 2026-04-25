@@ -339,3 +339,31 @@
    Rationale: After running `/risk-check` on F2 and F3+G5, recognized that running it on every CLAUDE.md paragraph and hook validation extension is heavy ceremony for low-risk edits. Skipped `/risk-check` on F4 (small extension to existing hook validation) and F5 (new check class added to existing auditor — no new structural infrastructure). Reserves `/risk-check` for genuinely structural changes (new hooks, new commands, new permission rules). Self-check + post-edit testing was sufficient for the small extensions.
 
 **Implication.** The plan-vs-execution gap surfaced two patterns worth carrying forward: (a) `/risk-check` should be invoked when scope is genuinely structural, not on every item that touches a hook or CLAUDE.md; (b) plan-stage severity classifications should be cross-checked against existing rulebook taxonomies before landing.
+
+## 2026-04-25 — /risk-check trigger model: per-change → two-gate
+
+**Context.** Operator flagged that `/risk-check` was firing too often during active work and burning tokens. Under the prior rule, any structural class touched (hook edit, permission change, cross-cutting CLAUDE.md edit, new command/skill, new symlink, automation with shared-state effects) required `/risk-check` *before each landing*. Multi-class sessions fired the gate 3–5 times.
+
+**Decision.** Adopt a two-gate model:
+- **Plan-time gate** — once after plan approval, if the plan touches any structural class. `$ARGUMENTS` describes the *design*. Catches design risk before tokens are spent on execution.
+- **End-time gate** — once before commit, batched across every in-class change the session actually made. `$ARGUMENTS` describes the *executed* change set. Catches drift, emergent coupling, scope creep.
+- **Skip rules.** Sessions without an explicit plan (auto-mode quick fixes, single-file edits) run only the end-time gate. Sessions touching no class skip both.
+
+**Rationale.** The two gates preserve `/risk-check`'s two distinct value propositions (design-risk catch + execution-drift catch) while bounding firings to ≤2 per session. Per-change pattern was the failure mode the operator flagged.
+
+**Alternatives considered.**
+- *Single end-time gate only.* Simpler but loses early design-risk catch — you can build for tokens against a design that should have been redesigned.
+- *Threshold trigger* (only fire when N+ structural changes accumulate). Adds bookkeeping to operator/main agent; less predictable than session boundaries.
+- *Status quo.* Rejected — was the trigger for this redesign.
+
+**Mitigations applied (per end-time `/risk-check` on this very change set).**
+- Workspace CLAUDE.md pause-trigger #9 trimmed to ~95 words (matched prior baseline length). Always-loaded surcharge would otherwise have partially undone the policy's token-saving motivation.
+- `/wrap-session` Step 13b added as the tactile end-time prompt at the natural session boundary.
+
+**Cross-session note.** This decision and the concurrent session's decision #5 ("Reduced `/risk-check` ceremony for small edits") are complementary, not contradictory: that decision narrows the *trigger classes* (skip on small low-risk extensions to existing files); this decision changes the *firing cadence* within those classes (≤2 firings per session, at session boundaries).
+
+**Files changed.**
+- `../CLAUDE.md` (workspace root) — pause-trigger #9 reworded then trimmed.
+- `ai-resources/docs/audit-discipline.md` — added "When to fire (two-gate model)" subsection.
+- `ai-resources/.claude/commands/risk-check.md` — added "Two intended call sites per session" block.
+- `ai-resources/.claude/commands/wrap-session.md` — added Step 13b end-time gate reminder (swept into concurrent session's wrap commit `26d9c7f`).

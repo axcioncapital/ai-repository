@@ -392,3 +392,40 @@ Followup to the 2026-04-24 cleanup-worktree session, which uncovered four benign
 ### Open Questions
 
 - None.
+
+## 2026-04-25 — /risk-check trigger model: per-change → two-gate
+
+### Summary
+
+Operator flagged that `/risk-check` was firing too frequently mid-session under the per-change rule and burning tokens. Designed a two-gate model — plan-time (after plan approval, if the plan touches a structural class) and end-time (once before commit, batched across all in-class changes the session actually made) — replacing per-change firing. Edits landed across workspace `CLAUDE.md`, `ai-resources/docs/audit-discipline.md`, and `.claude/commands/risk-check.md`. Ran the new policy on itself (end-time gate); verdict PROCEED-WITH-CAUTION required two paired mitigations, both applied (workspace CLAUDE.md trim + `/wrap-session` Step 13b reminder).
+
+### Files Created
+
+- `audits/risk-checks/2026-04-25-change-risk-check-trigger-semantics-from-per-change-to-two.md` — risk-check report on the two-gate change set (verdict PROCEED-WITH-CAUTION; two mitigations required, both applied)
+
+### Files Modified
+
+- `../CLAUDE.md` (workspace root, separate git repo) — pause-trigger #9 reworded twice: first to two-gate semantics with full prose; then trimmed to ~95 words after end-time `/risk-check` flagged always-loaded surcharge. Detail moved to `audit-discipline.md`.
+- `docs/audit-discipline.md` — added "When to fire (two-gate model)" subsection under § Risk-check change classes; defines plan-time/end-time payloads and skip rules for unplanned/no-touch sessions.
+- `.claude/commands/risk-check.md` — added "Two intended call sites per session" block above invocation semantics.
+- `.claude/commands/wrap-session.md` — added Step 13b end-time `/risk-check` gate (between dirt check Step 13a and commit). Note: this edit was inadvertently swept into the concurrent session's wrap commit `26d9c7f` rather than being staged here. The change landed correctly; commit-message narrative is incomplete.
+- `audits/permission-sweep-2026-04-24.md` — pre-existing untracked file from 2026-04-24, committed with this session per operator disposition (c).
+- `audits/risk-checks/2026-04-24-workspace-claude-md-chat-communication-style.md` — pre-existing untracked file from 2026-04-24, committed with this session per operator disposition (c).
+- `workflows/research-workflow/.claude/settings.json` — pre-existing modification from 2026-04-24, committed with this session per operator disposition (c).
+
+### Decisions Made
+
+- **Adopted two-gate model** over per-change firing. Rationale: per-change pattern multiplied tokens during structural-change sessions without proportionate signal. Two gates preserve early design-risk catch and end-of-session drift catch while bounding firings to ≤2 per session. Complementary to the concurrent session's decision #5 ("Reduced /risk-check ceremony for small edits") — that decision narrows trigger *classes*; this decision changes firing *cadence* within those classes.
+- **Trimmed workspace CLAUDE.md pause-trigger #9** to ~95 words (matching prior baseline length) after end-time `/risk-check` flagged always-loaded token surcharge. Prose detail moved to `audit-discipline.md`.
+- **Added `/wrap-session` Step 13b** as the operator-tactile prompt for the end-time gate. Smallest viable mechanism so the two-gate model isn't dependent solely on operator memory.
+- **Declined post-edit `/qc-pass`** on the policy edits — operator chose direct wrap. Mechanical-mode rubric doesn't apply (policy edit, not substitution); operator judged trimmed CLAUDE.md and Step 13b are well-bounded enough to commit without external QC.
+
+### Next Steps
+
+- **Push** ai-resources commit (forthcoming) and workspace-root `CLAUDE.md` commit (forthcoming) — two repos, two pushes, requires operator approval per Autonomy Rules.
+- Watch the next 3–5 sessions under the new policy: confirm plan-time gate is firing post-approval (not per-change), and `/wrap-session` Step 13b actually surfaces the end-time gate in real wraps.
+- Re-evaluate at next `/token-audit` whether the always-loaded surcharge nets positive given session mix.
+
+### Open Questions
+
+- The concurrent session's commit `26d9c7f` swept this session's `wrap-session.md` edit (Step 13b) into its commit. The edit landed correctly but commit narrative is incomplete. Decide later whether to leave-as-is or note in a follow-up commit.

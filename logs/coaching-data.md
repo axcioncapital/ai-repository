@@ -279,3 +279,10 @@
 - **Decisions logged:** 1 (5-point design-choices entry covering F2 redesign, G5 drop, F5 severity, scope-stop, /risk-check de-ceremony)
 - **QC cycles:** 1 (F2 post-edit QC → GO mechanical-mode rubric, triage auto-loop skipped per Notes-only rule)
 - **Gates:** 5 (3 confirmed, 2 changed) — plan-approval:confirmed (wiggly-volcano plan via ExitPlanMode), qc-disposition:confirmed (Option 1 chosen after F2 /risk-check RECONSIDER), editorial-disagreement:changed (operator: "Why are you still asking for permission prompts?" → switched to acting on recommended default without asking), editorial-disagreement:changed (operator: "Why are you overcomplicating this operation?" → dropped /risk-check on small extensions for F4/F5), bright-line-review:confirmed (operator: "are you introducing new permissions?" → clarified with git log evidence; operator proceeded to /wrap-session)
+
+### 2026-04-25 — /risk-check trigger model: per-change → two-gate
+- **Commands used:** /risk-check, /wrap-session
+- **Iterations:** 0
+- **Decisions logged:** 1 (two-gate model adoption with alternatives, mitigations, cross-session note)
+- **QC cycles:** 0 (operator declined post-edit /qc-pass; judged trimmed CLAUDE.md + new /wrap-session step well-bounded)
+- **Gates:** 3 (1 changed) — service-design-disposition:changed (initial single-end-gate proposal refined by operator to two-gate "after plan + at end"), plan-approval:confirmed (three-file edit scope approved), qc-disposition:confirmed (operator chose direct wrap over /qc-pass after PROCEED-WITH-CAUTION mitigations applied)

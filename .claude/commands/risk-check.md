@@ -21,6 +21,12 @@ Required-when-mandatory change classes (per `ai-resources/docs/audit-discipline.
 
 For non-listed change classes, `/risk-check` is optional and operator-invoked as judgment dictates.
 
+Two intended call sites per session (per `ai-resources/docs/audit-discipline.md` § When to fire):
+- **Plan-time** — once after the plan is approved, if the plan touches any required class. `$ARGUMENTS` describes the *design*.
+- **End-time** — once before commit, batched across every in-class change the session actually made. `$ARGUMENTS` describes the *executed* change set.
+
+Sessions without an explicit plan run only the end-time gate. Mid-session per-change firing is **not** the intended pattern — it multiplies tokens without proportionate signal.
+
 Invocation semantics: operator-typed, or inline-prompted by other commands (e.g., `/friday-act`). There is NO SessionStart / Stop / PreToolUse hook that auto-fires `/risk-check` — that would over-escalate on ordinary edits.
 
 ---

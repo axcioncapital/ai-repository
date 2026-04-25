@@ -237,3 +237,31 @@
 - Pin produce-prose-draft.md once at session start (208 lines × 2–3 reads = ~4–6k redundant tokens). Bigger than the typical re-read lever because this is a central command file touched across 4 phases — any multi-phase edit session will re-encounter it. Projects to ~40–80k over 10–20 sessions.
 - Scope harness-config audits to a single subagent brief that enumerates ALL candidate files upfront rather than iterating after operator challenge (~3–5k tokens per audit by avoiding the second round). Smaller than the primary because harness-config audits are less frequent than planning sessions.
 - Batch the four skill-contract edits into one Read + one Edit per file pattern (already mostly done this session, but one-file-at-a-time drift cost ~1–2k) — smallest lever, included for completeness since the pattern is reusable across future multi-skill contract updates.
+
+### 2026-04-25 | Acceptable
+
+**Task:** Adopted two-gate trigger model for `/risk-check` (plan-time + end-time) replacing per-change firing — edited workspace `CLAUDE.md` pause-trigger #9 (×2, expand then trim), `audits/audit-discipline.md`, `risk-check.md`, `wrap-session.md`; ran self-applied `/risk-check` returning PROCEED-WITH-CAUTION with two paired mitigations applied.
+
+| Metric | Value |
+|--------|-------|
+| Exchanges | 11 |
+| Files read | 13 (re-reads: 0 for same content; 4 ledger files touched via head + tail-via-bash dual-call pattern) |
+| Files written/edited | 9 |
+| Tool calls | ~32 |
+| Subagents | 1 |
+| Rework cycles | 1 |
+
+**Findings:**
+- Workspace `CLAUDE.md` pause-trigger #9 written first as a ~10-line expansion, then trimmed to ~95 words after end-time `/risk-check` flagged the always-loaded surcharge — full payload paid twice on the same load-bearing section. (Rework, Moderate)
+- Four ledger files (`session-notes.md`, `decisions.md`, `coaching-data.md`, `innovation-registry.md`) each touched via separate `Read` head + `Bash` tail sequences when a single full Read of files ≤100 lines would have sufficed — same tail-before-read anti-pattern flagged in 2026-04-24 entry, third session running. (Tool overhead, Moderate)
+- Concurrent-session collision swept the `wrap-session.md` Step 13b edit into the other session's commit — externally caused, no extra reads triggered this session, but the staging-discipline check before the edit could have detected the active concurrent context earlier. (Tool overhead, Minor)
+- Stable relative to last 3 entries (Acceptable / Acceptable / Acceptable) — no regression; the ledger-file tail-before-read pattern persists for the third session, reinforcing it as a structural sub-pattern.
+
+**Recommendation:** When wrap-step touches the standard ledger set (session-notes, decisions, coaching-data, innovation-registry, improvement-log), do a single Read pass per file at append-point — no Bash tail precursor — for any ledger ≤200 lines. The tail call is almost never load-bearing for files this size and doubles the per-ledger tool overhead.
+
+**Estimated savings:** ~1–2k tokens per wrap session (4 ledger files × ~300–500 tokens of avoided tail+head dual reads each). Over 10–20 wrap sessions: ~10–40k tokens. Smaller than typical creation-session levers but recurs every session that runs `/wrap-session`.
+
+**Additional levers (ROI-ranked):**
+- Anticipate the always-loaded surcharge before drafting `CLAUDE.md` pause-trigger or rule edits — set a target word budget (e.g., ≤100 words for a single pause-trigger entry) at the start, draft to fit, then run `/risk-check`. Saves ~2–3k tokens per always-loaded edit by avoiding the expand-then-trim cycle and the second `Edit` payload. Bigger than primary on policy-edit sessions; smaller frequency than the wrap-ledger pattern.
+- When concurrent-session disclosure is known at session start, scope `wrap-session.md` and other shared infra edits earlier in the session so commit-boundary collisions are visible before the other session wraps — saves 1 lost edit + 1 lost commit-boundary attribution per affected session, ~1–2k tokens of recovery overhead. Smaller than primary because concurrent-session collisions are infrequent.
+- Self-applied `/risk-check` worked — the gate caught the always-loaded surcharge that the main agent's draft missed. Worth codifying as a lever: for any always-loaded-content edit, make plan-time `/risk-check` mandatory rather than discretionary. Zero token savings (it's a quality lever, not a cost lever) but prevents the rework-cycle cost above.

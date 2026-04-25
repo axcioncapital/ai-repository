@@ -2,20 +2,23 @@
   "model": "sonnet",
   "permissions": {
     "allow": [
-      "Bash(*)",
-      "Read",
-      "Edit",
-      "Write",
-      "MultiEdit",
       "Agent",
-      "Skill",
-      "TodoWrite",
+      "Bash(*)",
+      "Bash(rm *)",
+      "Edit",
+      "Edit(**/.claude/**)",
       "Glob",
       "Grep",
+      "MultiEdit",
+      "NotebookEdit",
+      "Read",
+      "Skill",
+      "TodoWrite",
+      "ToolSearch",
       "WebFetch",
       "WebSearch",
-      "NotebookEdit",
-      "ToolSearch"
+      "Write",
+      "Write(**/.claude/**)"
     ],
     "deny": [
       "Bash(git push*)",
@@ -26,6 +29,10 @@
       "Read(logs/*-archive-*.md)",
       "Read(**/deprecated/**)",
       "Read(**/old/**)"
+    ],
+    "defaultMode": "bypassPermissions",
+    "additionalDirectories": [
+      "/Users/patrik.lindeberg/Claude Code/Axcion AI Repo"
     ]
   },
   "hooks": {
