@@ -2,6 +2,44 @@
 
 > Archive: [session-notes-archive-2026-04.md](session-notes-archive-2026-04.md)
 
+## 2026-04-25 — Commission Batch 5 (resume): draft /route-change + commit Batch 5 (docs/repo-architecture.md + /route-change)
+
+### Summary
+
+Resumed Batch 5 from prior session (which had drafted `docs/repo-architecture.md` and stopped before `/route-change` due to context-window concerns). Drafted the `/route-change` advisory command (lightweight, non-mutating, main-session, sonnet tier). QC → triage → post-edit QC loop returned REVISE then GO; four fixes landed (template gap, AI_RESOURCES upward-walk resolution, change-class citation in lieu of inline duplication, removal of hardcoded counts from architecture map). Synthetic-brief verification confirmed correct routing for a "skill that summarizes long documents" input. End-time `/risk-check` returned GO — all five dimensions Low. Mid-session: diagnosed and surfaced a workspace `settings.local.json` permission-shadow regression (operator applied the `defaultMode: bypassPermissions` fix manually).
+
+### Files Created
+
+- `ai-resources/.claude/commands/route-change.md` — Stage 1 routing advisor command. Sonnet tier, main session, no subagent. Reads `docs/repo-architecture.md` plus relevant CLAUDE.md / canonical doc layers (gated by keyword in `$ARGUMENTS`). Walks Q1–Q8 placement heuristics. Outputs structured chat-only recommendation: artifact type, canonical home, files to touch, pipeline pointer, /risk-check requirement, conditional Alternative-placement and Architecture-gap fields. Auto-wiring into `/create-skill` is OFF.
+- `ai-resources/audits/risk-checks/2026-04-25-add-new-slash-command-ai-resources-claude-commands-route.md` — end-time risk-check report (verdict GO, all dimensions Low).
+- `ai-resources/audits/working/qc-batch5-route-change-and-repo-architecture.md` — initial QC working notes.
+- `ai-resources/audits/working/post-edit-qc-batch5-2026-04-25.md` — post-edit QC working notes.
+
+### Files Modified
+
+- `ai-resources/docs/repo-architecture.md` — committed for the first time (was untracked from prior session). Triage F4 applied: dropped hardcoded counts ("38 files", "23 files", "9 files", "70 dirs") and named projects/ subdirectory list. Maintenance-rule self-consistency restored.
+- `/Users/patrik.lindeberg/Claude Code/Axcion AI Repo/.claude/settings.local.json` — model identifier fix (`claude-sonnet-4-6` → `claude-sonnet-4-6[1m]`). Operator subsequently added `"defaultMode": "bypassPermissions"` to the permissions block (resolves the shadow regression — see Decisions Made).
+- `ai-resources/logs/session-notes.md` — this entry.
+
+### Decisions Made
+
+- **All four QC findings classified Fix (none deferred).** Triage applied them in one pass with no conflicts. F1 and F2 were load-bearing (template gap + invocation-from-projects ambiguity); F3 and F4 were durability (drift prevention).
+- **Post-edit QC selected mechanical-mode rubric.** Acceptable per workspace CLAUDE.md mechanical-mode QC rule — fixes were substitution-shaped on infrastructure files.
+- **Surfaced workspace settings.local.json permission shadow regression mid-session.** Workspace-level `settings.local.json` declared its own `permissions` block but lacked `defaultMode: bypassPermissions`, shadowing the parent's bypass setting. Operator applied the one-line fix manually after diagnosis. Memory entry `feedback_zero_permission_prompts.md` policy now honored across all four settings layers again. Did not auto-apply per pause-trigger #8 (harness-level config change).
+
+### Next Steps
+
+**Commission status: COMPLETE.** All five batches landed (Batch 1 = `/risk-check`; Batch 2 = `/friday-act` + tier output; Batch 3 = Friday cadence durability; Batch 4 = maintenance ledger aging; Batch 5 = Stage 1 repo architecture).
+
+**Suggested follow-ups (not commissioned):**
+- Run `/permission-sweep` against the workspace to verify the settings.local.json fix holds and no other layers drift. (The shadow rule should already be in the rulebook — confirm the sweep would have caught this regression.)
+- Quarterly checkup: review `docs/repo-architecture.md` for staleness against actual repo layout.
+- Consider whether `/route-change` should be wired into `/create-skill` Step 1 (decision parked: OFF until proven useful per Batch 5 plan).
+
+### Open Questions
+
+None. Commission closed.
+
 ## 2026-04-25 — Commission Batch 5 (partial): docs/repo-architecture.md drafted; /route-change deferred
 
 ### Summary

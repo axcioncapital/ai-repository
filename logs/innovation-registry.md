@@ -84,3 +84,4 @@
 | 2026-04-25 | command | .claude/commands/friday-act.md | triaged:project-specific | — (already in ai-resources canonical location; no graduation needed) |
 | 2026-04-25 | agent | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/project-planning/.claude/agents/plan-evaluator.md | triaged:project-specific | — (paired with project-planning's own pipeline) |
 | 2026-04-25 | agent | /Users/patrik.lindeberg/Claude Code/Axcion AI Repo/projects/project-planning/.claude/agents/spec-evaluator.md | triaged:project-specific | — (paired with project-planning's own pipeline) |
+| 2026-04-25 | command | .claude/commands/route-change.md | detected | — |
