@@ -1,5 +1,5 @@
 {
-  "model": "sonnet",
+  "model": "sonnet[1m]",
   "permissions": {
     "allow": [
       "Agent",
