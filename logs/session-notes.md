@@ -464,5 +464,4 @@ Implemented a complete per-project model routing architecture across 6 git repos
 
 ### Open Questions
 
-- **Pre-existing workspace dirt.** Workspace shows ~70 untracked files (massive `.claude/agents/`, `.claude/commands/`, `projects/*` listing) and `M .claude/settings.json` + `M projects/corporate-identity/.claude/settings.json`. None of these were produced by this session. They likely originate from a concurrent session or accumulated background state. Deferred — operator should run `/cleanup-worktree` in a clean follow-up session.
-- **Ai-resources `logs/session-notes-archive-2026-04.md`** — pre-existing dirty state (not this session). Defer.
+None.
